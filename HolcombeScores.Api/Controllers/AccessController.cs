@@ -1,0 +1,43 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using HolcombeScores.Api.Models;
+using HolcombeScores.Api.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HolcombeScores.Api.Controllers
+{
+    [ApiController]
+    public class AccessController : Controller
+    {
+        private readonly IAccessService _accessService;
+
+        public AccessController(IAccessService accessService)
+        {
+            _accessService = accessService;
+        }
+
+        [HttpPost("/api/Access/Request")]
+        public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto requestDto)
+        {
+            return await _accessService.RequestAccess(requestDto);
+        }
+
+        [HttpPost("/api/Access/Respond")]
+        public async Task<ActionResultDto<AccessDto>> Respond(AccessResponseDto response)
+        {
+            return await _accessService.RespondToRequest(response);
+        }
+
+        [HttpGet("/api/Access")]
+        public IAsyncEnumerable<AccessRequestDto> GetRequests()
+        {
+            return _accessService.GetAccessRequests();
+        }
+
+        [HttpGet("/api/Access/Revoke")]
+        public async Task<ActionResultDto<AccessDto>> RevokeRequest(AccessResponseDto response)
+        {
+            return await _accessService.RevokeAccess(response);
+        }
+    }
+}
