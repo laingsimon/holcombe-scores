@@ -38,6 +38,7 @@ Fields:
 - Opponent
 - Squad
 - Goals
+- PlayingAtHome
 
 ### Player
 Represents the information about a team player
