@@ -16,5 +16,6 @@ namespace HolcombeScores.Api.Services
         IAsyncEnumerable<AccessRequestDto> GetAccessRequests();
         Task<bool> CanAccessTeam(Guid teamId);
         Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto);
+        IAsyncEnumerable<AccessDto> GetAllAccess();
     }
 }
