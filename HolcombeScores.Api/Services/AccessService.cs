@@ -34,6 +34,19 @@ namespace HolcombeScores.Api.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
+        public async IAsyncEnumerable<AccessDto> GetAllAccess()
+        {
+            if (!await IsAdmin())
+            {
+                yield break;
+            }
+
+            await foreach (var access in _accessRepository.GetAllAccess())
+            {
+                yield return _accessDtoAdapter.Adapt(access);
+            }
+        }
+
         /// <summary>
         /// Get the access for the current HTTP request, return null if no access
         /// </summary>
