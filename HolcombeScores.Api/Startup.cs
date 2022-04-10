@@ -42,9 +42,10 @@ namespace HolcombeScores.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI();
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseRouting();
             app.UseEndpoints(endpoints =>
