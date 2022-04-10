@@ -1,8 +1,10 @@
 ﻿using System;
+using Azure;
+using Azure.Data.Tables;
 
 namespace HolcombeScores.Models
 {
-    public class Game
+    public class Game : ITableEntity
     {
         public Guid TeamId { get; set; }
         public Guid Id { get; set; }
@@ -11,5 +13,17 @@ namespace HolcombeScores.Models
         public DateTime Date { get; set; }
         public Player[] Squad { get; set; }
         public Goal[] Goals { get; set; }
+
+        /// <summary>
+        /// TeamId
+        /// </summary>
+        public string PartitionKey { get; set; }
+
+        /// <summary>
+        /// Id
+        /// </summary>
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
     }
 }

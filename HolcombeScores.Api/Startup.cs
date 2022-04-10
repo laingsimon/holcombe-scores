@@ -16,12 +16,12 @@ namespace HolcombeScores.Api
         {
             services.AddControllers();
             services.AddHttpContextAccessor();
+            services.AddSwaggerGen();
 
             services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IPlayerRepository, PlayerRepository>();
             services.AddScoped<IAccessRepository, AccessRepository>();
             services.AddScoped<ITableServiceClientFactory, TableServiceClientFactory>();
-            services.AddScoped<IGenericEntityAdapter, GenericEntityAdapter>();
             services.AddScoped<INewGameDtoAdapter, NewGameDtoAdapter>();
 
             services.AddSingleton<IGameDtoAdapter, GameDtoAdapter>();
@@ -42,6 +42,8 @@ namespace HolcombeScores.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseRouting();
