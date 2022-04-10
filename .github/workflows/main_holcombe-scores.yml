@@ -47,6 +47,14 @@ jobs:
         with:
           name: .net-app
 
+      - name: App Settings Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: '${{env.DOTNET_ROOT}}/myapp/appsettings.json'
+        env:
+          AZURE_TABLE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_TABLE_STORAGE_ACCOUNT_NAME }}
+          AZURE_TABLE_STORAGE_KEY: ${{ secrets.AZURE_TABLE_STORAGE_KEY }}
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
