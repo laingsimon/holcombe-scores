@@ -16,6 +16,12 @@ namespace HolcombeScores.Api.Controllers
             _accessService = accessService;
         }
 
+        [HttpGet("/api/Access")]
+        public IAsyncEnumerable<AccessDto> ListAccess()
+        {
+            return await _accessService.GetAllAccess();
+        }
+
         [HttpPost("/api/Access/Request")]
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto requestDto)
         {
