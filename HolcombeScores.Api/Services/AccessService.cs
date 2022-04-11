@@ -53,7 +53,7 @@ namespace HolcombeScores.Api.Services
 
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
         {
-            await foreach (var access in _accessRepository.GetAccess())
+            await foreach (var access in _accessRepository.GetAllAccess())
             {
                yield return _recoverAccessDtoAdapter.Adapt(access);
             }
