@@ -19,7 +19,7 @@ namespace HolcombeScores.Api.Services
         private readonly IAccessRequestDtoAdapter _accessRequestDtoAdapter;
         private readonly IAccessDtoAdapter _accessDtoAdapter;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IAccessRecoveryDtoAdapter _accessRecoveryDtoAdapter;
+        private readonly IRecoverAccessDtoAdapter _recoverAccessDtoAdapter;
 
         public AccessService(
             IAccessRepository accessRepository,
@@ -27,14 +27,14 @@ namespace HolcombeScores.Api.Services
             IAccessRequestDtoAdapter accessRequestDtoAdapter,
             IAccessDtoAdapter accessDtoAdapter,
             IHttpContextAccessor httpContextAccessor,
-            IAccessRecoveryDtoAdapter accessRecoveryDtoAdapter)
+            IRecoverAccessDtoAdapter recoverAccessDtoAdapter)
         {
             _accessRepository = accessRepository;
             _accessRequestedDtoAdapter = accessRequestedDtoAdapter;
             _accessRequestDtoAdapter = accessRequestDtoAdapter;
             _accessDtoAdapter = accessDtoAdapter;
             _httpContextAccessor = httpContextAccessor;
-            _accessRecoveryDtoAdapter = accessRecoveryDtoAdapter;
+            _recoverAccessDtoAdapter = recoverAccessDtoAdapter;
         }
 
         public async Task<MyAccessDto> GetMyAccess()
@@ -55,7 +55,7 @@ namespace HolcombeScores.Api.Services
         {
             await foreach (var access in _accessRepository.GetAccess())
             {
-               yield return _accessRecoveryDtoAdapter.Adapt(access);
+               yield return _recoverAccessDtoAdapter.Adapt(access);
             }
         }
 
