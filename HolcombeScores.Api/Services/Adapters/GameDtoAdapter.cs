@@ -17,6 +17,11 @@ namespace HolcombeScores.Api.Services.Adapters
 
         public GameDto Adapt(Game game)
         {
+            if (game == null)
+            {
+                return null;
+            }
+
             return new GameDto
             {
                 TeamId = game.TeamId,
@@ -31,6 +36,11 @@ namespace HolcombeScores.Api.Services.Adapters
 
         public Game Adapt(GameDto game)
         {
+            if (game == null)
+            {
+                return null;
+            }
+
             return new Game
             {
                 Date = game.Date,
