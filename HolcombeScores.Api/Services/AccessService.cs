@@ -38,7 +38,7 @@ namespace HolcombeScores.Api.Services
         {
             var userId = GetUserId();
             var access = userId == null ? null : await GetAccess();
-            var accessRequest = userId == null ? null : await _accessRepository.GetAccessRequest(userId);
+            var accessRequest = userId == null ? null : await _accessRepository.GetAccessRequest(userId.Value);
 
             return new MyAccessDto
             {
