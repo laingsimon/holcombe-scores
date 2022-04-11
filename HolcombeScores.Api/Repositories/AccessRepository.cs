@@ -82,7 +82,7 @@ namespace HolcombeScores.Api.Repositories
             await foreach (var access in _accessTableClient.QueryAsync<Access>())
             {
                 var teamId = access.TeamId;
-                await _accessTableClient.DeleteAsync(userId.ToString(), teamId.ToString());
+                await _accessTableClient.DeleteEntityAsync(userId.ToString(), teamId.ToString(), ETag.All, CancellationToken.None);
             }
         }
     }
