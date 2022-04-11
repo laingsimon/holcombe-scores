@@ -31,7 +31,7 @@ namespace HolcombeScores.Api.Controllers
         [HttpPost("/api/Access/Recover/{adminPassCode}")]
         public async Task<ActionResultDto<AccessDto>> RecoverAccess(string adminPassCode, RecoverAccessDto recoverAccess)
         {
-            return _accessService.RecoverAccess(recoverAccess, adminPassCode);
+            return await _accessService.RecoverAccess(recoverAccess, adminPassCode);
         }
 
         [HttpPost("/api/Access/Request")]
