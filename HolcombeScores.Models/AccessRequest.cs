@@ -10,6 +10,7 @@ namespace HolcombeScores.Models
         public string Name { get; set; }
         public Guid TeamId { get; set; }
         public DateTime Requested { get; set; }
+        public bool Recovery { get; set; }
 
         /// <summary>
         /// The same as TeamId

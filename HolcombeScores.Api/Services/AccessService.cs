@@ -7,6 +7,7 @@ using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
 using HolcombeScores.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace HolcombeScores.Api.Services
 {
@@ -19,19 +20,78 @@ namespace HolcombeScores.Api.Services
         private readonly IAccessRequestDtoAdapter _accessRequestDtoAdapter;
         private readonly IAccessDtoAdapter _accessDtoAdapter;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IRecoverAccessDtoAdapter _recoverAccessDtoAdapter;
+        private readonly string _adminPassCode;
 
         public AccessService(
             IAccessRepository accessRepository,
             IAccessRequestedDtoAdapter accessRequestedDtoAdapter,
             IAccessRequestDtoAdapter accessRequestDtoAdapter,
             IAccessDtoAdapter accessDtoAdapter,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IRecoverAccessDtoAdapter recoverAccessDtoAdapter,
+            IConfiguration configuration)
         {
             _accessRepository = accessRepository;
             _accessRequestedDtoAdapter = accessRequestedDtoAdapter;
             _accessRequestDtoAdapter = accessRequestDtoAdapter;
             _accessDtoAdapter = accessDtoAdapter;
             _httpContextAccessor = httpContextAccessor;
+            _recoverAccessDtoAdapter = recoverAccessDtoAdapter;
+            _adminPassCode = configuration["AdminPassCode"];
+        }
+
+        public async Task<MyAccessDto> GetMyAccess()
+        {
+            var userId = GetUserId();
+            var access = userId == null ? null : await GetAccess();
+            var accessRequest = userId == null ? null : await _accessRepository.GetAccessRequest(userId.Value);
+
+            return new MyAccessDto
+            {
+                UserId = userId,
+                Access = access == null ? null : _accessDtoAdapter.Adapt(access),
+                Request = accessRequest == null ? null : _accessRequestDtoAdapter.Adapt(accessRequest),
+            };
+        }
+
+        public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
+        {
+            await foreach (var access in _accessRepository.GetAllAccess())
+            {
+               yield return _recoverAccessDtoAdapter.Adapt(access);
+            }
+        }
+
+        public async Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto, string adminPassCode)
+        {
+            if (_adminPassCode != adminPassCode)
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Warnings = 
+                    {
+                        "Admin pass code mismatch"
+                    }
+                };
+            }
+
+            await foreach (var access in _accessRepository.GetAllAccess())
+            {
+                var adapted = _recoverAccessDtoAdapter.Adapt(access);
+                if (adapted.RecoveryId == recoverAccessDto.RecoveryId)
+                {
+                    return await RecoverAccess(access);
+                }
+            }
+
+            return new ActionResultDto<AccessDto>
+            {
+                Warnings = 
+                {
+                   "Access not found"
+                }
+            };
         }
 
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
@@ -219,6 +279,26 @@ namespace HolcombeScores.Api.Services
         {
             var response = _httpContextAccessor.HttpContext?.Response;
             response?.Cookies.Append(CookieName, teamId.ToString());
+        }
+
+        private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
+        {
+            var oldId = access.UserId;
+            await _accessRepository.RemoveAccess(access.UserId);
+            access.UserId = Guid.NewGuid();
+
+            await _accessRepository.AddAccess(access);
+            SetUserId(access.UserId);
+
+            return new ActionResultDto<AccessDto>
+            {
+                Outcome = _accessDtoAdapter.Adapt(access),
+                Success = true,
+                Messages = 
+                {
+                    $"User superseded: {oldId}",
+                }
+            };
         }
     }
 }

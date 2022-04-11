@@ -8,6 +8,7 @@ namespace HolcombeScores.Api.Services
 {
     public interface IAccessService
     {
+        Task<MyAccessDto> GetMyAccess();
         Task<Access> GetAccess();
         Task<bool> IsAdmin();
         Guid? GetUserId();
@@ -17,5 +18,7 @@ namespace HolcombeScores.Api.Services
         Task<bool> CanAccessTeam(Guid teamId);
         Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto);
         IAsyncEnumerable<AccessDto> GetAllAccess();
+        IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery();
+        Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto, string adminPassCode);
     }
 }
