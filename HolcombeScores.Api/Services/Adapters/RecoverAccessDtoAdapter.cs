@@ -10,7 +10,7 @@ namespace HolcombeScores.Api.Services.Adapters
             return new RecoverAccessDto
             {
                 Name = access.Name,
-                UserId = access.UserId.ToString().Substring(0, 8),
+                UserIdFragment = access.UserId.ToString().Substring(0, 8),
             };
         }
     }
