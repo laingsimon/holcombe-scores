@@ -45,7 +45,7 @@ namespace HolcombeScores.Api.Services
                 UserId = userId,
                 Access = access == null ? null : _accessDtoAdapter.Adapt(access),
                 Request = accessRequest == null ? null : _accessRequestDtoAdapter.Adapt(accessRequest),
-            }
+            };
         }
 
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
