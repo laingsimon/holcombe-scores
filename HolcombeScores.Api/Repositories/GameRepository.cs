@@ -18,7 +18,11 @@ namespace HolcombeScores.Api.Repositories
 
         public IAsyncEnumerable<Game> GetAll(Guid? teamId)
         {
-            return _gameTableClient.QueryAsync<Game>(gte => gte.TeamId == teamId || teamId == null);
+            if (teamId == null)
+            {
+                return _gameTableClient.QueryAsync<Game>();
+            }
+            return _gameTableClient.QueryAsync<Game>(g => g.TeamId == teamId);
         }
 
         public async Task<Game> Get(Guid id)
