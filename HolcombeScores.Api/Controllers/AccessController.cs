@@ -22,6 +22,12 @@ namespace HolcombeScores.Api.Controllers
             return _accessService.GetAllAccess();
         }
 
+        [HttpGet("/api/Access/Recover")]
+        public IAsyncEnumerable<RecoverAccessDto> RecoverAccess()
+        {
+            return _accessService.GetAccessForRecovery();
+        }
+
         [HttpPost("/api/Access/Request")]
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto requestDto)
         {

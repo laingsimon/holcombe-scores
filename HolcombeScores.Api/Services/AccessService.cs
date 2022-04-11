@@ -19,19 +19,22 @@ namespace HolcombeScores.Api.Services
         private readonly IAccessRequestDtoAdapter _accessRequestDtoAdapter;
         private readonly IAccessDtoAdapter _accessDtoAdapter;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IRecoverAccessDtoAdapter _recoverAccessDtoAdapter;
 
         public AccessService(
             IAccessRepository accessRepository,
             IAccessRequestedDtoAdapter accessRequestedDtoAdapter,
             IAccessRequestDtoAdapter accessRequestDtoAdapter,
             IAccessDtoAdapter accessDtoAdapter,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IRecoverAccessDtoAdapter recoverAccessDtoAdapter)
         {
             _accessRepository = accessRepository;
             _accessRequestedDtoAdapter = accessRequestedDtoAdapter;
             _accessRequestDtoAdapter = accessRequestDtoAdapter;
             _accessDtoAdapter = accessDtoAdapter;
             _httpContextAccessor = httpContextAccessor;
+            _recoverAccessDtoAdapter = recoverAccessDtoAdapter;
         }
 
         public async Task<MyAccessDto> GetMyAccess()
@@ -46,6 +49,14 @@ namespace HolcombeScores.Api.Services
                 Access = access == null ? null : _accessDtoAdapter.Adapt(access),
                 Request = accessRequest == null ? null : _accessRequestDtoAdapter.Adapt(accessRequest),
             };
+        }
+
+        public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
+        {
+            await foreach (var access in _accessRepository.GetAllAccess())
+            {
+               yield return _recoverAccessDtoAdapter.Adapt(access);
+            }
         }
 
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
