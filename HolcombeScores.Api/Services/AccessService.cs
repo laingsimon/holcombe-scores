@@ -19,19 +19,22 @@ namespace HolcombeScores.Api.Services
         private readonly IAccessRequestDtoAdapter _accessRequestDtoAdapter;
         private readonly IAccessDtoAdapter _accessDtoAdapter;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IAccessRecoveryDtoAdapter _accessRecoveryDtoAdapter;
 
         public AccessService(
             IAccessRepository accessRepository,
             IAccessRequestedDtoAdapter accessRequestedDtoAdapter,
             IAccessRequestDtoAdapter accessRequestDtoAdapter,
             IAccessDtoAdapter accessDtoAdapter,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IAccessRecoveryDtoAdapter accessRecoveryDtoAdapter)
         {
             _accessRepository = accessRepository;
             _accessRequestedDtoAdapter = accessRequestedDtoAdapter;
             _accessRequestDtoAdapter = accessRequestDtoAdapter;
             _accessDtoAdapter = accessDtoAdapter;
             _httpContextAccessor = httpContextAccessor;
+            _accessRecoveryDtoAdapter = accessRecoveryDtoAdapter;
         }
 
         public async Task<MyAccessDto> GetMyAccess()
