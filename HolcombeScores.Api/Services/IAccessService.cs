@@ -8,6 +8,7 @@ namespace HolcombeScores.Api.Services
 {
     public interface IAccessService
     {
+        Task<MyAccessDto> GetMyAccess();
         Task<Access> GetAccess();
         Task<bool> IsAdmin();
         Guid? GetUserId();
