@@ -284,7 +284,7 @@ namespace HolcombeScores.Api.Services
             access.UserId = Guid.NewId();
 
             await _accessRepository.AddAccess(access);
-            SetUserId(access.UserId):
+            SetUserId(access.UserId);
 
             return new ActionResultDto<AccessDto>
             {
