@@ -7,7 +7,7 @@ namespace HolcombeScores.Api.Models
     /// </summary>
     public class RecoverAccessDto
     {
-        public string UserIdFragment { get; set; }
+        public string RecoveryId { get; set; }
         public string Name { get; set; }
     }
 }
