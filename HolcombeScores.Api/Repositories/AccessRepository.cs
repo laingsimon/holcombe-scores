@@ -30,12 +30,12 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task<AccessRequest> GetAccessRequest(Guid userId)
         {
-            return await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(gte => gte.UserId == userId);
+            return await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.UserId == userId);
         }
 
         public async Task<Access> GetAccess(Guid userId)
         {
-            return await _accessTableClient.SingleOrDefaultAsync<Access>(gte => gte.UserId == userId);
+            return await _accessTableClient.SingleOrDefaultAsync<Access>(a => a.UserId == userId);
         }
 
         public async Task AddAccessRequest(AccessRequest accessRequest)
@@ -79,7 +79,7 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task RemoveAccess(Guid userId)
         {
-            await foreach (var access in _accessTableClient.QueryAsync<Access>())
+            await foreach (var access in _accessTableClient.QueryAsync<Access>(a => a.UserId == userId))
             {
                 var teamId = access.TeamId;
                 await _accessTableClient.DeleteEntityAsync(userId.ToString(), teamId.ToString(), ETag.All);
