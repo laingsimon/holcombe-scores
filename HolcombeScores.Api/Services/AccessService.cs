@@ -282,7 +282,7 @@ namespace HolcombeScores.Api.Services
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
         {
             var oldId = access.UserId;
-            await _accessRepository.DeleteAccess(access);
+            await _accessRepository.RemoveAccess(access.UserId);
             access.UserId = Guid.NewGuid();
 
             await _accessRepository.AddAccess(access);
