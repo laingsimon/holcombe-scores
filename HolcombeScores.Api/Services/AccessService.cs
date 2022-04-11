@@ -59,6 +59,37 @@ namespace HolcombeScores.Api.Services
             }
         }
 
+        public async Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto, string adminPassCode)
+        {
+            if (adminPassCode != adminPassCode)
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Warnings = 
+                    {
+                        "Admin pass code mismatch"
+                    }
+                };
+            }
+
+            await foreach (var access in _accessRepository.GetAllAccess())
+            {
+                var adapted = _recoverAccessDtoAdapter.Adapt(access);
+                if (adapted.RecoveryId == recoverAccessDto)
+                {
+                    return await RecoverAccess(access);
+                }
+            }
+
+            return new ActionResultDto<AccessDto>
+            {
+                Warnings = 
+                {
+                   "Access not found"
+                }
+            };
+        }
+
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
         {
             if (!await IsAdmin())
