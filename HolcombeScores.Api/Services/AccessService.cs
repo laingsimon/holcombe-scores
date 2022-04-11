@@ -276,5 +276,25 @@ namespace HolcombeScores.Api.Services
             var response = _httpContextAccessor.HttpContext?.Response;
             response?.Cookies.Append(CookieName, teamId.ToString());
         }
+
+        private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
+        {
+            var oldId = access.UserId;
+            await _accessRepository.DeleteAccess(access);
+            access.UserId = Guid.NewId();
+
+            await _accessRepository.AddAccess(access);
+            SetUserId(access.UserId):
+
+            return new ActionResultDto<AccessDto>
+            {
+                Outcome = access,
+                Success = true,
+                Messages = 
+                {
+                    $"User superseded: {oldId}",
+                }
+            };
+        }
     }
 }
