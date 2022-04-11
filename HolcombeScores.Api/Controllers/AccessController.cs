@@ -28,6 +28,12 @@ namespace HolcombeScores.Api.Controllers
             return _accessService.GetAccessForRecovery();
         }
 
+        [HttpPost("/api/Access/Recover/{passCode}")]
+        public async Task<ActionResultDto<AccessDto>> RecoverAccess(string passCode, RecoverAccessDto recoverAccess)
+        {
+            return _accessService.RecoverAccess(recoverAccess, passCode);
+        }
+
         [HttpPost("/api/Access/Request")]
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto requestDto)
         {
