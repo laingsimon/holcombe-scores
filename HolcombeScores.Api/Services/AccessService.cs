@@ -48,6 +48,14 @@ namespace HolcombeScores.Api.Services
             };
         }
 
+        public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
+        {
+            await foreach (var access in _accessRepository.GetAccess())
+            {
+               yield return _accessRecoveryDtoAdapter.Adapt(access);
+            }
+        }
+
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
         {
             if (!await IsAdmin())
