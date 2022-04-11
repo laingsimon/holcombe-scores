@@ -28,7 +28,8 @@ namespace HolcombeScores.Api.Services
             IAccessRequestDtoAdapter accessRequestDtoAdapter,
             IAccessDtoAdapter accessDtoAdapter,
             IHttpContextAccessor httpContextAccessor,
-            IRecoverAccessDtoAdapter recoverAccessDtoAdapter)
+            IRecoverAccessDtoAdapter recoverAccessDtoAdapter,
+            IConfiguration configuration)
         {
             _accessRepository = accessRepository;
             _accessRequestedDtoAdapter = accessRequestedDtoAdapter;
@@ -36,7 +37,7 @@ namespace HolcombeScores.Api.Services
             _accessDtoAdapter = accessDtoAdapter;
             _httpContextAccessor = httpContextAccessor;
             _recoverAccessDtoAdapter = recoverAccessDtoAdapter;
-            _adminPassCode = "test";
+            _adminPassCode = configuration ["AdminPassCode"];
         }
 
         public async Task<MyAccessDto> GetMyAccess()
