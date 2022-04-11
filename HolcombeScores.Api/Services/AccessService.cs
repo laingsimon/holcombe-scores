@@ -7,6 +7,7 @@ using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
 using HolcombeScores.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace HolcombeScores.Api.Services
 {
