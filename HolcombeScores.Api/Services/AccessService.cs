@@ -34,6 +34,20 @@ namespace HolcombeScores.Api.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
+        public async Task<MyAccessDto> GetMyAccess()
+        {
+            var userId = GetUserId();
+            var access = userId == null ? null : await GetAccess();
+            var accessRequest = userId == null ? null : await GetAccessRequest(userId);
+
+            return new MyAccessDto
+            {
+                UserId = userId,
+                Access = access == null ? null : _accessDtoAdapter.Adapt(access),
+                Request = accessRequest == null ? null : _accessRequestDtoAdapter.Adapt(accessRequest),
+            }
+        }
+
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
         {
             if (!await IsAdmin())
