@@ -283,14 +283,14 @@ namespace HolcombeScores.Api.Services
         {
             var oldId = access.UserId;
             await _accessRepository.DeleteAccess(access);
-            access.UserId = Guid.NewId();
+            access.UserId = Guid.NewGuid();
 
             await _accessRepository.AddAccess(access);
             SetUserId(access.UserId);
 
             return new ActionResultDto<AccessDto>
             {
-                Outcome = access,
+                Outcome = _accessDtoAdapter.Adapt(access),
                 Success = true,
                 Messages = 
                 {
