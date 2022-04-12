@@ -88,6 +88,16 @@ namespace HolcombeScores.Api.Services
                 }
             }
 
+            await foreach (var accessRequest in _accessRepository.GetAllAccessRequests())
+            {
+                var adapted = _recoverAccessDtoAdapter.Adapt(accessRequest);
+                if (adapted.RecoveryId == recoverAccessDto.RecoveryId)
+                {
+                    return await RecoverAccess(accessRequest);
+                }
+            }
+
+
             return new ActionResultDto<AccessDto>
             {
                 Warnings = 
@@ -288,7 +298,7 @@ namespace HolcombeScores.Api.Services
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
         {
             var newToken = Guid.NewGuid().ToString();
-            await _accessRepository.UpdateToken(access.Token, newToken);
+            await _accessRepository.UpdateAccessToken(access.Token, newToken);
 
             SetToken(newToken);
 
@@ -299,6 +309,24 @@ namespace HolcombeScores.Api.Services
                 Messages = 
                 {
                     $"Access recovered",
+                }
+            };
+        }
+
+        private async Task<ActionResultDto<AccessDto>> RecoverAccess(AccessRequest accessRequest)
+        {
+            var newToken = Guid.NewGuid().ToString();
+            await _accessRepository.UpdateAccessRequestToken(accessRequest.Token, newToken);
+
+            SetToken(newToken);
+
+            return new ActionResultDto<AccessDto>
+            {
+                Outcome = null,
+                Success = true,
+                Messages = 
+                {
+                    $"Access request recovered, awaiting approval",
                 }
             };
         }

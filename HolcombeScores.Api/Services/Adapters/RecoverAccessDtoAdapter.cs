@@ -30,7 +30,7 @@ namespace HolcombeScores.Api.Services.Adapters
             return new RecoverAccessDto
             {
                 Name = accessRequest.Name,
-                RecoveryId = access.UserId.ToString().Substring(0, 8),
+                RecoveryId = accessRequest.UserId.ToString().Substring(0, 8),
                 Type = "AccessRequest",
             };
         }
