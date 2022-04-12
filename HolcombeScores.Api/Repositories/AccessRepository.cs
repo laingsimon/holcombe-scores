@@ -106,7 +106,7 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task UpdateAccessRequestToken(string currentToken, string newToken)
         {
-            var accessRequeat = await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.Token == currentToken);
+            var accessRequest = await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.Token == currentToken);
             accessRequest.Token = newToken;
 
             await _accessRequestTableClient.UpdateEntityAsync(accessRequest, ETag.All);
