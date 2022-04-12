@@ -8,7 +8,7 @@ namespace HolcombeScores.Api.Services.Adapters
         private readonly IAccessDtoAdapter _accessDtoAdapter;
         private readonly IAccessRequestDtoAdapter _accessRequestDtoAdapter;
 
-        public MyAccessDto adapter(IAccessDtoAdapter accessDtoAdapter, IAccessRequestDtoAdapter accessRequestDtoAdapter)
+        public MyAccessDtoAdapter(IAccessDtoAdapter accessDtoAdapter, IAccessRequestDtoAdapter accessRequestDtoAdapter)
         {
             _accessDtoAdapter = accessDtoAdapter;
             _accessRequestDtoAdapter = accessRequestDtoAdapter;
