@@ -31,7 +31,20 @@ namespace HolcombeScores.Api.Controllers
         [HttpPost("/api/Access/Recover/{adminPassCode}")]
         public async Task<ActionResultDto<AccessDto>> RecoverAccess(string adminPassCode, RecoverAccessDto recoverAccess)
         {
-            return await _accessService.RecoverAccess(recoverAccess, adminPassCode);
+            try
+            {
+                return await _accessService.RecoverAccess(recoverAccess, adminPassCode);
+            }
+            catch (Exception exc)
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Errors =
+                    {
+                        exc.ToString()
+                    }
+                }
+            }
         }
 
         [HttpPost("/api/Access/Request")]
@@ -43,7 +56,20 @@ namespace HolcombeScores.Api.Controllers
         [HttpPost("/api/Access/Respond")]
         public async Task<ActionResultDto<AccessDto>> Respond(AccessResponseDto response)
         {
-            return await _accessService.RespondToRequest(response);
+            try
+            {
+                return await _accessService.RespondToRequest(response);
+            }
+            catch (Exception exc)
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Errors =
+                    {
+                        exc.ToString()
+                    }
+                }
+            }
         }
 
         [HttpGet("/api/Access/Request")]
@@ -55,7 +81,20 @@ namespace HolcombeScores.Api.Controllers
         [HttpGet("/api/Access/Revoke")]
         public async Task<ActionResultDto<AccessDto>> RevokeRequest(AccessResponseDto response)
         {
-            return await _accessService.RevokeAccess(response);
+            try
+            {
+                return await _accessService.RevokeAccess(response);
+            }
+            catch (Exception exc)
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Errors =
+                    {
+                        exc.ToString()
+                    }
+                }
+            }
         }
     }
 }
