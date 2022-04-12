@@ -59,6 +59,11 @@ namespace HolcombeScores.Api.Services
             {
                yield return _recoverAccessDtoAdapter.Adapt(access);
             }
+
+            await foreach (var accessRequest in _accessRepository.GetAllAccessRequests())
+            {
+               yield return _recoverAccessDtoAdapter.Adapt(accessRequest);
+            }
         }
 
         public async Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto, string adminPassCode)
