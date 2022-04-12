@@ -85,5 +85,13 @@ namespace HolcombeScores.Api.Repositories
                 await _accessTableClient.DeleteEntityAsync(userId.ToString(), teamId.ToString(), ETag.All);
             }
         }
+
+        public async Task UpdateToken(string currentToken, string newToken)
+        {
+            var access = await _accessTableClient.SingleOrDefaultAsync<Access>(a => a.Token == currentToken);
+            access.Token = newToken;
+
+            await _accessTableClient.UpdateEntityAsync(access, ETag.All);
+        }
     }
 }
