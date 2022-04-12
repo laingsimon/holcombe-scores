@@ -14,6 +14,11 @@ namespace HolcombeScores.Api.Services.Adapters
 
         public GoalDto Adapt(Goal goal)
         {
+            if (goal == null)
+            {
+                return null;
+            }
+
             return new GoalDto
             {
                 Player = _playerAdapter.Adapt(goal.Player),
@@ -24,6 +29,11 @@ namespace HolcombeScores.Api.Services.Adapters
 
         public Goal Adapt(GoalDto goal)
         {
+            if (goal == null)
+            {
+                return null;
+            }
+
             return new Goal
             {
                 Player = _playerAdapter.Adapt(goal.Player),
