@@ -22,6 +22,7 @@ namespace HolcombeScores.Api.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRecoverAccessDtoAdapter _recoverAccessDtoAdapter;
         private readonly string _adminPassCode;
+        private readonly IMyAccessDtoAdapter myAccessDtoAdapter;
 
         public AccessService(
             IAccessRepository accessRepository,
@@ -30,6 +31,7 @@ namespace HolcombeScores.Api.Services
             IAccessDtoAdapter accessDtoAdapter,
             IHttpContextAccessor httpContextAccessor,
             IRecoverAccessDtoAdapter recoverAccessDtoAdapter,
+            IMyAccessDtoAdapter myAccessDtoAdapter,
             IConfiguration configuration)
         {
             _accessRepository = accessRepository;
@@ -39,6 +41,7 @@ namespace HolcombeScores.Api.Services
             _httpContextAccessor = httpContextAccessor;
             _recoverAccessDtoAdapter = recoverAccessDtoAdapter;
             _adminPassCode = configuration["AdminPassCode"];
+            _myAccessDtoAdapter = myAccessDtoAdapter;
         }
 
         public async Task<MyAccessDto> GetMyAccess()
@@ -47,11 +50,7 @@ namespace HolcombeScores.Api.Services
             var access = token == null ? null : await _accessRepository.GetAccess(token);
             var accessRequest = token == null ? null : await _accessRepository.GetAccessRequest(token);
 
-            return new MyAccessDto
-            {
-                Access = access == null ? null : _accessDtoAdapter.Adapt(access),
-                Request = accessRequest == null ? null : _accessRequestDtoAdapter.Adapt(accessRequest),
-            };
+            return _myAccessDtoAdapter.Adapt(access, accessRequest);
         }
 
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
