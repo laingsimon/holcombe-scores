@@ -13,6 +13,7 @@ namespace HolcombeScores.Models
         public bool Admin { get; set; }
         public string Name { get; set; }
         public string RevokedReason { get; set; }
+        public string Token { get; set; }
 
         /// <summary>
         /// TeamId
