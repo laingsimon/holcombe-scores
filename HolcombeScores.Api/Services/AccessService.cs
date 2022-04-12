@@ -44,7 +44,7 @@ namespace HolcombeScores.Api.Services
         public async Task<MyAccessDto> GetMyAccess()
         {
             var token = GetToken();
-            var access = token == null ? null : await GetAccess();
+            var access = token == null ? null : await _accessRepository.GetAccess(token);
             var accessRequest = token == null ? null : await _accessRepository.GetAccessRequest(token);
 
             return new MyAccessDto
