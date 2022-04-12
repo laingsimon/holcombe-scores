@@ -14,6 +14,11 @@ namespace HolcombeScores.Api.Services.Adapters
 
         public AccessRequestedDto Adapt(AccessRequest accessRequest)
         {
+            if (accessRequest == null)
+            {
+                return null;
+            }
+
             return new AccessRequestedDto
             {
                 UserId = accessRequest.UserId,

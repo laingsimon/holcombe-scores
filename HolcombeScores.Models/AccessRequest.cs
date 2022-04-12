@@ -11,6 +11,7 @@ namespace HolcombeScores.Models
         public Guid TeamId { get; set; }
         public DateTime Requested { get; set; }
         public bool Recovery { get; set; }
+        public string Token { get; set; }
 
         /// <summary>
         /// The same as TeamId
