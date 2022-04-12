@@ -11,7 +11,6 @@ namespace HolcombeScores.Api.Services
         Task<MyAccessDto> GetMyAccess();
         Task<Access> GetAccess();
         Task<bool> IsAdmin();
-        Guid? GetUserId();
         Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto);
         Task<ActionResultDto<AccessDto>> RespondToRequest(AccessResponseDto response);
         IAsyncEnumerable<AccessRequestDto> GetAccessRequests();
