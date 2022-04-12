@@ -96,12 +96,20 @@ namespace HolcombeScores.Api.Repositories
             }
         }
 
-        public async Task UpdateToken(string currentToken, string newToken)
+        public async Task UpdateAccessToken(string currentToken, string newToken)
         {
             var access = await _accessTableClient.SingleOrDefaultAsync<Access>(a => a.Token == currentToken);
             access.Token = newToken;
 
             await _accessTableClient.UpdateEntityAsync(access, ETag.All);
+        }
+
+        public async Task UpdateAccessRequestToken(string currentToken, string newToken)
+        {
+            var accessRequeat = await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.Token == currentToken);
+            accessRequest.Token = newToken;
+
+            await _accessRequestTableClient.UpdateEntityAsync(accessRequest, ETag.All);
         }
     }
 }
