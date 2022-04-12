@@ -43,7 +43,7 @@ namespace HolcombeScores.Api.Controllers
                     {
                         exc.ToString()
                     }
-                }
+                };
             }
         }
 
@@ -68,7 +68,7 @@ namespace HolcombeScores.Api.Controllers
                     {
                         exc.ToString()
                     }
-                }
+                };
             }
         }
 
@@ -93,7 +93,7 @@ namespace HolcombeScores.Api.Controllers
                     {
                         exc.ToString()
                     }
-                }
+                };
             }
         }
     }
