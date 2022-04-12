@@ -60,7 +60,7 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task RemoveAccessRequest(Guid userId)
         {
-            var accessRequest = await GetAccessRequest(userId);
+            var accessRequest = await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.UserId == userId);
             if (accessRequest != null)
             {
                 await _accessRequestTableClient.DeleteEntityAsync(accessRequest.TeamId.ToString(), accessRequest.UserId.ToString());
