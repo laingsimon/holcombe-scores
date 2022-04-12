@@ -22,7 +22,7 @@ namespace HolcombeScores.Api.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRecoverAccessDtoAdapter _recoverAccessDtoAdapter;
         private readonly string _adminPassCode;
-        private readonly IMyAccessDtoAdapter myAccessDtoAdapter;
+        private readonly IMyAccessDtoAdapter _myAccessDtoAdapter;
 
         public AccessService(
             IAccessRepository accessRepository,
