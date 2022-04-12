@@ -19,7 +19,7 @@ namespace HolcombeScores.Api.Services.Adapters
             return new MyAccessDto
             {
                 Access = _accessDtoAdapter.Adapt(access),
-                AccessRequest = _accessRequestDtoAdapter.Adapt(accessRequest),
+                Request = _accessRequestDtoAdapter.Adapt(accessRequest),
             };
         }
     }
