@@ -316,7 +316,7 @@ namespace HolcombeScores.Api.Services
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(AccessRequest accessRequest)
         {
             var newToken = Guid.NewGuid().ToString();
-            await _accessRepository.UpdateAccessRequestToken(access.Token, newToken);
+            await _accessRepository.UpdateAccessRequestToken(accessRequest.Token, newToken);
 
             SetToken(newToken);
 
