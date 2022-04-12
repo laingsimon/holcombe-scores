@@ -243,6 +243,43 @@ namespace HolcombeScores.Api.Services
             }
         }
 
+        public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId)
+        {
+            if (!await IsAdmin())
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Errors =
+                    {
+                        "Not an admin",
+                    }
+                };
+            }
+
+            var access = await _accessRepository.GetAccess(userId);
+            if (access == null)
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Errors =
+                    {
+                        "Access not found",
+                    }
+                };
+            }
+
+            await _accessRepository.RemoveAccess(access.UserId);
+            return new ActionResultDto<AccessDto>
+            {
+                Messages =
+                {
+                    "Access removed",
+                },
+                Success = true,
+                Outcome = _accessDtoAdapter.Adapt(access),
+            };
+        }
+
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
         {
             var resultDto = new ActionResultDto<AccessDto>();
@@ -318,17 +355,42 @@ namespace HolcombeScores.Api.Services
             var newToken = Guid.NewGuid().ToString();
             await _accessRepository.UpdateAccessRequestToken(accessRequest.Token, newToken);
 
+            var resultDto = new ActionResultDto<AccessDto>();
             SetToken(newToken);
+            resultDto.Messages.Add("Cookie set");
 
-            return new ActionResultDto<AccessDto>
+            var existingAccess = await _accessRepository.GetAccess(accessRequest.UserId);
+            if (existingAccess != null)
             {
-                Outcome = null,
-                Success = true,
-                Messages = 
-                {
-                    $"Access request recovered, awaiting approval",
-                }
+                // access already granted/revoked don't overwrite
+                resultDto.Warnings.Add("Access already exists");
+                resultDto.Success = true; // technically not true, but access does exist
+                resultDto.Outcome = _accessDtoAdapter.Adapt(existingAccess);
+                return resultDto;
+            }
+
+            var newAccess = new Access
+            {
+               Admin = true,
+               Granted = DateTime.UtcNow,
+               Name = accessRequest.Name,
+               Revoked = null,
+               RevokedReason = null,
+               TeamId = accessRequest.TeamId,
+               UserId = accessRequest.UserId,
+               Token = accessRequest.Token,
             };
+            await _accessRepository.AddAccess(newAccess);
+
+            resultDto.Success = true;
+            resultDto.Messages.Add("Access recovered");
+            resultDto.Outcome = _accessDtoAdapter.Adapt(newAccess);
+
+            // clean up the access request
+            await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
+            resultDto.Messages.Add("Access request removed");
+
+            return resultDto;
         }
     }
 }
