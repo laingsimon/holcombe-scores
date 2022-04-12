@@ -33,6 +33,11 @@ namespace HolcombeScores.Api.Repositories
             return await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.Token == token);
         }
 
+        public async Task<AccessRequest> GetAccessRequest(Guid userId)
+        {
+            return await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.UserId == userId);
+        }
+
         public async Task<Access> GetAccess(string token)
         {
             return await _accessTableClient.SingleOrDefaultAsync<Access>(a => a.Token == token);
