@@ -16,5 +16,6 @@ namespace HolcombeScores.Api.Repositories
         Task RemoveAccessRequest(Guid userId);
         Task UpdateAccess(Access access);
         Task RemoveAccess(Guid userId);
+        Task UpdateToken(string currentToken, string newToken);
     }
 }
