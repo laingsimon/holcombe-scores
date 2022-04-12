@@ -43,6 +43,11 @@ namespace HolcombeScores.Api.Repositories
             return await _accessTableClient.SingleOrDefaultAsync<Access>(a => a.Token == token);
         }
 
+        public async Task<Access> GetAccess(Guid userId)
+        {
+            return await _accessTableClient.SingleOrDefaultAsync<Access>(a => a.UserId == userId);
+        }
+
         public async Task AddAccessRequest(AccessRequest accessRequest)
         {
             accessRequest.Timestamp = DateTimeOffset.UtcNow;
