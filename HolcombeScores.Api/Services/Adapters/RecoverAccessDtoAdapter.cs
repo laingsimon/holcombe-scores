@@ -7,6 +7,11 @@ namespace HolcombeScores.Api.Services.Adapters
     {
         public RecoverAccessDto Adapt(Access access)
         {
+            if (access == null)
+            {
+                return null;
+            }
+
             return new RecoverAccessDto
             {
                 Name = access.Name,

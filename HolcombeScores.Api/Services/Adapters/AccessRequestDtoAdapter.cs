@@ -7,6 +7,11 @@ namespace HolcombeScores.Api.Services.Adapters
     {
         public AccessRequest Adapt(AccessRequestDto accessRequest)
         {
+            if (accessRequest == null)
+            {
+                return null;
+            }
+
             return new AccessRequest
             {
                 Name = accessRequest.Name,
@@ -18,6 +23,11 @@ namespace HolcombeScores.Api.Services.Adapters
 
         public AccessRequestDto Adapt(AccessRequest accessRequest)
         {
+            if (accessRequest == null)
+            {
+                return null;
+            }
+
             return new AccessRequestDto
             {
                 Name = accessRequest.Name,

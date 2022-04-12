@@ -19,6 +19,11 @@ namespace HolcombeScores.Api.Services.Adapters
 
         public async Task<Game> AdaptToGame(NewGameDto newGameDto, ActionResultDto<GameDto> actionResult)
         {
+            if (newGameDto == null)
+            {
+                return null;
+            }
+
             return new Game
             {
                 Date = newGameDto.Date ?? DateTime.Today,

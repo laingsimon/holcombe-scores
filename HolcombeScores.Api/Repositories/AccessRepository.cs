@@ -28,9 +28,19 @@ namespace HolcombeScores.Api.Repositories
             return _accessRequestTableClient.QueryAsync<AccessRequest>();
         }
 
+        public async Task<AccessRequest> GetAccessRequest(string token)
+        {
+            return await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.Token == token);
+        }
+
         public async Task<AccessRequest> GetAccessRequest(Guid userId)
         {
             return await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.UserId == userId);
+        }
+
+        public async Task<Access> GetAccess(string token)
+        {
+            return await _accessTableClient.SingleOrDefaultAsync<Access>(a => a.Token == token);
         }
 
         public async Task<Access> GetAccess(Guid userId)
@@ -60,7 +70,7 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task RemoveAccessRequest(Guid userId)
         {
-            var accessRequest = await GetAccessRequest(userId);
+            var accessRequest = await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.UserId == userId);
             if (accessRequest != null)
             {
                 await _accessRequestTableClient.DeleteEntityAsync(accessRequest.TeamId.ToString(), accessRequest.UserId.ToString());
@@ -84,6 +94,14 @@ namespace HolcombeScores.Api.Repositories
                 var teamId = access.TeamId;
                 await _accessTableClient.DeleteEntityAsync(userId.ToString(), teamId.ToString(), ETag.All);
             }
+        }
+
+        public async Task UpdateToken(string currentToken, string newToken)
+        {
+            var access = await _accessTableClient.SingleOrDefaultAsync<Access>(a => a.Token == currentToken);
+            access.Token = newToken;
+
+            await _accessTableClient.UpdateEntityAsync(access, ETag.All);
         }
     }
 }

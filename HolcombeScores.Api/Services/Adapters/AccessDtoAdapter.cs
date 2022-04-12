@@ -7,6 +7,11 @@ namespace HolcombeScores.Api.Services.Adapters
     {
         public Access Adapt(AccessDto access)
         {
+            if (access == null)
+            {
+                return null;
+            }
+
             return new Access
             {
                 Admin = access.Admin,
@@ -21,6 +26,11 @@ namespace HolcombeScores.Api.Services.Adapters
 
         public AccessDto Adapt(Access access)
         {
+            if (access == null)
+            {
+                return null;
+            }
+
             return new AccessDto
             {
                 Admin = access.Admin,

@@ -13,7 +13,7 @@ namespace HolcombeScores.Api.Services
 {
     public class AccessService : IAccessService
     {
-        private const string CookieName = "HS_UserId";
+        private const string CookieName = "HS_Token";
 
         private readonly IAccessRepository _accessRepository;
         private readonly IAccessRequestedDtoAdapter _accessRequestedDtoAdapter;
@@ -22,6 +22,7 @@ namespace HolcombeScores.Api.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRecoverAccessDtoAdapter _recoverAccessDtoAdapter;
         private readonly string _adminPassCode;
+        private readonly IMyAccessDtoAdapter _myAccessDtoAdapter;
 
         public AccessService(
             IAccessRepository accessRepository,
@@ -30,6 +31,7 @@ namespace HolcombeScores.Api.Services
             IAccessDtoAdapter accessDtoAdapter,
             IHttpContextAccessor httpContextAccessor,
             IRecoverAccessDtoAdapter recoverAccessDtoAdapter,
+            IMyAccessDtoAdapter myAccessDtoAdapter,
             IConfiguration configuration)
         {
             _accessRepository = accessRepository;
@@ -39,20 +41,16 @@ namespace HolcombeScores.Api.Services
             _httpContextAccessor = httpContextAccessor;
             _recoverAccessDtoAdapter = recoverAccessDtoAdapter;
             _adminPassCode = configuration["AdminPassCode"];
+            _myAccessDtoAdapter = myAccessDtoAdapter;
         }
 
         public async Task<MyAccessDto> GetMyAccess()
         {
-            var userId = GetUserId();
-            var access = userId == null ? null : await GetAccess();
-            var accessRequest = userId == null ? null : await _accessRepository.GetAccessRequest(userId.Value);
+            var token = GetToken();
+            var access = token == null ? null : await _accessRepository.GetAccess(token);
+            var accessRequest = token == null ? null : await _accessRepository.GetAccessRequest(token);
 
-            return new MyAccessDto
-            {
-                UserId = userId,
-                Access = access == null ? null : _accessDtoAdapter.Adapt(access),
-                Request = accessRequest == null ? null : _accessRequestDtoAdapter.Adapt(accessRequest),
-            };
+            return _myAccessDtoAdapter.Adapt(access, accessRequest);
         }
 
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
@@ -113,14 +111,14 @@ namespace HolcombeScores.Api.Services
         /// <returns></returns>
         public async Task<Access> GetAccess()
         {
-            var userId = GetUserId();
-            if (userId == null)
+            var token = GetToken();
+            if (token == null)
             {
                 return null;
             }
 
             // TODO return a different object rather than the data object, expose IsAdmin and CanAccessTeam() and DefaultTeamId
-            return await _accessRepository.GetAccess(userId.Value);
+            return await _accessRepository.GetAccess(token);
         }
 
         public async Task<bool> IsAdmin()
@@ -135,27 +133,13 @@ namespace HolcombeScores.Api.Services
             return access.Admin || access.TeamId == teamId;
         }
 
-        public Guid? GetUserId()
-        {
-            var request = _httpContextAccessor.HttpContext?.Request;
-            var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
-            if (cookies.TryGetValue(CookieName, out var userIdString))
-            {
-                return Guid.TryParse(userIdString, out var userId)
-                    ? userId
-                    : null;
-            }
-
-            return null;
-        }
-
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto)
         {
-            var userId = GetUserId();
-            if (userId != null)
+            var token = GetToken();
+            if (token != null)
             {
                 // access already requested
-                var existingAccessRequest = await _accessRepository.GetAccessRequest(userId.Value);
+                var existingAccessRequest = await _accessRepository.GetAccessRequest(token);
                 if (existingAccessRequest != null)
                 {
                     return _accessRequestedDtoAdapter.Adapt(existingAccessRequest);
@@ -164,8 +148,12 @@ namespace HolcombeScores.Api.Services
 
             var accessRequest = _accessRequestDtoAdapter.Adapt(accessRequestDto);
             accessRequest.UserId = Guid.NewGuid();
+            accessRequest.Token = Guid.NewGuid().ToString();
 
             await _accessRepository.AddAccessRequest(accessRequest);
+
+            SetToken(accessRequest.Token);
+
             return _accessRequestedDtoAdapter.Adapt(accessRequest);
         }
 
@@ -209,6 +197,7 @@ namespace HolcombeScores.Api.Services
                     RevokedReason = null,
                     TeamId = response.TeamId,
                     UserId = response.UserId,
+                    Token = accessRequest.Token,
                 };
                 await _accessRepository.AddAccess(newAccess);
 
@@ -218,8 +207,6 @@ namespace HolcombeScores.Api.Services
 
                 // clean up the access request
                 await _accessRepository.RemoveAccessRequest(response.UserId);
-
-                SetUserId(response.UserId);
 
                 return resultDto;
             }
@@ -275,20 +262,30 @@ namespace HolcombeScores.Api.Services
             return resultDto;
         }
 
-        private void SetUserId(Guid teamId)
+        private string GetToken()
+        {
+            var request = _httpContextAccessor.HttpContext?.Request;
+            var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
+            if (cookies.TryGetValue(CookieName, out var token))
+            {
+                return token;
+            }
+
+            return null;
+        }
+
+        private void SetToken(string token)
         {
             var response = _httpContextAccessor.HttpContext?.Response;
-            response?.Cookies.Append(CookieName, teamId.ToString());
+            response?.Cookies.Append(CookieName, token);
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
         {
-            var oldId = access.UserId;
-            await _accessRepository.RemoveAccess(access.UserId);
-            access.UserId = Guid.NewGuid();
+            var newToken = Guid.NewGuid().ToString();
+            await _accessRepository.UpdateToken(access.Token, newToken);
 
-            await _accessRepository.AddAccess(access);
-            SetUserId(access.UserId);
+            SetToken(newToken);
 
             return new ActionResultDto<AccessDto>
             {
@@ -296,7 +293,7 @@ namespace HolcombeScores.Api.Services
                 Success = true,
                 Messages = 
                 {
-                    $"User superseded: {oldId}",
+                    $"Access recovered",
                 }
             };
         }
