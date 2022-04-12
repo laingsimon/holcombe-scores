@@ -134,18 +134,6 @@ namespace HolcombeScores.Api.Services
             return access.Admin || access.TeamId == teamId;
         }
 
-        public string GetToken()
-        {
-            var request = _httpContextAccessor.HttpContext?.Request;
-            var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
-            if (cookies.TryGetValue(CookieName, out var token))
-            {
-                return token;
-            }
-
-            return null;
-        }
-
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto)
         {
             var token = GetToken();
@@ -273,6 +261,18 @@ namespace HolcombeScores.Api.Services
             resultDto.Messages.Add("Access revoked");
             resultDto.Outcome = _accessDtoAdapter.Adapt(access);
             return resultDto;
+        }
+
+        private string GetToken()
+        {
+            var request = _httpContextAccessor.HttpContext?.Request;
+            var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
+            if (cookies.TryGetValue(CookieName, out var token))
+            {
+                return token;
+            }
+
+            return null;
         }
 
         private void SetToken(string token)
