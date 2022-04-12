@@ -59,6 +59,11 @@ namespace HolcombeScores.Api.Services
             {
                yield return _recoverAccessDtoAdapter.Adapt(access);
             }
+
+            await foreach (var accessRequest in _accessRepository.GetAllAccessRequests())
+            {
+               yield return _recoverAccessDtoAdapter.Adapt(accessRequest);
+            }
         }
 
         public async Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto, string adminPassCode)
@@ -82,6 +87,16 @@ namespace HolcombeScores.Api.Services
                     return await RecoverAccess(access);
                 }
             }
+
+            await foreach (var accessRequest in _accessRepository.GetAllAccessRequests())
+            {
+                var adapted = _recoverAccessDtoAdapter.Adapt(accessRequest);
+                if (adapted.RecoveryId == recoverAccessDto.RecoveryId)
+                {
+                    return await RecoverAccess(accessRequest);
+                }
+            }
+
 
             return new ActionResultDto<AccessDto>
             {
@@ -283,7 +298,7 @@ namespace HolcombeScores.Api.Services
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
         {
             var newToken = Guid.NewGuid().ToString();
-            await _accessRepository.UpdateToken(access.Token, newToken);
+            await _accessRepository.UpdateAccessToken(access.Token, newToken);
 
             SetToken(newToken);
 
@@ -294,6 +309,24 @@ namespace HolcombeScores.Api.Services
                 Messages = 
                 {
                     $"Access recovered",
+                }
+            };
+        }
+
+        private async Task<ActionResultDto<AccessDto>> RecoverAccess(AccessRequest accessRequest)
+        {
+            var newToken = Guid.NewGuid().ToString();
+            await _accessRepository.UpdateAccessRequestToken(accessRequest.Token, newToken);
+
+            SetToken(newToken);
+
+            return new ActionResultDto<AccessDto>
+            {
+                Outcome = null,
+                Success = true,
+                Messages = 
+                {
+                    $"Access request recovered, awaiting approval",
                 }
             };
         }

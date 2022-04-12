@@ -16,6 +16,22 @@ namespace HolcombeScores.Api.Services.Adapters
             {
                 Name = access.Name,
                 RecoveryId = access.UserId.ToString().Substring(0, 8),
+                Type = "Access",
+            };
+        }
+
+        public RecoverAccessDto Adapt(AccessRequest accessRequest)
+        {
+            if (accessRequest == null)
+            {
+                return null;
+            }
+
+            return new RecoverAccessDto
+            {
+                Name = accessRequest.Name,
+                RecoveryId = accessRequest.UserId.ToString().Substring(0, 8),
+                Type = "AccessRequest",
             };
         }
     }
