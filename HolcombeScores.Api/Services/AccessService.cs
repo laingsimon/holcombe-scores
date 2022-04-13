@@ -243,6 +243,80 @@ namespace HolcombeScores.Api.Services
             }
         }
 
+        public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId)
+        {
+            if (!await IsAdmin())
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Errors =
+                    {
+                        "Not an admin",
+                    }
+                };
+            }
+
+            var access = await _accessRepository.GetAccess(userId);
+            if (access == null)
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Errors =
+                    {
+                        "Access not found",
+                    }
+                };
+            }
+
+            await _accessRepository.RemoveAccess(access.UserId);
+            return new ActionResultDto<AccessDto>
+            {
+                Messages =
+                {
+                    "Access removed",
+                },
+                Success = true,
+                Outcome = _accessDtoAdapter.Adapt(access),
+            };
+        }
+
+        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId)
+        {
+            if (!await IsAdmin())
+            {
+                return new ActionResultDto<AccessRequestDto>
+                {
+                    Errors =
+                    {
+                        "Not an admin",
+                    }
+                };
+            }
+
+            var accessRequest = await _accessRepository.GetAccessRequest(userId);
+            if (accessRequest == null)
+            {
+                return new ActionResultDto<AccessRequestDto>
+                {
+                    Errors =
+                    {
+                        "Access not found",
+                    }
+                };
+            }
+
+            await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
+            return new ActionResultDto<AccessRequestDto>
+            {
+                Messages =
+                {
+                    "Access request removed",
+                },
+                Success = true,
+                Outcome = _accessRequestDtoAdapter.Adapt(accessRequest),
+            };
+        }
+
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
         {
             var resultDto = new ActionResultDto<AccessDto>();
