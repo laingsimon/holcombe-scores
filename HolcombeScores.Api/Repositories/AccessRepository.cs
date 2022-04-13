@@ -73,7 +73,7 @@ namespace HolcombeScores.Api.Repositories
             var accessRequest = await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.UserId == userId);
             if (accessRequest != null)
             {
-                await _accessRequestTableClient.DeleteEntityAsync(accessRequest.TeamId.ToString(), accessRequest.UserId.ToString());
+                await _accessRequestTableClient.DeleteEntityAsync(accessRequest.PartitionKey, accessRequest.RowKey);
             }
         }
 
@@ -91,8 +91,7 @@ namespace HolcombeScores.Api.Repositories
         {
             await foreach (var access in _accessTableClient.QueryAsync<Access>(a => a.UserId == userId))
             {
-                var teamId = access.TeamId;
-                await _accessTableClient.DeleteEntityAsync(userId.ToString(), teamId.ToString(), ETag.All);
+                await _accessTableClient.DeleteEntityAsync(access.PartitionKey, access.RowKey, ETag.All);
             }
         }
 
@@ -100,7 +99,8 @@ namespace HolcombeScores.Api.Repositories
         {
             var access = await _accessTableClient.SingleOrDefaultAsync<Access>(a => a.Token == currentToken);
             access.Token = newToken;
-
+            access.Timestamp = DateTimeOffset.UtcNow;
+           
             await _accessTableClient.UpdateEntityAsync(access, ETag.All);
         }
 
@@ -108,6 +108,7 @@ namespace HolcombeScores.Api.Repositories
         {
             var accessRequest = await _accessRequestTableClient.SingleOrDefaultAsync<AccessRequest>(a => a.Token == currentToken);
             accessRequest.Token = newToken;
+            accessRequest.Timestamp = DateTimeOffset.UtcNow;
 
             await _accessRequestTableClient.UpdateEntityAsync(accessRequest, ETag.All);
         }
