@@ -320,15 +320,39 @@ namespace HolcombeScores.Api.Services
 
             SetToken(newToken);
 
-            return new ActionResultDto<AccessDto>
+            var resultDto = new ActionResultDto<AccessDto>();
+
+            var existingAccess = await _accessRepository.GetAccess(accessRequest.UserId);
+            if (existingAccess != null)
             {
-                Outcome = null,
-                Success = true,
-                Messages = 
-                {
-                    $"Access request recovered, awaiting approval",
-                }
+                // access already granted/revoked don't overwrite
+                resultDto.Warnings.Add("Access already exists");
+                resultDto.Success = true; // technically not true, but access does exist
+                resultDto.Outcome = _accessDtoAdapter.Adapt(existingAccess);
+                return resultDto;
+            }
+
+            var newAccess = new Access
+            {
+               Admin = true,
+               Granted = DateTime.UtcNow,
+               Name = accessRequest.Name,
+               Revoked = null,
+               RevokedReason = null,
+               TeamId = response.TeamId,
+               UserId = response.UserId,
+               Token = accessRequest.Token,
             };
+            await _accessRepository.AddAccess(newAccess);
+
+            resultDto.Success = true;
+            resultDto.Messages.Add("Access granted");
+            resultDto.Outcome = _accessDtoAdapter.Adapt(newAccess);
+
+            // clean up the access request
+            await _accessRepository.RemoveAccessRequest(response.UserId);
+
+            return resultDto;
         }
     }
 }
