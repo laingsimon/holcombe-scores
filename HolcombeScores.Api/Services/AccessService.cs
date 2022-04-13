@@ -300,7 +300,7 @@ namespace HolcombeScores.Api.Services
                 {
                     Errors =
                     {
-                        "Access not found",
+                        "Access request not found",
                     }
                 };
             }
