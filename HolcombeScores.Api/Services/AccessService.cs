@@ -346,7 +346,7 @@ namespace HolcombeScores.Api.Services
             await _accessRepository.AddAccess(newAccess);
 
             resultDto.Success = true;
-            resultDto.Messages.Add("Access granted");
+            resultDto.Messages.Add("Access recovered");
             resultDto.Outcome = _accessDtoAdapter.Adapt(newAccess);
 
             // clean up the access request
