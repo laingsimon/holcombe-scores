@@ -268,7 +268,7 @@ namespace HolcombeScores.Api.Services
                 };
             }
 
-            await _accessRepository.RemoveAccess(access.Token);
+            await _accessRepository.RemoveAccess(access.UserId);
             return new ActionResultDto<AccessDto>
             {
                 Messages =
