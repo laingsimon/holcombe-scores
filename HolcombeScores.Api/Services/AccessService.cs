@@ -339,8 +339,8 @@ namespace HolcombeScores.Api.Services
                Name = accessRequest.Name,
                Revoked = null,
                RevokedReason = null,
-               TeamId = response.TeamId,
-               UserId = response.UserId,
+               TeamId = accessRequest.TeamId,
+               UserId = accessRequest.UserId,
                Token = accessRequest.Token,
             };
             await _accessRepository.AddAccess(newAccess);
@@ -350,7 +350,7 @@ namespace HolcombeScores.Api.Services
             resultDto.Outcome = _accessDtoAdapter.Adapt(newAccess);
 
             // clean up the access request
-            await _accessRepository.RemoveAccessRequest(response.UserId);
+            await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
 
             return resultDto;
         }
