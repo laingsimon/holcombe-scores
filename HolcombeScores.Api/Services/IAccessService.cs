@@ -19,5 +19,7 @@ namespace HolcombeScores.Api.Services
         IAsyncEnumerable<AccessDto> GetAllAccess();
         IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery();
         Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto, string adminPassCode);
+        Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId);
+        Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId);
     }
 }
