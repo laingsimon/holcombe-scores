@@ -243,6 +243,43 @@ namespace HolcombeScores.Api.Services
             }
         }
 
+        public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId)
+        {
+            if (!await IsAdmin())
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Errors =
+                    {
+                        "Not an admin",
+                    }
+                };
+            }
+
+            var access = await _accessRepository.GetAccess(userId);
+            if (access == null)
+            {
+                return new ActionResultDto<AccessDto>
+                {
+                    Errors =
+                    {
+                        "Access not found",
+                    }
+                };
+            }
+
+            await _accessRepository.DeleteAccess(access.Token);
+            return new ActionResultDto<AccessDto>
+            {
+                Messages =
+                {
+                    "Access removed",
+                },
+                Success = true,
+                Outcome = _accessDtoAdapter.Adapt(access),
+            };
+        }
+
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
         {
             var resultDto = new ActionResultDto<AccessDto>();
