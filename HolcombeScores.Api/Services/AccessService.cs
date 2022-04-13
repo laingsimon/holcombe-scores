@@ -318,9 +318,9 @@ namespace HolcombeScores.Api.Services
             var newToken = Guid.NewGuid().ToString();
             await _accessRepository.UpdateAccessRequestToken(accessRequest.Token, newToken);
 
-            SetToken(newToken);
-
             var resultDto = new ActionResultDto<AccessDto>();
+            SetToken(newToken);
+            resultDto.Messages.Add("Cookie set");
 
             var existingAccess = await _accessRepository.GetAccess(accessRequest.UserId);
             if (existingAccess != null)
@@ -351,6 +351,7 @@ namespace HolcombeScores.Api.Services
 
             // clean up the access request
             await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
+            resultDto.Messages.Add("Access request removed");
 
             return resultDto;
         }
