@@ -29,7 +29,7 @@ namespace HolcombeScores.Api.Services
         public async IAsyncEnumerable<GameDto> GetAllGames()
         {
             var access = await _accessService.GetAccess();
-            if (access == null)
+            if (access == null || access.Revoked != null)
             {
                 yield break;
             }
@@ -43,7 +43,7 @@ namespace HolcombeScores.Api.Services
         public async Task<GameDto> GetGame(Guid id)
         {
             var access = await _accessService.GetAccess();
-            if (access == null)
+            if (access == null || access.Revoked != null)
             {
                 return null;
             }
