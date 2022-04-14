@@ -70,13 +70,7 @@ namespace HolcombeScores.Api.Services
         {
             if (_adminPassCode != adminPassCode)
             {
-                return new ActionResultDto<AccessDto>
-                {
-                    Warnings = 
-                    {
-                        "Admin pass code mismatch"
-                    }
-                };
+                return new NotPermitted<AccessDto>("Admin pass code mismatch");
             }
 
             await foreach (var access in _accessRepository.GetAllAccess())
@@ -96,7 +90,6 @@ namespace HolcombeScores.Api.Services
                     return await RecoverAccess(accessRequest);
                 }
             }
-
 
             return NotFound<AccessDto>("Access not found");
         }
@@ -170,7 +163,7 @@ namespace HolcombeScores.Api.Services
         {
             if (!await IsAdmin())
             {
-                return NotPermitted<AccessDto>();
+                return NotAnAdmin<AccessDto>();
             }
 
             var accessRequest = await _accessRepository.GetAccessRequest(response.UserId);
@@ -226,44 +219,24 @@ namespace HolcombeScores.Api.Services
         {
             if (!await IsAdmin())
             {
-                return new ActionResultDto<AccessDto>
-                {
-                    Errors =
-                    {
-                        "Not an admin",
-                    }
-                };
+                return NotAnAdmin<AccessDto>();
             }
 
             var access = await _accessRepository.GetAccess(userId);
             if (access == null)
             {
-                return new ActionResultDto<AccessDto>
-                {
-                    Errors =
-                    {
-                        "Access not found",
-                    }
-                };
+                return NotFound<AccessDto>("Access not found");
             }
 
             await _accessRepository.RemoveAccess(access.UserId);
-            return new ActionResultDto<AccessDto>
-            {
-                Messages =
-                {
-                    "Access removed",
-                },
-                Success = true,
-                Outcome = _accessDtoAdapter.Adapt(access),
-            };
+            return Success<AccessDto>("Access removed", _accessDtoAdapter.Adapt(access));
         }
 
         public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId)
         {
             if (!await IsAdmin())
             {
-                return NotPermitted<AccessRequestDto>();
+                return NotAnAdmin<AccessRequestDto>();
             }
 
             var accessRequest = await _accessRepository.GetAccessRequest(userId);
@@ -278,36 +251,27 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
         {
-            var resultDto = new ActionResultDto<AccessDto>();
             if (!await IsAdmin())
             {
-                resultDto.Errors.Add("Not an admin");
-                return resultDto;
+                return NotAnAdmin<AccessDto>();
             }
 
             var access = await _accessRepository.GetAccess(accessResponseDto.UserId);
             if (access == null)
             {
-                resultDto.Errors.Add("Access not found");
-                return resultDto;
+                return NotFound<AccessDto>("Access not found");
             }
 
             if (access.Revoked != null)
             {
-                resultDto.Warnings.Add("Access already revoked");
-                resultDto.Outcome = _accessDtoAdapter.Adapt(access);
-                resultDto.Success = true;
-                return resultDto;
+                return Success<AccessDto>("Access already revoked", _accessDtoAdapter.Adapt(access));
             }
 
             access.Revoked = DateTime.UtcNow;
             access.RevokedReason = accessResponseDto.Reason;
             await _accessRepository.UpdateAccess(access);
 
-            resultDto.Success = true;
-            resultDto.Messages.Add("Access revoked");
-            resultDto.Outcome = _accessDtoAdapter.Adapt(access);
-            return resultDto;
+            return Success<AccessDto>("Access revoked", _accessDtoAdapter.Adapt(access));
         }
 
         public async Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated)
@@ -452,6 +416,17 @@ namespace HolcombeScores.Api.Services
                Warnings =
                {
                    message,
+               },
+           };
+        }
+
+        private static ActionResultDto<T> NotAnAdmin<T>()
+        {
+           return new ActionResultDto<T>
+           {
+               Errors =
+               {
+                   "Not an admin",
                },
            };
         }
