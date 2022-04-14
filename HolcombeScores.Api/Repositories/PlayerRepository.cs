@@ -18,13 +18,18 @@ namespace HolcombeScores.Api.Repositories
 
         public IAsyncEnumerable<Player> GetAll(Guid? teamId)
         {
-            return _playerTableClient.QueryAsync<Player>(gte => gte.TeamId == teamId || teamId == null);
+            if (teamId == null)
+            {
+                return _playerTableClient.QueryAsync<Player>();
+            }
+
+            return _playerTableClient.QueryAsync<Player>(p => p.TeamId == teamId);
         }
 
         public async Task<Player> GetByNumber(Guid? teamId, int number)
         {
-            return await _playerTableClient.SingleOrDefaultAsync<Player>(gte =>
-                (gte.TeamId == teamId || teamId == null) && gte.Number == number);
+            return await _playerTableClient.SingleOrDefaultAsync<Player>(p =>
+                (p.TeamId == teamId) && p.Number == number);
         }
 
         public async Task AddPlayer(Player player)
