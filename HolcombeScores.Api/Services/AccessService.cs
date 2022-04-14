@@ -98,13 +98,7 @@ namespace HolcombeScores.Api.Services
             }
 
 
-            return new ActionResultDto<AccessDto>
-            {
-                Warnings = 
-                {
-                   "Access not found"
-                }
-            };
+            return NotFound<AccessDto>("Access not found");
         }
 
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
@@ -174,31 +168,21 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> RespondToRequest(AccessResponseDto response)
         {
-            var resultDto = new ActionResultDto<AccessDto>();
-
             if (!await IsAdmin())
             {
-                // not an admin, not permitted to respond to requests
-                resultDto.Errors.Add("Not an admin");
-                return resultDto;
+                return NotPermitted<AccessDto>();
             }
 
             var accessRequest = await _accessRepository.GetAccessRequest(response.UserId);
             if (accessRequest == null)
             {
-                // access request doesn't exist, don't grant access
-                resultDto.Errors.Add("Access request not found");
-                return resultDto;
+                return NotFound<AccessDto>();
             }
 
             var existingAccess = await _accessRepository.GetAccess(response.UserId);
             if (existingAccess != null)
             {
-                // access already granted/revoked don't overwrite
-                resultDto.Warnings.Add("Access already exists");
-                resultDto.Success = true; // technically not true, but access does exist
-                resultDto.Outcome = _accessDtoAdapter.Adapt(existingAccess);
-                return resultDto;
+                return Success<AccessDto>("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
             }
 
             if (response.Allow)
@@ -216,18 +200,13 @@ namespace HolcombeScores.Api.Services
                 };
                 await _accessRepository.AddAccess(newAccess);
 
-                resultDto.Success = true;
-                resultDto.Messages.Add("Access granted");
-                resultDto.Outcome = _accessDtoAdapter.Adapt(newAccess);
-
                 // clean up the access request
                 await _accessRepository.RemoveAccessRequest(response.UserId);
 
-                return resultDto;
+                return Success<AccessDto>("Access granted", _accessDtoAdapter.Adapt(newAccess));
             }
 
-            resultDto.Messages.Add("Access not granted");
-            return resultDto;
+            return NotSuccess<AccessDto>("Access not granted");
         }
 
         public async IAsyncEnumerable<AccessRequestDto> GetAccessRequests()
@@ -450,7 +429,19 @@ namespace HolcombeScores.Api.Services
                {
                    message,
                },
-               Outcome = outcome
+               Outcome = outcome,
+               Success = true,
+           };
+        }
+
+        private static ActionResultDto<T> NotSuccess<T>(string message)
+        {
+           return new ActionResultDto<T>
+           {
+               Messages =
+               {
+                   message,
+               }
            };
         }
 
