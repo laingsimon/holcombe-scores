@@ -275,7 +275,7 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated)
         {
-             var accessToUpdate = await GetAccess();
+             var accessToUpdate = await _accessRepository.GetAccess(GetToken());
 
              if (accessToUpdate == null)
              {
@@ -346,18 +346,12 @@ namespace HolcombeScores.Api.Services
             var newToken = Guid.NewGuid().ToString();
             await _accessRepository.UpdateAccessRequestToken(accessRequest.Token, newToken);
 
-            var resultDto = new ActionResultDto<AccessDto>();
             SetToken(newToken);
-            resultDto.Messages.Add("Cookie set");
 
             var existingAccess = await _accessRepository.GetAccess(accessRequest.UserId);
             if (existingAccess != null)
             {
-                // access already granted/revoked don't overwrite
-                resultDto.Warnings.Add("Access already exists");
-                resultDto.Success = true; // technically not true, but access does exist
-                resultDto.Outcome = _accessDtoAdapter.Adapt(existingAccess);
-                return resultDto;
+                return Success<AccessDto>("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
             }
 
             var newAccess = new Access
@@ -373,15 +367,10 @@ namespace HolcombeScores.Api.Services
             };
             await _accessRepository.AddAccess(newAccess);
 
-            resultDto.Success = true;
-            resultDto.Messages.Add("Access recovered");
-            resultDto.Outcome = _accessDtoAdapter.Adapt(newAccess);
-
             // clean up the access request
             await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
-            resultDto.Messages.Add("Access request removed");
 
-            return resultDto;
+            return Success<AccessDto>("Access request removed", _accessDtoAdapter.Adapt(newAccess));
         }
 
         private static ActionResultDto<T> Success<T>(string message, T outcome = default)
