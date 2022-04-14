@@ -42,13 +42,7 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<TeamDto>> CreateTeam(TeamDto teamDto)
         {
-            var access = await _accessService.GetAccess();
-            if (access == null || access.Revoked != null)
-            {
-                return NotAnAdmin();
-            }
-
-            if (!access.Admin)
+            if (!await _accessService.IsAdmin())
             {
                 return NotAnAdmin();
             }
@@ -59,11 +53,10 @@ namespace HolcombeScores.Api.Services
 
             if (existingTeams.Any())
             {
-                return NotSuccess("Team of exists with this name already");
+                return NotSuccess("Team exists with this name already");
             }
 
             team.Id = Guid.NewGuid();
-
             await _teamRepository.CreateTeam(team);
 
             return Success("Team created", team);
@@ -135,6 +128,20 @@ namespace HolcombeScores.Api.Services
                    "Not logged in",
                },
            };
+        }
+
+        private async Task<IEnumerable<Team>> GetTeamsMatching(Predicate<Team> predicate)
+        {
+            var teams = new List<Team>();
+            await foreach (var team in _teamRepository.GetAll())
+            {
+                if (predicate(team))
+                {
+                    teams.Add(team);
+                }
+            }
+
+            return teams;
         }
     }
 }
