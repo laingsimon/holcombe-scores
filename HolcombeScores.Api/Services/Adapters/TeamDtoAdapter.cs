@@ -27,7 +27,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 return null;
             }
 
-            return new Player
+            return new Team
             {
                 Coach = team.Coach,
                 Name = team.Name,
