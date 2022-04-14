@@ -169,7 +169,7 @@ namespace HolcombeScores.Api.Services
             var accessRequest = await _accessRepository.GetAccessRequest(response.UserId);
             if (accessRequest == null)
             {
-                return NotFound<AccessDto>();
+                return NotFound<AccessDto>("Access request not found");
             }
 
             var existingAccess = await _accessRepository.GetAccess(response.UserId);
@@ -199,7 +199,7 @@ namespace HolcombeScores.Api.Services
                 return Success<AccessDto>("Access granted", _accessDtoAdapter.Adapt(newAccess));
             }
 
-            return NotSuccess<AccessDto>("Access not granted");
+            return NotSuccess<AccessDto>("Access request ignored");
         }
 
         public async IAsyncEnumerable<AccessRequestDto> GetAccessRequests()
@@ -294,7 +294,7 @@ namespace HolcombeScores.Api.Services
 
                  if (accessToUpdate == null)
                  {
-                     return NotFound<AccessDto>(updated.UserId);
+                     return NotFound<AccessDto>("Access not found");
                  }
 
                  accessToUpdate.Admin = update.Admin;
@@ -305,7 +305,7 @@ namespace HolcombeScores.Api.Services
 
              await _accessRepository.UpdateAccess(accessToUpdate);
 
-             return Success<AccessDto>("Access updated");
+             return Success<AccessDto>("Access updated", _accessDtoAdapter.Adapt(accessToUpdate));
         }
 
         private string GetToken()
