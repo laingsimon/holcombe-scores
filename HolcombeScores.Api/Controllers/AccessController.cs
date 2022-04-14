@@ -29,6 +29,12 @@ namespace HolcombeScores.Api.Controllers
             return await _accessService.RemoveAccess(userId);
         }
 
+        [HttpPatch("/api/Access")]
+        public async Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto update)
+        {
+            return await _accessService.UpdateAccess(update);
+        }
+
         [HttpGet("/api/Access/Recover")]
         public IAsyncEnumerable<RecoverAccessDto> RecoverAccess()
         {
