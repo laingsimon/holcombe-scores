@@ -19,7 +19,7 @@ namespace HolcombeScores.Api.Controllers
         [HttpGet("/api/Teams")]
         public IAsyncEnumerable<TeamDto> List()
         {
-            return _teamsService.GetAllTeams();
+            return _teamService.GetAllTeams();
         }
     }
 }
