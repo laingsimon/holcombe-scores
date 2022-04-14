@@ -70,7 +70,7 @@ namespace HolcombeScores.Api.Services
         {
             if (_adminPassCode != adminPassCode)
             {
-                return new NotPermitted<AccessDto>("Admin pass code mismatch");
+                return NotPermitted<AccessDto>("Admin pass code mismatch");
             }
 
             await foreach (var access in _accessRepository.GetAllAccess())
@@ -284,7 +284,7 @@ namespace HolcombeScores.Api.Services
 
              if (updated.UserId != accessToUpdate.UserId)
              {
-                 if (!access.Admin)
+                 if (!accessToUpdate.Admin)
                  {
                      return NotPermitted<AccessDto>("Only an admin can change another users' details");
                  }
@@ -296,7 +296,7 @@ namespace HolcombeScores.Api.Services
                      return NotFound<AccessDto>("Access not found");
                  }
 
-                 accessToUpdate.Admin = update.Admin;
+                 accessToUpdate.Admin = updated.Admin;
                  accessToUpdate.TeamId = updated.TeamId;
              }
 
