@@ -32,6 +32,7 @@ namespace HolcombeScores.Api
             services.AddSingleton<IAccessRequestedDtoAdapter, AccessRequestedDtoAdapter>();
             services.AddSingleton<IRecoverAccessDtoAdapter, RecoverAccessDtoAdapter>();
             services.AddSingleton<IMyAccessDtoAdapter, MyAccessDtoAdapter>();
+            services.AddSingleton<ITeamDtoAdapter, TeamDtoAdapter>();
 
             services.AddScoped<IGameService, GameService>();
             services.AddScoped<IPlayerService, PlayerService>();
