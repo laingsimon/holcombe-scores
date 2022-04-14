@@ -21,9 +21,10 @@ namespace HolcombeScores.Api
             services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IPlayerRepository, PlayerRepository>();
             services.AddScoped<IAccessRepository, AccessRepository>();
+            services.AddScoped<ITeamRepository, TeamRepository>();
             services.AddScoped<ITableServiceClientFactory, TableServiceClientFactory>();
-            services.AddScoped<INewGameDtoAdapter, NewGameDtoAdapter>();
 
+            services.AddScoped<INewGameDtoAdapter, NewGameDtoAdapter>();
             services.AddSingleton<IGameDtoAdapter, GameDtoAdapter>();
             services.AddSingleton<IGoalDtoAdapter, GoalDtoAdapter>();
             services.AddSingleton<IPlayerDtoAdapter, PlayerDtoAdapter>();
