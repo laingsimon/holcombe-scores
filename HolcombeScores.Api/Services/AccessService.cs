@@ -353,6 +353,36 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated)
         {
+             var accessToUpdate = await GetAccess();
+
+             if (accessToUpdate == null)
+             {
+                 return NoLoggedIn();
+             }
+
+             if (updated.UserId != accessToUpdate.UserId)
+             {
+                 if (!access.Admin)
+                 {
+                     return NotPermitted("Only an admin can change another users' details");
+                 }
+
+                 accessToUpdate = await _accessRepository.GetAccess(updated.UserId);
+
+                 if (accessToUpdate == null)
+                 {
+                     return NotFound(updated.UserId);
+                 }
+
+                 accessToUpdate.Admin = update.Admin;
+                 accessToUpdate.TeamId = updated.TeamId;
+             }
+
+             accessToUpdate.Name = updated.Name;
+
+             await _accessRepository.UpdateAccess(accessToUpdate);
+
+             return Success("Access updated");
         }
 
         private string GetToken()
