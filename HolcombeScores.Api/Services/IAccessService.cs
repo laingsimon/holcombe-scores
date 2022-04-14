@@ -9,7 +9,7 @@ namespace HolcombeScores.Api.Services
     public interface IAccessService
     {
         Task<MyAccessDto> GetMyAccess();
-        Task<Access> GetAccess();
+        Task<AccessDto> GetAccess();
         Task<bool> IsAdmin();
         Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto);
         Task<ActionResultDto<AccessDto>> RespondToRequest(AccessResponseDto response);
@@ -21,5 +21,6 @@ namespace HolcombeScores.Api.Services
         Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto, string adminPassCode);
         Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId);
         Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId);
+        Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated);
     }
 }
