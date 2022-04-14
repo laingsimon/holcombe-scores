@@ -284,37 +284,17 @@ namespace HolcombeScores.Api.Services
         {
             if (!await IsAdmin())
             {
-                return new ActionResultDto<AccessRequestDto>
-                {
-                    Errors =
-                    {
-                        "Not an admin",
-                    }
-                };
+                return NotPermitted<AccessRequestDto>();
             }
 
             var accessRequest = await _accessRepository.GetAccessRequest(userId);
             if (accessRequest == null)
             {
-                return new ActionResultDto<AccessRequestDto>
-                {
-                    Errors =
-                    {
-                        "Access request not found",
-                    }
-                };
+                return NotFound<AccessRequestDto>("Access request not found");
             }
 
             await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
-            return new ActionResultDto<AccessRequestDto>
-            {
-                Messages =
-                {
-                    "Access request removed",
-                },
-                Success = true,
-                Outcome = _accessRequestDtoAdapter.Adapt(accessRequest),
-            };
+            return Success<AccessRequestDto>("Access request removed", _accessRequestDtoAdapter.Adapt(accessRequest));
         }
 
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
@@ -357,21 +337,21 @@ namespace HolcombeScores.Api.Services
 
              if (accessToUpdate == null)
              {
-                 return NoLoggedIn();
+                 return NotLoggedIn<AccessDto>();
              }
 
              if (updated.UserId != accessToUpdate.UserId)
              {
                  if (!access.Admin)
                  {
-                     return NotPermitted("Only an admin can change another users' details");
+                     return NotPermitted<AccessDto>("Only an admin can change another users' details");
                  }
 
                  accessToUpdate = await _accessRepository.GetAccess(updated.UserId);
 
                  if (accessToUpdate == null)
                  {
-                     return NotFound(updated.UserId);
+                     return NotFound<AccessDto>(updated.UserId);
                  }
 
                  accessToUpdate.Admin = update.Admin;
@@ -382,7 +362,7 @@ namespace HolcombeScores.Api.Services
 
              await _accessRepository.UpdateAccess(accessToUpdate);
 
-             return Success("Access updated");
+             return Success<AccessDto>("Access updated");
         }
 
         private string GetToken()
@@ -416,15 +396,7 @@ namespace HolcombeScores.Api.Services
 
             SetToken(newToken);
 
-            return new ActionResultDto<AccessDto>
-            {
-                Outcome = _accessDtoAdapter.Adapt(access),
-                Success = true,
-                Messages = 
-                {
-                    $"Access recovered",
-                }
-            };
+            return Success<AccessDto>("Access recovered", _accessDtoAdapter.Adapt(access));
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(AccessRequest accessRequest)
@@ -468,6 +440,51 @@ namespace HolcombeScores.Api.Services
             resultDto.Messages.Add("Access request removed");
 
             return resultDto;
+        }
+
+        private static ActionResultDto<T> Success<T>(string message, T outcome = default)
+        {
+           return new ActionResultDto<T>
+           {
+               Messages =
+               {
+                   message,
+               },
+               Outcome = outcome
+           };
+        }
+
+        private static ActionResultDto<T> NotFound<T>(string message)
+        {
+           return new ActionResultDto<T>
+           {
+               Warnings =
+               {
+                   message,
+               },
+           };
+        }
+
+        private static ActionResultDto<T> NotPermitted<T>(string message)
+        {
+           return new ActionResultDto<T>
+           {
+               Errors =
+               {
+                   message,
+               },
+           };
+        }
+
+        private static ActionResultDto<T> NotLoggedIn<T>()
+        {
+           return new ActionResultDto<T>
+           {
+               Warnings =
+               {
+                   "Not logged in",
+               },
+           };
         }
     }
 }
