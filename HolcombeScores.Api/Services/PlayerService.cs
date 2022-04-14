@@ -23,7 +23,7 @@ namespace HolcombeScores.Api.Services
         public async IAsyncEnumerable<PlayerDto> GetAllPlayers()
         {
             var access = await _accessService.GetAccess();
-            if (access == null)
+            if (access == null || access.Revoked != null)
             {
                 yield break;
             }

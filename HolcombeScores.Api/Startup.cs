@@ -21,9 +21,10 @@ namespace HolcombeScores.Api
             services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IPlayerRepository, PlayerRepository>();
             services.AddScoped<IAccessRepository, AccessRepository>();
+            services.AddScoped<ITeamRepository, TeamRepository>();
             services.AddScoped<ITableServiceClientFactory, TableServiceClientFactory>();
-            services.AddScoped<INewGameDtoAdapter, NewGameDtoAdapter>();
 
+            services.AddScoped<INewGameDtoAdapter, NewGameDtoAdapter>();
             services.AddSingleton<IGameDtoAdapter, GameDtoAdapter>();
             services.AddSingleton<IGoalDtoAdapter, GoalDtoAdapter>();
             services.AddSingleton<IPlayerDtoAdapter, PlayerDtoAdapter>();
@@ -32,10 +33,12 @@ namespace HolcombeScores.Api
             services.AddSingleton<IAccessRequestedDtoAdapter, AccessRequestedDtoAdapter>();
             services.AddSingleton<IRecoverAccessDtoAdapter, RecoverAccessDtoAdapter>();
             services.AddSingleton<IMyAccessDtoAdapter, MyAccessDtoAdapter>();
+            services.AddSingleton<ITeamDtoAdapter, TeamDtoAdapter>();
 
             services.AddScoped<IGameService, GameService>();
             services.AddScoped<IPlayerService, PlayerService>();
             services.AddScoped<IAccessService, AccessService>();
+            services.AddScoped<ITeamService, TeamService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
