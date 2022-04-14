@@ -136,5 +136,19 @@ namespace HolcombeScores.Api.Services
                },
            };
         }
+
+        private async Task<IEnumerable<Team>> GetTeamsMatching(Predicate<Team> predicate)
+        {
+            var teams = new List<Team>();
+            await foreach (var team in _teamRepository.GetAll())
+            {
+                if (predicate(team))
+                {
+                    teams.Add(team);
+                }
+            }
+
+            return teams;
+        }
     }
 }
