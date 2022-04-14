@@ -12,12 +12,18 @@ namespace HolcombeScores.Api.Services
         private readonly ITeamRepository _teamRepository;
         private readonly ITeamDtoAdapter _teamDtoAdapter;
         private readonly IAccessService _accessService;
+        private readonly IPlayerRepository _playerRepository;
 
-        public TeamService(ITeamRepository teamRepository, ITeamDtoAdapter teamDtoAdapter, IAccessService accessService)
+        public TeamService(
+            ITeamRepository teamRepository,
+            ITeamDtoAdapter teamDtoAdapter,
+            IAccessService accessService,
+            IPlayerRepository playerRepository)
         {
             _teamRepository = teamRepository;
             _teamDtoAdapter = teamDtoAdapter;
             _accessService = accessService;
+            _playerRepository = playerRepository;
         }
 
         public async IAsyncEnumerable<TeamDto> GetAllTeams()
@@ -32,6 +38,103 @@ namespace HolcombeScores.Api.Services
             {
                 yield return _teamDtoAdapter.Adapt(team);
             }
+        }
+
+        public async Task<ActionResultDto<TeamDto>> CreateTeam(TeamDto teamDto)
+        {
+            var access = await _accessService.GetAccess();
+            if (access == null || access.Revoked != null)
+            {
+                return NotAnAdmin();
+            }
+
+            if (!access.Admin)
+            {
+                return NotAnAdmin();
+            }
+
+            var team = _teamDtoAdapter.Adapt(teamDto);
+
+            var existingTeams = await GetTeamsMatching(t => t.Name == team.Name).ToArray();
+
+            if (existingTeams.Any())
+            {
+                return NotSuccess("Team of exists with this name already");
+            }
+
+            team.Id = Guid.NewGuid();
+
+            await _teamRepository.CreateTeam(team);
+
+            return Success("Team created", team);
+        }
+
+        private static ActionResultDto<TeamDto> Success(string message, TeamDto outcome = null)
+        {
+           return new ActionResultDto<TeamDto>
+           {
+               Messages =
+               {
+                   message,
+               },
+               Outcome = outcome,
+               Success = true,
+           };
+        }
+
+        private static ActionResultDto<TeamDto> NotSuccess(string message)
+        {
+           return new ActionResultDto<TeamDto>
+           {
+               Messages =
+               {
+                   message,
+               }
+           };
+        }
+
+        private static ActionResultDto<TeamDto> NotFound(string message)
+        {
+           return new ActionResultDto<TeamDto>
+           {
+               Warnings =
+               {
+                   message,
+               },
+           };
+        }
+
+        private static ActionResultDto<TeamDto> NotAnAdmin()
+        {
+           return new ActionResultDto<TeamDto>
+           {
+               Errors =
+               {
+                   "Not an admin",
+               },
+           };
+        }
+
+        private static ActionResultDto<TeamDto> NotPermitted(string message)
+        {
+           return new ActionResultDto<TeamDto>
+           {
+               Errors =
+               {
+                   message,
+               },
+           };
+        }
+
+        private static ActionResultDto<TeamDto> NotLoggedIn()
+        {
+           return new ActionResultDto<TeamDto>
+           {
+               Warnings =
+               {
+                   "Not logged in",
+               },
+           };
         }
     }
 }
