@@ -351,6 +351,10 @@ namespace HolcombeScores.Api.Services
             return resultDto;
         }
 
+        public async Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated)
+        {
+        }
+
         private string GetToken()
         {
             var request = _httpContextAccessor.HttpContext?.Request;
