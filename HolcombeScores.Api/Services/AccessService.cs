@@ -70,13 +70,7 @@ namespace HolcombeScores.Api.Services
         {
             if (_adminPassCode != adminPassCode)
             {
-                return new ActionResultDto<AccessDto>
-                {
-                    Warnings = 
-                    {
-                        "Admin pass code mismatch"
-                    }
-                };
+                return NotPermitted<AccessDto>("Admin pass code mismatch");
             }
 
             await foreach (var access in _accessRepository.GetAllAccess())
@@ -97,14 +91,7 @@ namespace HolcombeScores.Api.Services
                 }
             }
 
-
-            return new ActionResultDto<AccessDto>
-            {
-                Warnings = 
-                {
-                   "Access not found"
-                }
-            };
+            return NotFound<AccessDto>("Access not found");
         }
 
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
@@ -124,7 +111,7 @@ namespace HolcombeScores.Api.Services
         /// Get the access for the current HTTP request, return null if no access
         /// </summary>
         /// <returns></returns>
-        public async Task<Access> GetAccess()
+        public async Task<AccessDto> GetAccess()
         {
             var token = GetToken();
             if (token == null)
@@ -132,8 +119,7 @@ namespace HolcombeScores.Api.Services
                 return null;
             }
 
-            // TODO return a different object rather than the data object, expose IsAdmin and CanAccessTeam() and DefaultTeamId
-            return await _accessRepository.GetAccess(token);
+            return _accessDtoAdapter.Adapt(await _accessRepository.GetAccess(token));
         }
 
         public async Task<bool> IsAdmin()
@@ -174,31 +160,21 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> RespondToRequest(AccessResponseDto response)
         {
-            var resultDto = new ActionResultDto<AccessDto>();
-
             if (!await IsAdmin())
             {
-                // not an admin, not permitted to respond to requests
-                resultDto.Errors.Add("Not an admin");
-                return resultDto;
+                return NotAnAdmin<AccessDto>();
             }
 
             var accessRequest = await _accessRepository.GetAccessRequest(response.UserId);
             if (accessRequest == null)
             {
-                // access request doesn't exist, don't grant access
-                resultDto.Errors.Add("Access request not found");
-                return resultDto;
+                return NotFound<AccessDto>("Access request not found");
             }
 
             var existingAccess = await _accessRepository.GetAccess(response.UserId);
             if (existingAccess != null)
             {
-                // access already granted/revoked don't overwrite
-                resultDto.Warnings.Add("Access already exists");
-                resultDto.Success = true; // technically not true, but access does exist
-                resultDto.Outcome = _accessDtoAdapter.Adapt(existingAccess);
-                return resultDto;
+                return Success<AccessDto>("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
             }
 
             if (response.Allow)
@@ -216,18 +192,13 @@ namespace HolcombeScores.Api.Services
                 };
                 await _accessRepository.AddAccess(newAccess);
 
-                resultDto.Success = true;
-                resultDto.Messages.Add("Access granted");
-                resultDto.Outcome = _accessDtoAdapter.Adapt(newAccess);
-
                 // clean up the access request
                 await _accessRepository.RemoveAccessRequest(response.UserId);
 
-                return resultDto;
+                return Success<AccessDto>("Access granted", _accessDtoAdapter.Adapt(newAccess));
             }
 
-            resultDto.Messages.Add("Access not granted");
-            return resultDto;
+            return NotSuccess<AccessDto>("Access request ignored");
         }
 
         public async IAsyncEnumerable<AccessRequestDto> GetAccessRequests()
@@ -247,108 +218,93 @@ namespace HolcombeScores.Api.Services
         {
             if (!await IsAdmin())
             {
-                return new ActionResultDto<AccessDto>
-                {
-                    Errors =
-                    {
-                        "Not an admin",
-                    }
-                };
+                return NotAnAdmin<AccessDto>();
             }
 
             var access = await _accessRepository.GetAccess(userId);
             if (access == null)
             {
-                return new ActionResultDto<AccessDto>
-                {
-                    Errors =
-                    {
-                        "Access not found",
-                    }
-                };
+                return NotFound<AccessDto>("Access not found");
             }
 
             await _accessRepository.RemoveAccess(access.UserId);
-            return new ActionResultDto<AccessDto>
-            {
-                Messages =
-                {
-                    "Access removed",
-                },
-                Success = true,
-                Outcome = _accessDtoAdapter.Adapt(access),
-            };
+            return Success<AccessDto>("Access removed", _accessDtoAdapter.Adapt(access));
         }
 
         public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId)
         {
             if (!await IsAdmin())
             {
-                return new ActionResultDto<AccessRequestDto>
-                {
-                    Errors =
-                    {
-                        "Not an admin",
-                    }
-                };
+                return NotAnAdmin<AccessRequestDto>();
             }
 
             var accessRequest = await _accessRepository.GetAccessRequest(userId);
             if (accessRequest == null)
             {
-                return new ActionResultDto<AccessRequestDto>
-                {
-                    Errors =
-                    {
-                        "Access request not found",
-                    }
-                };
+                return NotFound<AccessRequestDto>("Access request not found");
             }
 
             await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
-            return new ActionResultDto<AccessRequestDto>
-            {
-                Messages =
-                {
-                    "Access request removed",
-                },
-                Success = true,
-                Outcome = _accessRequestDtoAdapter.Adapt(accessRequest),
-            };
+            return Success<AccessRequestDto>("Access request removed", _accessRequestDtoAdapter.Adapt(accessRequest));
         }
 
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
         {
-            var resultDto = new ActionResultDto<AccessDto>();
             if (!await IsAdmin())
             {
-                resultDto.Errors.Add("Not an admin");
-                return resultDto;
+                return NotAnAdmin<AccessDto>();
             }
 
             var access = await _accessRepository.GetAccess(accessResponseDto.UserId);
             if (access == null)
             {
-                resultDto.Errors.Add("Access not found");
-                return resultDto;
+                return NotFound<AccessDto>("Access not found");
             }
 
             if (access.Revoked != null)
             {
-                resultDto.Warnings.Add("Access already revoked");
-                resultDto.Outcome = _accessDtoAdapter.Adapt(access);
-                resultDto.Success = true;
-                return resultDto;
+                return Success<AccessDto>("Access already revoked", _accessDtoAdapter.Adapt(access));
             }
 
             access.Revoked = DateTime.UtcNow;
             access.RevokedReason = accessResponseDto.Reason;
             await _accessRepository.UpdateAccess(access);
 
-            resultDto.Success = true;
-            resultDto.Messages.Add("Access revoked");
-            resultDto.Outcome = _accessDtoAdapter.Adapt(access);
-            return resultDto;
+            return Success<AccessDto>("Access revoked", _accessDtoAdapter.Adapt(access));
+        }
+
+        public async Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated)
+        {
+             var accessToUpdate = await _accessRepository.GetAccess(GetToken());
+
+             if (accessToUpdate == null)
+             {
+                 return NotLoggedIn<AccessDto>();
+             }
+
+             if (updated.UserId != accessToUpdate.UserId)
+             {
+                 if (!accessToUpdate.Admin)
+                 {
+                     return NotPermitted<AccessDto>("Only an admin can change another users' details");
+                 }
+
+                 accessToUpdate = await _accessRepository.GetAccess(updated.UserId);
+
+                 if (accessToUpdate == null)
+                 {
+                     return NotFound<AccessDto>("Access not found");
+                 }
+
+                 accessToUpdate.Admin = updated.Admin;
+                 accessToUpdate.TeamId = updated.TeamId;
+             }
+
+             accessToUpdate.Name = updated.Name;
+
+             await _accessRepository.UpdateAccess(accessToUpdate);
+
+             return Success<AccessDto>("Access updated", _accessDtoAdapter.Adapt(accessToUpdate));
         }
 
         private string GetToken()
@@ -382,15 +338,7 @@ namespace HolcombeScores.Api.Services
 
             SetToken(newToken);
 
-            return new ActionResultDto<AccessDto>
-            {
-                Outcome = _accessDtoAdapter.Adapt(access),
-                Success = true,
-                Messages = 
-                {
-                    $"Access recovered",
-                }
-            };
+            return Success<AccessDto>("Access recovered", _accessDtoAdapter.Adapt(access));
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(AccessRequest accessRequest)
@@ -398,18 +346,12 @@ namespace HolcombeScores.Api.Services
             var newToken = Guid.NewGuid().ToString();
             await _accessRepository.UpdateAccessRequestToken(accessRequest.Token, newToken);
 
-            var resultDto = new ActionResultDto<AccessDto>();
             SetToken(newToken);
-            resultDto.Messages.Add("Cookie set");
 
             var existingAccess = await _accessRepository.GetAccess(accessRequest.UserId);
             if (existingAccess != null)
             {
-                // access already granted/revoked don't overwrite
-                resultDto.Warnings.Add("Access already exists");
-                resultDto.Success = true; // technically not true, but access does exist
-                resultDto.Outcome = _accessDtoAdapter.Adapt(existingAccess);
-                return resultDto;
+                return Success<AccessDto>("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
             }
 
             var newAccess = new Access
@@ -425,15 +367,78 @@ namespace HolcombeScores.Api.Services
             };
             await _accessRepository.AddAccess(newAccess);
 
-            resultDto.Success = true;
-            resultDto.Messages.Add("Access recovered");
-            resultDto.Outcome = _accessDtoAdapter.Adapt(newAccess);
-
             // clean up the access request
             await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
-            resultDto.Messages.Add("Access request removed");
 
-            return resultDto;
+            return Success<AccessDto>("Access request removed", _accessDtoAdapter.Adapt(newAccess));
+        }
+
+        private static ActionResultDto<T> Success<T>(string message, T outcome = default)
+        {
+           return new ActionResultDto<T>
+           {
+               Messages =
+               {
+                   message,
+               },
+               Outcome = outcome,
+               Success = true,
+           };
+        }
+
+        private static ActionResultDto<T> NotSuccess<T>(string message)
+        {
+           return new ActionResultDto<T>
+           {
+               Messages =
+               {
+                   message,
+               }
+           };
+        }
+
+        private static ActionResultDto<T> NotFound<T>(string message)
+        {
+           return new ActionResultDto<T>
+           {
+               Warnings =
+               {
+                   message,
+               },
+           };
+        }
+
+        private static ActionResultDto<T> NotAnAdmin<T>()
+        {
+           return new ActionResultDto<T>
+           {
+               Errors =
+               {
+                   "Not an admin",
+               },
+           };
+        }
+
+        private static ActionResultDto<T> NotPermitted<T>(string message)
+        {
+           return new ActionResultDto<T>
+           {
+               Errors =
+               {
+                   message,
+               },
+           };
+        }
+
+        private static ActionResultDto<T> NotLoggedIn<T>()
+        {
+           return new ActionResultDto<T>
+           {
+               Warnings =
+               {
+                   "Not logged in",
+               },
+           };
         }
     }
 }
