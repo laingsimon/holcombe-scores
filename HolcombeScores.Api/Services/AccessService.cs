@@ -366,7 +366,13 @@ namespace HolcombeScores.Api.Services
         private void SetToken(string token)
         {
             var response = _httpContextAccessor.HttpContext?.Response;
-            response?.Cookies.Append(CookieName, token);
+            var options = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddYears(1),
+            };
+            response?.Cookies.Append(CookieName, token, options);
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
