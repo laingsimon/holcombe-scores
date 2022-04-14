@@ -11,7 +11,7 @@ namespace HolcombeScores.Api.Controllers
     {
         private readonly ITeamService _teamService;
 
-        public PlayerController(ITeamService teamService)
+        public TeamController(ITeamService teamService)
         {
             _teamService = teamService;
         }
