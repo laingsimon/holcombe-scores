@@ -125,13 +125,18 @@ namespace HolcombeScores.Api.Services
         public async Task<bool> IsAdmin()
         {
             var access = await GetAccess();
-            return access?.Admin ?? false;
+            if (access == null)
+            {
+                return false;
+            }
+
+            return access.Admin && access.Revoked == null;
         }
 
         public async Task<bool> CanAccessTeam(Guid teamId)
         {
             var access = await GetAccess();
-            return access.Admin || access.TeamId == teamId;
+            return (access.Admin || access.TeamId == teamId) && access.Revoked == null;
         }
 
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto)
@@ -282,6 +287,11 @@ namespace HolcombeScores.Api.Services
                  return NotLoggedIn<AccessDto>();
              }
 
+             if (accessToUpdate.Revoked != null)
+             {
+                 return NotPermitted<AccessDto>("Unable to update revoked access");
+             }
+
              if (updated.UserId != accessToUpdate.UserId)
              {
                  if (!accessToUpdate.Admin)
@@ -333,6 +343,11 @@ namespace HolcombeScores.Api.Services
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
         {
+            if (access.Revoked != null)
+            {
+                return NotPermitted<AccessDto>("Unable to recover revoked access");
+            }
+
             var newToken = Guid.NewGuid().ToString();
             await _accessRepository.UpdateAccessToken(access.Token, newToken);
 
