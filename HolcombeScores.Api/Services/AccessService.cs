@@ -111,7 +111,7 @@ namespace HolcombeScores.Api.Services
         /// Get the access for the current HTTP request, return null if no access
         /// </summary>
         /// <returns></returns>
-        public async Task<Access> GetAccess()
+        public async Task<AccessDto> GetAccess()
         {
             var token = GetToken();
             if (token == null)
@@ -119,8 +119,7 @@ namespace HolcombeScores.Api.Services
                 return null;
             }
 
-            // TODO return a different object rather than the data object, expose IsAdmin and CanAccessTeam() and DefaultTeamId
-            return await _accessRepository.GetAccess(token);
+            return _accessDtoAdapter.Adapt(await _accessRepository.GetAccess(token));
         }
 
         public async Task<bool> IsAdmin()
