@@ -155,7 +155,6 @@ namespace HolcombeScores.Api.Services
             }
 
             var playerToTransfer = await _playerRepository.GetByNumber(transferDto.CurrentTeamId, transferDto.CurrentNumber);
-
             if (playerToTransfer == null)
             {
                 return new ActionResultDto<PlayerDto>
@@ -172,7 +171,7 @@ namespace HolcombeScores.Api.Services
             newPlayer.Number = transferDto.NewNumber ?? transferDto.CurrentNumber;
             newPlayer.TeamId = transferDto.NewTeamId;
 
-            if (await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number) == null)
+            if (await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number) != null)
             {
                 return new ActionResultDto<PlayerDto>
                 {
