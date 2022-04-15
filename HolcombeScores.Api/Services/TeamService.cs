@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using HolcombeScores.Api.Models;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
+using HolcombeScores.Models;
 
 namespace HolcombeScores.Api.Services
 {
