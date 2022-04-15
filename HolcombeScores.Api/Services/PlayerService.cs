@@ -108,7 +108,7 @@ namespace HolcombeScores.Api.Services
                 };
             }
 
-            await _playerRepository.DeletePlayer(existingPlayer);
+            await _playerRepository.DeletePlayer(existingPlayer.TeamId, existingPlayer.Number);
 
             return new ActionResultDto<PlayerDto>
             {
