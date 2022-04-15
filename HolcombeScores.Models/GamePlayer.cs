@@ -1,25 +1,22 @@
-﻿using System;
+using System;
 using Azure;
 using Azure.Data.Tables;
 
 namespace HolcombeScores.Models
 {
-    public class Game : ITableEntity
+    public class GamePlayer : ITableEntity
     {
         public Guid TeamId { get; set; }
-        public Guid Id { get; set; }
-        public string Opponent { get; set; }
-        public bool PlayingAtHome { get; set; }
-        public DateTime Date { get; set; }
-        public Goal[] Goals { get; set; }
+        public string Name { get; set; }
+        public int Number { get; set; }
+        public Guid GameId { get; set; }
 
         /// <summary>
-        /// TeamId
+        /// GameId
         /// </summary>
         public string PartitionKey { get; set; }
-
         /// <summary>
-        /// Id
+        /// (Player) Number
         /// </summary>
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
