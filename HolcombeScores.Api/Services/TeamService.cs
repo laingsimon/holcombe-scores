@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using HolcombeScores.Api.Models;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
+using HolcombeScores.Models;
 
 namespace HolcombeScores.Api.Services
 {
@@ -59,7 +61,7 @@ namespace HolcombeScores.Api.Services
             team.Id = Guid.NewGuid();
             await _teamRepository.CreateTeam(team);
 
-            return Success("Team created", team);
+            return Success("Team created", _teamDtoAdapter.Adapt(team));
         }
 
         public async Task<ActionResultDto<TeamDto>> UpdateTeam(TeamDto teamDto)
@@ -71,7 +73,7 @@ namespace HolcombeScores.Api.Services
 
             var updatedTeam = _teamDtoAdapter.Adapt(teamDto);
 
-            var existingTeam = (await GetTeamsMatching(t => t.Id == team.Id)).SingleOrDefault();
+            var existingTeam = (await GetTeamsMatching(t => t.Id == updatedTeam.Id)).SingleOrDefault();
 
             if (existingTeam == null)
             {
@@ -82,7 +84,7 @@ namespace HolcombeScores.Api.Services
             existingTeam.Coach = updatedTeam.Coach;
             await _teamRepository.UpdateTeam(existingTeam);
 
-            return Success("Team updated", existingTeam);
+            return Success("Team updated", _teamDtoAdapter.Adapt(existingTeam));
         }
 
         public async Task<ActionResultDto<TeamDto>> DeleteTeam(Guid id)
@@ -99,14 +101,14 @@ namespace HolcombeScores.Api.Services
                 return NotFound("Team not found");
             }
 
-            var playersToDelete = await _playerRepository.GetAllPlayers(teamToDelete.Id);
+            var playersToDelete = _playerRepository.GetAll(teamToDelete.Id);
             await foreach (var playerToDelete in playersToDelete)
             {
-                await _playerRepository.DeletePlayer(teamToDelete.Id, playerToDelete.Number)
+                await _playerRepository.DeletePlayer(teamToDelete.Id, playerToDelete.Number);
             }
 
-            await _teamRepository.DeleteTeam(teamToDelete);
-            return Success("Team and players deleted", teamToDelete);
+            await _teamRepository.DeleteTeam(teamToDelete.Id);
+            return Success("Team and players deleted", _teamDtoAdapter.Adapt(teamToDelete));
         }
 
         private static ActionResultDto<TeamDto> Success(string message, TeamDto outcome = null)
