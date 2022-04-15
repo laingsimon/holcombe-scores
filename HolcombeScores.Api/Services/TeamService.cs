@@ -53,11 +53,10 @@ namespace HolcombeScores.Api.Services
 
             if (existingTeams.Any())
             {
-                return NotSuccess("Team of exists with this name already");
+                return NotSuccess("Team exists with this name already");
             }
 
             team.Id = Guid.NewGuid();
-
             await _teamRepository.CreateTeam(team);
 
             return Success("Team created", team);
