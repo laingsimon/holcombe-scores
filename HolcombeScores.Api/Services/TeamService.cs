@@ -102,7 +102,7 @@ namespace HolcombeScores.Api.Services
             var playersToDelete = await _playerRepository.GetAllPlayers(teamToDelete.Id);
             await foreach (var playerToDelete in playersToDelete)
             {
-                await _playerRepository.DeletePlayer(teamToDelete.Id, playerToDelete.Number)
+                await _playerRepository.DeletePlayer(teamToDelete.Id, playerToDelete.Number);
             }
 
             await _teamRepository.DeleteTeam(teamToDelete);
