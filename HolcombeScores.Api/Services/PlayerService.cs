@@ -12,12 +12,18 @@ namespace HolcombeScores.Api.Services
         private readonly IPlayerRepository _playerRepository;
         private readonly IPlayerDtoAdapter _playerDtoAdapter;
         private readonly IAccessService _accessService;
+        private readonly ITeamRepository teamRepository;
 
-        public PlayerService(IPlayerRepository playerRepository, IPlayerDtoAdapter playerDtoAdapter, IAccessService accessService)
+        public PlayerService(
+            IPlayerRepository playerRepository,
+            IPlayerDtoAdapter playerDtoAdapter,
+            IAccessService accessService,
+            ITeamRepository teamRepository)
         {
             _playerRepository = playerRepository;
             _playerDtoAdapter = playerDtoAdapter;
             _accessService = accessService;
+            _teamRepository = teamRepository;
         }
 
         public async IAsyncEnumerable<PlayerDto> GetAllPlayers()
@@ -118,6 +124,79 @@ namespace HolcombeScores.Api.Services
                     "Player deleted"
                 },
                 Outcome = _playerDtoAdapter.Adapt(existingPlayer),
+            };
+        }
+
+        public async Task<ActionResultDto<PlayerDto>> TransferPlayer(TransferPlayerDto transferDto)
+        {
+            if (!await _accessService.CanAccessTeam(transferDto.CurrentTeamId))
+            {
+                return new ActionResultDto<PlayerDto>
+                {
+                    Success = false,
+                    Errors =
+                    {
+                        "Cannot access team"
+                    },
+                };
+            }
+
+            var newTeam = await _teamRepository.Get(transferDto.NewTeamId);
+            if (newTeam == null)
+            {
+                return new ActionResultDto<PlayerDto>
+                {
+                    Success = false,
+                    Errors =
+                    {
+                        "New team not found"
+                    },
+                };
+            }
+
+            var playerToTransfer = await _playerRepository.GetByNumber(player.CurrentTeamId, player.CurrentNumber);
+
+            if (playerToTransfer == null)
+            {
+                return new ActionResultDto<PlayerDto>
+                {
+                    Success = false,
+                    Warnings =
+                    {
+                        "Player not found"
+                    },
+                };
+            }
+
+            var newNumber = transferDto.NewNumber ?? transferDto.CurrentNumber;
+            var newPlayer = _playerDtoAdapter.Adapt(playerToTransfer);
+            newPlayer.Number = newNumber;
+            newPlayer.TeamId = transferDto.NewTeamId;
+            var transferredPlayer = await _playerRepository.GetByNumber(transferDto.NewTeamId, newNumber);
+
+            if (transferredPlayer == null)
+            {
+                return new ActionResultDto<PlayerDto>
+                {
+                    Success = false,
+                    Warnings =
+                    {
+                        $"Player already exists with this number in team {newTeam.Name}"
+                    },
+                };
+            }
+
+            await _playerRepository.CreatePlayer(newPlayer);
+            await _playerRepository.DeletePlayer(transferDto.CurrentTeamId, transferDto.CurrentNumber);
+
+            return new ActionResultDto<PlayerDto>
+            {
+                Success = true,
+                Warnings =
+                {
+                    $"Player transferred to {newTeam.Name}"
+                },
+                Outcome = _playerDtoAdapter.Adapt(newPlayer),
             };
         }
 
