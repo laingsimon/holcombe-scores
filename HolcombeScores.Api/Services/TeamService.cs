@@ -101,7 +101,7 @@ namespace HolcombeScores.Api.Services
                 return NotFound("Team not found");
             }
 
-            var playersToDelete = await _playerRepository.GetAll(teamToDelete.Id);
+            var playersToDelete = _playerRepository.GetAll(teamToDelete.Id);
             await foreach (var playerToDelete in playersToDelete)
             {
                 await _playerRepository.DeletePlayer(teamToDelete.Id, playerToDelete.Number);
