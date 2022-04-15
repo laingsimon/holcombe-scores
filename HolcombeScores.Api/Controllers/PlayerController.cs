@@ -33,5 +33,11 @@ namespace HolcombeScores.Api.Controllers
         {
             return await _playerService.DeletePlayer(player);
         }
+
+        [HttpPost("/api/Player/Transfer")]
+        public async Task<ActionResultDto<PlayerDto>> Delete(TransferPlayerDto transferDto)
+        {
+            return await _playerService.TransferPlayer(transferDto);
+        }
     }
 }
