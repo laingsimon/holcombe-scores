@@ -20,5 +20,20 @@ namespace HolcombeScores.Api.Repositories
         {
             return _teamTableClient.QueryAsync<Team>();
         }
+
+        public async Task CreateTeam(Team team)
+        {
+            await _teamTableClient.AddEntityAsync(team);
+        }
+
+        public async Task UpdateTeam(Team team)
+        {
+            await _teamTableClient.UpdateEntityAsync(team, team.ETag);
+        }
+
+        public async Task DeleteTeam(Guid id)
+        {
+            await _teamTableClient.DeleteEntityAsync(id.ToString(), id.ToString());
+        }
     }
 }

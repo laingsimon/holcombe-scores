@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HolcombeScores.Api.Models;
@@ -20,6 +21,24 @@ namespace HolcombeScores.Api.Controllers
         public IAsyncEnumerable<TeamDto> List()
         {
             return _teamService.GetAllTeams();
+        }
+
+        [HttpPost("/api/Team")]
+        public async Task<ActionResultDto<TeamDto>> Create(TeamDto teamDto)
+        {
+            return await _teamService.CreateTeam(teamDto);
+        }
+
+        [HttpPatch("/api/Team")]
+        public async Task<ActionResultDto<TeamDto>> Update(TeamDto teamDto)
+        {
+            return await _teamService.UpdateTeam(teamDto);
+        }
+
+        [HttpDelete("/api/Team/{id}")]
+        public async Task<ActionResultDto<TeamDto>> Create(Guid id)
+        {
+            return await _teamService.DeleteTeam(id);
         }
     }
 }

@@ -11,5 +11,6 @@ namespace HolcombeScores.Api.Repositories
         Task<Player> GetByNumber(Guid? teamId, int number);
         Task AddPlayer(Player player);
         Task UpdatePlayer(Guid teamId, int playerNumber, string playerName);
+        Task DeletePlayer(Guid teamId, int playerNumber);
     }
 }
