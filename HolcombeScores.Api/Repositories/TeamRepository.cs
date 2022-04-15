@@ -28,7 +28,7 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task UpdateTeam(Team team)
         {
-            await _teamTableClient.UpdateEntityAsync(team);
+            await _teamTableClient.UpdateEntityAsync(team, team.ETag);
         }
 
         public async Task DeleteTeam(Guid id)
