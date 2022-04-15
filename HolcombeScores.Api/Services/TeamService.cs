@@ -42,13 +42,7 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<TeamDto>> CreateTeam(TeamDto teamDto)
         {
-            var access = await _accessService.GetAccess();
-            if (access == null || access.Revoked != null)
-            {
-                return NotAnAdmin();
-            }
-
-            if (!access.Admin)
+            if (!await _accessService.IsAdmin())
             {
                 return NotAnAdmin();
             }
