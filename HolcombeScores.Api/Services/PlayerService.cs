@@ -46,14 +46,7 @@ namespace HolcombeScores.Api.Services
 
             if (!await _accessService.CanAccessTeam(playerDto.TeamId))
             {
-                return new ActionResultDto<PlayerDto>
-                {
-                    Success = false,
-                    Errors =
-                    {
-                        "Cannot access team"
-                    },
-                };
+                return CannotAccessTeam();
             }
 
             var existingPlayer = await _playerRepository.GetByNumber(player.TeamId, player.Number);
@@ -61,27 +54,11 @@ namespace HolcombeScores.Api.Services
             if (existingPlayer == null)
             {
                 await _playerRepository.AddPlayer(player);
-                return new ActionResultDto<PlayerDto>
-                {
-                    Success = true,
-                    Messages =
-                    {
-                        "Player created"
-                    },
-                    Outcome = await GetPlayerDto(player.TeamId, player.Number),
-                };
+                return Success("Player created", await GetPlayerDto(player.TeamId, player.Number));
             }
 
             await _playerRepository.UpdatePlayer(player.TeamId, player.Number, player.Name);
-            return new ActionResultDto<PlayerDto>
-            {
-                Success = true,
-                Messages =
-                {
-                    "Player updated"
-                },
-                Outcome = await GetPlayerDto(player.TeamId, player.Number),
-            };
+            return Success("Player updated", await GetPlayerDto(player.TeamId, player.Number));
         }
 
         public async Task<ActionResultDto<PlayerDto>> DeletePlayer(PlayerDto playerDto)
@@ -90,14 +67,7 @@ namespace HolcombeScores.Api.Services
 
             if (!await _accessService.CanAccessTeam(playerDto.TeamId))
             {
-                return new ActionResultDto<PlayerDto>
-                {
-                    Success = false,
-                    Errors =
-                    {
-                        "Cannot access team"
-                    },
-                };
+                return CannotAccessTeam();
             }
 
             var existingPlayer = await _playerRepository.GetByNumber(player.TeamId, player.Number);
@@ -116,29 +86,14 @@ namespace HolcombeScores.Api.Services
 
             await _playerRepository.DeletePlayer(existingPlayer.TeamId, existingPlayer.Number);
 
-            return new ActionResultDto<PlayerDto>
-            {
-                Success = true,
-                Warnings =
-                {
-                    "Player deleted"
-                },
-                Outcome = _playerDtoAdapter.Adapt(existingPlayer),
-            };
+            return Success("Player deleted", _playerDtoAdapter.Adapt(existingPlayer));
         }
 
         public async Task<ActionResultDto<PlayerDto>> TransferPlayer(TransferPlayerDto transferDto)
         {
             if (!await _accessService.CanAccessTeam(transferDto.CurrentTeamId))
             {
-                return new ActionResultDto<PlayerDto>
-                {
-                    Success = false,
-                    Errors =
-                    {
-                        "Cannot access team"
-                    },
-                };
+                return CannotAccessTeam();
             }
 
             var newTeam = await _teamRepository.Get(transferDto.NewTeamId);
@@ -186,21 +141,38 @@ namespace HolcombeScores.Api.Services
             await _playerRepository.AddPlayer(newPlayer);
             await _playerRepository.DeletePlayer(transferDto.CurrentTeamId, transferDto.CurrentNumber);
 
-            return new ActionResultDto<PlayerDto>
-            {
-                Success = true,
-                Warnings =
-                {
-                    $"Player transferred to {newTeam.Name}",
-                },
-                Outcome = _playerDtoAdapter.Adapt(newPlayer),
-            };
+            return Success($"Player transferred to {newTeam.Name}", _playerDtoAdapter.Adapt(newPlayer));
         }
 
         private async Task<PlayerDto> GetPlayerDto(Guid teamId, int number)
         {
             var existingPlayer = await _playerRepository.GetByNumber(teamId, number);
             return _playerDtoAdapter.Adapt(existingPlayer);
+        }
+
+        private static ActionResultDto<PlayerDto> CannotAccessTeam()
+        {
+            return new ActionResultDto<PlayerDto>
+            {
+                Success = false,
+                Errors =
+                {
+                    "Cannot access team"
+                },
+            };
+        }
+
+        private static ActionResultDto<PlayerDto> Success(string message, PlayerDto outcome = null)
+        {
+            return new ActionResultDto<PlayerDto>
+            {
+                Success = true,
+                Messages =
+                {
+                    message,
+                },
+                Outcome = outcome,
+            };
         }
     }
 }
