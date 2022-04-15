@@ -78,11 +78,35 @@ namespace HolcombeScores.Api.Services
                 return NotFound("Team not found");
             }
 
-            team.Name = updatedTeam.Name;
-            team.Coach = updatedTeam.Coach;
-            await _teamRepository.UpdateTeam(team);
+            existingTeam.Name = updatedTeam.Name;
+            existingTeam.Coach = updatedTeam.Coach;
+            await _teamRepository.UpdateTeam(existingTeam);
 
-            return Success("Team updated", team);
+            return Success("Team updated", existingTeam);
+        }
+
+        public async Task<ActionResultDto<TeamDto>> DeleteTeam(Guid id)
+        {
+            if (!await _accessService.IsAdmin())
+            {
+                return NotAnAdmin();
+            }
+
+            var teamToDelete = (await GetTeamsMatching(t => t.Id == id)).SingleOrDefault();
+
+            if (teamToDelete == null)
+            {
+                return NotFound("Team not found");
+            }
+
+            var playersToDelete = await _playerRepository.GetAllPlayers(teamToDelete.Id);
+            await foreach (var playerToDelete in playersToDelete)
+            {
+                await _playerRepository.DeletePlayer(teamToDelete.Id, playerToDelete.Number)
+            }
+
+            await _teamRepository.DeleteTeam(teamToDelete);
+            return Success("Team and players deleted", teamToDelete);
         }
 
         private static ActionResultDto<TeamDto> Success(string message, TeamDto outcome = null)
