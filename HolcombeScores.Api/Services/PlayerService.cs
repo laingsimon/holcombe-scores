@@ -78,6 +78,49 @@ namespace HolcombeScores.Api.Services
             };
         }
 
+        public async Task<ActionResultDto<PlayerDto>> DeletePlayer(PlayerDto playerDto)
+        {
+            var player = _playerDtoAdapter.Adapt(playerDto);
+
+            if (!await _accessService.CanAccessTeam(playerDto.TeamId))
+            {
+                return new ActionResultDto<PlayerDto>
+                {
+                    Success = false,
+                    Errors =
+                    {
+                        "Cannot access team"
+                    },
+                };
+            }
+
+            var existingPlayer = await _playerRepository.GetByNumber(player.TeamId, player.Number);
+
+            if (existingPlayer == null)
+            {
+                return new ActionResultDto<PlayerDto>
+                {
+                    Success = false,
+                    Warnings =
+                    {
+                        "Player not found"
+                    },
+                };
+            }
+
+            await _playerRepository.DeletePlayer(existingPlayer.TeamId, existingPlayer.Number);
+
+            return new ActionResultDto<PlayerDto>
+            {
+                Success = true,
+                Warnings =
+                {
+                    "Player deleted"
+                },
+                Outcome = _playerDtoAdapter.Adapt(existingPlayer),
+            };
+        }
+
         private async Task<PlayerDto> GetPlayerDto(Guid teamId, int number)
         {
             var existingPlayer = await _playerRepository.GetByNumber(teamId, number);

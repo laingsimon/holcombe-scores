@@ -23,6 +23,9 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task CreateTeam(Team team)
         {
+            team.ETag = ETag.All;
+            team.RowKey = team.Id.ToString();
+            team.PartitionKey = team.Id.ToString();
             await _teamTableClient.AddEntityAsync(team);
         }
 

@@ -27,5 +27,11 @@ namespace HolcombeScores.Api.Controllers
         {
             return await _playerService.CreateOrUpdatePlayer(player);
         }
+
+        [HttpDelete("/api/Player")]
+        public async Task<ActionResultDto<PlayerDto>> Delete(PlayerDto player)
+        {
+            return await _playerService.DeletePlayer(player);
+        }
     }
 }

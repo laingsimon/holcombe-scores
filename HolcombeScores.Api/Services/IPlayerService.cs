@@ -8,5 +8,6 @@ namespace HolcombeScores.Api.Services
     {
         Task<ActionResultDto<PlayerDto>> CreateOrUpdatePlayer(PlayerDto player);
         IAsyncEnumerable<PlayerDto> GetAllPlayers();
+        Task<ActionResultDto<PlayerDto>> DeletePlayer(PlayerDto player);
     }
 }
