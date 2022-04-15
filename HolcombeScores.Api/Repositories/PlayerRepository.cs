@@ -57,10 +57,10 @@ namespace HolcombeScores.Api.Repositories
 
             if (player == null)
             {
-                return null;
+                return;
             }
 
-            await _playerTableClient.DeleteEntityAsync(player, player.ETag);
+            await _playerTableClient.DeleteEntityAsync(player.PartitionKey, player.RowKey);
         }
     }
 }
