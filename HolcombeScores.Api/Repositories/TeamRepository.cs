@@ -23,7 +23,7 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task CreateTeam(Team team)
         {
-            await _teamTableClient.InsertEntityAsync(team);
+            await _teamTableClient.AddEntityAsync(team);
         }
 
         public async Task UpdateTeam(Team team)
