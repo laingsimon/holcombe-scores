@@ -8,6 +8,7 @@ namespace HolcombeScores.Api.Repositories
     public interface ITeamRepository
     {
         IAsyncEnumerable<Team> GetAll();
+        Task<Team> Get(Guid teamId);
         Task CreateTeam(Team team);
         Task UpdateTeam(Team team);
         Task DeleteTeam(Guid id);

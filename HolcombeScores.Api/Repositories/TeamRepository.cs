@@ -21,6 +21,11 @@ namespace HolcombeScores.Api.Repositories
             return _teamTableClient.QueryAsync<Team>();
         }
 
+        public async Task<Team> Get(Guid teamId)
+        {
+            return await _teamTableClient.GetEntityAsync<Team>(teamId.ToString(), teamId.ToString());
+        }
+
         public async Task CreateTeam(Team team)
         {
             team.ETag = ETag.All;
