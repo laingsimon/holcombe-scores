@@ -168,12 +168,11 @@ namespace HolcombeScores.Api.Services
                 };
             }
 
-            var newPlayer = _playerDtoAdapter.Adapt(playerToTransfer);
+            var newPlayer = await _playerRepository.GetByNumber(transferDto.CurrentTeamId, transferDto.CurrentNumber);
             newPlayer.Number = transferDto.NewNumber ?? transferDto.CurrentNumber;
             newPlayer.TeamId = transferDto.NewTeamId;
-            var transferredPlayer = await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number);
 
-            if (transferredPlayer == null)
+            if (await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number) == null)
             {
                 return new ActionResultDto<PlayerDto>
                 {
