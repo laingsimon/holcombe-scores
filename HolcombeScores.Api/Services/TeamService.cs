@@ -49,7 +49,7 @@ namespace HolcombeScores.Api.Services
 
             var team = _teamDtoAdapter.Adapt(teamDto);
 
-            var existingTeams = await GetTeamsMatching(t => t.Name == team.Name).ToArray();
+            var existingTeams = (await GetTeamsMatching(t => t.Name == team.Name)).ToArray();
 
             if (existingTeams.Any())
             {
@@ -60,6 +60,29 @@ namespace HolcombeScores.Api.Services
             await _teamRepository.CreateTeam(team);
 
             return Success("Team created", team);
+        }
+
+        public async Task<ActionResultDto<TeamDto>> UpdateTeam(TeamDto teamDto)
+        {
+            if (!await _accessService.IsAdmin())
+            {
+                return NotAnAdmin();
+            }
+
+            var updatedTeam = _teamDtoAdapter.Adapt(teamDto);
+
+            var existingTeam = (await GetTeamsMatching(t => t.Id == team.Id)).SingleOrDefault();
+
+            if (existingTeam == null)
+            {
+                return NotFound("Team not found");
+            }
+
+            team.Name = updatedTeam.Name;
+            team.Coach = updatedTeam.Coach;
+            await _teamRepository.UpdateTeam(team);
+
+            return Success("Team updated", team);
         }
 
         private static ActionResultDto<TeamDto> Success(string message, TeamDto outcome = null)
