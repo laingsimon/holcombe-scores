@@ -12,7 +12,7 @@ namespace HolcombeScores.Api.Services
         private readonly IPlayerRepository _playerRepository;
         private readonly IPlayerDtoAdapter _playerDtoAdapter;
         private readonly IAccessService _accessService;
-        private readonly ITeamRepository teamRepository;
+        private readonly ITeamRepository _teamRepository;
 
         public PlayerService(
             IPlayerRepository playerRepository,
@@ -154,7 +154,7 @@ namespace HolcombeScores.Api.Services
                 };
             }
 
-            var playerToTransfer = await _playerRepository.GetByNumber(player.CurrentTeamId, player.CurrentNumber);
+            var playerToTransfer = await _playerRepository.GetByNumber(transferDto.CurrentTeamId, transferDto.CurrentNumber);
 
             if (playerToTransfer == null)
             {
@@ -163,16 +163,15 @@ namespace HolcombeScores.Api.Services
                     Success = false,
                     Warnings =
                     {
-                        "Player not found"
+                        "Player not found",
                     },
                 };
             }
 
-            var newNumber = transferDto.NewNumber ?? transferDto.CurrentNumber;
             var newPlayer = _playerDtoAdapter.Adapt(playerToTransfer);
-            newPlayer.Number = newNumber;
+            newPlayer.Number = transferDto.NewNumber ?? transferDto.CurrentNumber;
             newPlayer.TeamId = transferDto.NewTeamId;
-            var transferredPlayer = await _playerRepository.GetByNumber(transferDto.NewTeamId, newNumber);
+            var transferredPlayer = await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number);
 
             if (transferredPlayer == null)
             {
@@ -181,12 +180,12 @@ namespace HolcombeScores.Api.Services
                     Success = false,
                     Warnings =
                     {
-                        $"Player already exists with this number in team {newTeam.Name}"
+                        $"Player already exists with this number in team {newTeam.Name}",
                     },
                 };
             }
 
-            await _playerRepository.CreatePlayer(newPlayer);
+            await _playerRepository.AddPlayer(newPlayer);
             await _playerRepository.DeletePlayer(transferDto.CurrentTeamId, transferDto.CurrentNumber);
 
             return new ActionResultDto<PlayerDto>
@@ -194,7 +193,7 @@ namespace HolcombeScores.Api.Services
                 Success = true,
                 Warnings =
                 {
-                    $"Player transferred to {newTeam.Name}"
+                    $"Player transferred to {newTeam.Name}",
                 },
                 Outcome = _playerDtoAdapter.Adapt(newPlayer),
             };
