@@ -59,6 +59,9 @@ namespace HolcombeScores.Api.Services
             }
 
             team.Id = Guid.NewGuid();
+            team.PartitionKey = team.Id.ToString();
+            team.RowKey = team.Id.ToString();
+            team.ETag = ETag.All;
             await _teamRepository.CreateTeam(team);
 
             return Success("Team created", _teamDtoAdapter.Adapt(team));
