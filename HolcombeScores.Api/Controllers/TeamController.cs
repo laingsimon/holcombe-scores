@@ -21,5 +21,23 @@ namespace HolcombeScores.Api.Controllers
         {
             return _teamService.GetAllTeams();
         }
+
+        [HttpPost("/api/Team")]
+        public async Task<ActionResultDto<TeamDto>> Create(TeamDto teamDto)
+        {
+            return await _teamService.CreateTeam(teamDto);
+        }
+
+        [HttpPatch("/api/Team")]
+        public async Task<ActionResultDto<TeamDto>> Update(TeamDto teamDto)
+        {
+            return await _teamService.UpdateTeam(teamDto);
+        }
+
+        [HttpDelete("/api/Team/{id}")]
+        public async Task<ActionResultDto<TeamDto>> Create(Guid id)
+        {
+            return await _teamService.DeleteTeam(id);
+        }
     }
 }
