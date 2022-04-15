@@ -107,7 +107,7 @@ namespace HolcombeScores.Api.Services
                 await _playerRepository.DeletePlayer(teamToDelete.Id, playerToDelete.Number);
             }
 
-            await _teamRepository.DeleteTeam(teamToDelete);
+            await _teamRepository.DeleteTeam(teamToDelete.Id);
             return Success("Team and players deleted", _teamDtoAdapter.Adapt(teamToDelete));
         }
 
