@@ -51,7 +51,7 @@ namespace HolcombeScores.Api.Repositories
             await _playerTableClient.UpdateEntityAsync(player, player.ETag);
         }
 
-        public async Task DeletePlayer(Guid teamId, int playerNumber, string playerName)
+        public async Task DeletePlayer(Guid teamId, int playerNumber)
         {
             var player = await GetByNumber(teamId, playerNumber);
 
