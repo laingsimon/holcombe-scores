@@ -74,14 +74,7 @@ namespace HolcombeScores.Api.Services
 
             if (existingPlayer == null)
             {
-                return new ActionResultDto<PlayerDto>
-                {
-                    Success = false,
-                    Warnings =
-                    {
-                        "Player not found"
-                    },
-                };
+                return NotFound("Player not found");
             }
 
             await _playerRepository.DeletePlayer(existingPlayer.TeamId, existingPlayer.Number);
@@ -99,27 +92,13 @@ namespace HolcombeScores.Api.Services
             var newTeam = await _teamRepository.Get(transferDto.NewTeamId);
             if (newTeam == null)
             {
-                return new ActionResultDto<PlayerDto>
-                {
-                    Success = false,
-                    Errors =
-                    {
-                        "New team not found"
-                    },
-                };
+                return NotFound("New team not found");
             }
 
             var playerToTransfer = await _playerRepository.GetByNumber(transferDto.CurrentTeamId, transferDto.CurrentNumber);
             if (playerToTransfer == null)
             {
-                return new ActionResultDto<PlayerDto>
-                {
-                    Success = false,
-                    Warnings =
-                    {
-                        "Player not found",
-                    },
-                };
+                return NotFound("Player not found");
             }
 
             var newPlayer = await _playerRepository.GetByNumber(transferDto.CurrentTeamId, transferDto.CurrentNumber);
@@ -128,14 +107,7 @@ namespace HolcombeScores.Api.Services
 
             if (await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number) != null)
             {
-                return new ActionResultDto<PlayerDto>
-                {
-                    Success = false,
-                    Warnings =
-                    {
-                        $"Player already exists with this number in team {newTeam.Name}",
-                    },
-                };
+                return NotSuccess($"Player already exists with this number in team {newTeam.Name}");
             }
 
             await _playerRepository.AddPlayer(newPlayer);
@@ -158,6 +130,31 @@ namespace HolcombeScores.Api.Services
                 Errors =
                 {
                     "Cannot access team"
+                },
+            };
+        }
+
+        private static ActionResultDto<PlayerDto> NotSuccess (string message)
+        {
+            return new ActionResultDto<PlayerDto>
+            {
+                Success = false,
+                Errors =
+                {
+                    message,
+                },
+            };
+        }
+
+
+        private static ActionResultDto<PlayerDto> NotFound(string message)
+        {
+            return new ActionResultDto<PlayerDto>
+            {
+                Success = false,
+                Errors =
+                {
+                    message,
                 },
             };
         }
