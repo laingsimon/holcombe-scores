@@ -55,7 +55,7 @@ namespace HolcombeScores.Api.Repositories
             return players;
         }
 
-        public async Task<IEnumerable<Goal>> GetPlayers(Guid gameId)
+        public async Task<IEnumerable<Goal>> GetGoals(Guid gameId)
         {
             var goals = new List<Goal>();
             await foreach (var goal in _goalTableClient.QueryAsync<Goal>(g => g.GameId == gameId))
