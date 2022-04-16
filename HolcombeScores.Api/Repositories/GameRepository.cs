@@ -42,7 +42,7 @@ namespace HolcombeScores.Api.Repositories
             await _gameTableClient.AddEntityAsync(game);
         }
 
-        public Task<IEnumerable<GamePlayer>> GetPlayers(Guid gameId)
+        public async Task<IEnumerable<GamePlayer>> GetPlayers(Guid gameId)
         {
             var players = new List<GamePlayer>();
             await foreach (var gamePlayer in _gameTableClient.QueryAsync<Game>(g => g.Id == gameId))
