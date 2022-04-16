@@ -30,10 +30,13 @@ namespace HolcombeScores.Api.Repositories
 
         public TableClient CreateTableClient(string tableName)
         {
-            return new TableClient(
+            var client = new TableClient(
                 _storageUri,
                 tableName,
                 new TableSharedKeyCredential(_accountName, _accountKey));
+
+            client.CreateIfNotExists();
+            return client;
         }
 
         private static Uri GetAzureStorageUri(string uriTemplate, string accountName)

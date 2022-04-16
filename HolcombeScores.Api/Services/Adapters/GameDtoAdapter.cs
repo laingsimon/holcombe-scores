@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using HolcombeScores.Api.Models;
 using HolcombeScores.Models;
@@ -8,11 +9,13 @@ namespace HolcombeScores.Api.Services.Adapters
     {
         private readonly IGoalDtoAdapter _goalAdapter;
         private readonly IPlayerDtoAdapter _playerAdapter;
+        private readonly IGamePlayerDtoAdapter _gamePlayerAdapter;
 
-        public GameDtoAdapter(IGoalDtoAdapter goalAdapter, IPlayerDtoAdapter playerAdapter)
+        public GameDtoAdapter(IGoalDtoAdapter goalAdapter, IPlayerDtoAdapter playerAdapter, IGamePlayerDtoAdapter gamePlayerAdapter)
         {
             _goalAdapter = goalAdapter;
             _playerAdapter = playerAdapter;
+            _gamePlayerAdapter = gamePlayerAdapter;
         }
 
         public GameDto Adapt(Game game, IEnumerable<GamePlayer> squad)
@@ -29,7 +32,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Goals = game.Goals.Select(_goalAdapter.Adapt).ToArray(),
                 Id = game.Id,
                 Opponent = game.Opponent,
-                Squad = squad.Select(_playerAdapter.Adapt).ToArray(),
+                Squad = squad.Select(_gamePlayerAdapter.Adapt).ToArray(),
                 PlayingAtHome = game.PlayingAtHome,
             };
         }

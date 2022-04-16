@@ -17,21 +17,21 @@ namespace HolcombeScores.Api.Services.Adapters
             _playerRepository = playerRepository;
         }
 
-        public async Task<Game> AdaptToGame(NewGameDto newGameDto, ActionResultDto<GameDto> actionResult)
+        public Task<Game> AdaptToGame(NewGameDto newGameDto, ActionResultDto<GameDto> actionResult)
         {
             if (newGameDto == null)
             {
-                return null;
+                return Task.FromResult<Game>(null);
             }
 
-            return new Game
+            return Task.FromResult(new Game
             {
                 Date = newGameDto.Date ?? DateTime.Today,
                 Goals = Array.Empty<Goal>(),
                 Id = Guid.NewGuid(),
                 Opponent = newGameDto.Opponent,
                 PlayingAtHome = newGameDto.PlayingAtHome,
-            };
+            });
         }
 
         public async IAsyncEnumerable<GamePlayer> AdaptSquad(NewGameDto newGameDto, Guid gameId, ActionResultDto<GameDto> actionResult)
@@ -48,9 +48,9 @@ namespace HolcombeScores.Api.Services.Adapters
                 {
                     yield return new GamePlayer
                     {
-                        Number = player.Number,
-                        TeamId = player.TeamId,
-                        Name = player.Name,
+                        Number = knownPlayer.Number,
+                        TeamId = knownPlayer.TeamId,
+                        Name = knownPlayer.Name,
                         GameId = gameId,
                     };
                     continue;
