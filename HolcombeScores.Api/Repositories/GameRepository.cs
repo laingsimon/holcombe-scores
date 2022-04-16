@@ -10,10 +10,12 @@ namespace HolcombeScores.Api.Repositories
     public class GameRepository : IGameRepository
     {
         private readonly TableClient _gameTableClient;
+        private readonly TableClient _gamePlayerTableClient;
 
         public GameRepository(ITableServiceClientFactory tableServiceClientFactory)
         {
             _gameTableClient = tableServiceClientFactory.CreateTableClient("Game");
+            _gamePlayerTableClient = tableServiceClientFactory.CreateTableClient("GamePlayer"); 
         }
 
         public IAsyncEnumerable<Game> GetAll(Guid? teamId)
@@ -42,6 +44,22 @@ namespace HolcombeScores.Api.Repositories
 
         public Task<IEnumerable<GamePlayer>> GetPlayers(Guid gameId)
         {
+            var players = new List<GamePlayer>();
+            await foreach (var gamePlayer in _gameTableClient.QueryAsync<Game>(g => g.GameId == gameId))
+            {
+                players.Add(gamePlayer);
+            }
+
+            return players;
+        }
+
+        public async Task AddGamePlayer(GamePlayer gamePlayer)
+        {
+            gamePlayer.PartitionKey = gamePlayer.GameId.ToString();
+            gamePlayer.RowKey = gamePlayer.Number.ToString();
+            gamePlayer.ETag = ETag.All;
+
+            await _gameTableClient.AddEntityAsync(gamePlayer);
         }
     }
 }
