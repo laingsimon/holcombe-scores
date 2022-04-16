@@ -35,7 +35,7 @@ namespace HolcombeScores.Api.Repositories
                 tableName,
                 new TableSharedKeyCredential(_accountName, _accountKey));
 
-            await client.CreateIfNotExists();
+            client.CreateIfNotExists().Wait();
             return client;
         }
 
