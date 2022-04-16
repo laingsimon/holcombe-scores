@@ -39,5 +39,9 @@ namespace HolcombeScores.Api.Repositories
 
             await _gameTableClient.AddEntityAsync(game);
         }
+
+        public Task<IEnumerable<GamePlayer>> GetPlayers(Guid gameId)
+        {
+        }
     }
 }
