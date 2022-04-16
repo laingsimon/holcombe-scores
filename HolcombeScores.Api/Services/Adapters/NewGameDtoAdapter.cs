@@ -34,12 +34,7 @@ namespace HolcombeScores.Api.Services.Adapters
             };
         }
 
-        public async Task<IEnumerable<GamePlayer>> AdaptToSquad(NewGameDto newGameDto, Guid gameId, ActionResultDto<GameDto> actionResult)
-        {
-            return await ToArray(AdaptSquad(newGameDto, gameId, actionResult));
-        }
-
-        private async IAsyncEnumerable<GamePlayer> AdaptSquad(NewGameDto newGameDto, Guid gameId, ActionResultDto<GameDto> actionResult)
+        public async IAsyncEnumerable<GamePlayer> AdaptSquad(NewGameDto newGameDto, Guid gameId, ActionResultDto<GameDto> actionResult)
         {
             var knownPlayersLookup = new Dictionary<string, Player>();
             await foreach (var player in _playerRepository.GetAll(newGameDto.TeamId))
@@ -63,18 +58,6 @@ namespace HolcombeScores.Api.Services.Adapters
 
                 actionResult.Warnings.Add($"Player not found: `{player}`");
             }
-        }
-
-        private static async Task<T[]> ToArray<T>(IAsyncEnumerable<T> asyncEnumerable)
-        {
-            var list = new List<T>();
-
-            await foreach (var item in asyncEnumerable)
-            {
-                list.Add(item);
-            }
-
-            return list.ToArray(); // TODO Improve this, don't convert a list to an array, it copies the memory around.
         }
     }
 }
