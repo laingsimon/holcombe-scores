@@ -15,7 +15,7 @@ namespace HolcombeScores.Api.Services.Adapters
             _playerAdapter = playerAdapter;
         }
 
-        public GameDto Adapt(Game game)
+        public GameDto Adapt(Game game, IEnumerable<GamePlayer> squad)
         {
             if (game == null)
             {
@@ -29,7 +29,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Goals = game.Goals.Select(_goalAdapter.Adapt).ToArray(),
                 Id = game.Id,
                 Opponent = game.Opponent,
-                Squad = game.Squad.Select(_playerAdapter.Adapt).ToArray(),
+                Squad = squad.Select(_playerAdapter.Adapt).ToArray(),
                 PlayingAtHome = game.PlayingAtHome,
             };
         }
@@ -47,7 +47,6 @@ namespace HolcombeScores.Api.Services.Adapters
                 Goals = game.Goals.Select(_goalAdapter.Adapt).ToArray(),
                 Id = game.Id,
                 Opponent = game.Opponent,
-                Squad = game.Squad.Select(_playerAdapter.Adapt).ToArray(),
                 PlayingAtHome = game.PlayingAtHome,
                 TeamId = game.TeamId,
             };
