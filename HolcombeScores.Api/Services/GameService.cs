@@ -36,7 +36,8 @@ namespace HolcombeScores.Api.Services
 
             await foreach (var game in _gameRepository.GetAll(access.Admin ? null : access.TeamId))
             {
-                yield return _gameDtoAdapter.Adapt(game);
+                var gamePlayers = await _gameRepository.GetPlayers(game.Id);
+                yield return _gameDtoAdapter.Adapt(game, gamePlayers);
             }
         }
 
@@ -54,7 +55,8 @@ namespace HolcombeScores.Api.Services
                 return null;
             }
 
-            return _gameDtoAdapter.Adapt(game);
+            var gamePlayers = await _gameRepository.GetPlayers(game.Id);
+            return _gameDtoAdapter.Adapt(game, gamePlayers);
         }
 
         public async Task<ActionResultDto<GameDto>> CreateGame(NewGameDto newGameDto)
