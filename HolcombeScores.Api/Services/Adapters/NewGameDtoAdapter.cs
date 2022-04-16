@@ -30,12 +30,16 @@ namespace HolcombeScores.Api.Services.Adapters
                 Goals = Array.Empty<Goal>(),
                 Id = Guid.NewGuid(),
                 Opponent = newGameDto.Opponent,
-                Squad = await ToArray(AdaptSquad(newGameDto, actionResult)),
                 PlayingAtHome = newGameDto.PlayingAtHome,
             };
         }
 
-        private async IAsyncEnumerable<Player> AdaptSquad(NewGameDto newGameDto, ActionResultDto<GameDto> actionResult)
+        public async Task<IEnumerable<GamePlayer>> AdaptToSquad(NewGameDto newGameDto, Guid gameId, ActionResultDto<GameDto> actionResult)
+        {
+            return await ToArray(AdaptSquad(newGameDto, gameId, actionResult));
+        }
+
+        private async IAsyncEnumerable<GamePlayer> AdaptSquad(NewGameDto newGameDto, Guid gameId, ActionResultDto<GameDto> actionResult)
         {
             var knownPlayersLookup = new Dictionary<string, Player>();
             await foreach (var player in _playerRepository.GetAll(newGameDto.TeamId))
@@ -47,7 +51,13 @@ namespace HolcombeScores.Api.Services.Adapters
             {
                 if (knownPlayersLookup.TryGetValue(player, out var knownPlayer))
                 {
-                    yield return knownPlayer;
+                    yield return new GamePlayer
+                    {
+                        Number = player.Number,
+                        TeamId = player.TeamId,
+                        Name = player.Name,
+                        GameId = gameId,
+                    };
                     continue;
                 }
 
