@@ -10,5 +10,6 @@ namespace HolcombeScores.Api.Repositories
         IAsyncEnumerable<Game> GetAll(Guid? teamId);
         Task<Game> Get(Guid id);
         Task Add(Game game);
+        Task<IEnumerable<GamePlayer>> GetPlayers(Guid gameId);
     }
 }
