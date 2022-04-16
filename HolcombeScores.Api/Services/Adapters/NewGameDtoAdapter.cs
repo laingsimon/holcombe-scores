@@ -48,9 +48,9 @@ namespace HolcombeScores.Api.Services.Adapters
                 {
                     yield return new GamePlayer
                     {
-                        Number = knownPlayer).Number,
-                        TeamId = knownPlayer).TeamId,
-                        Name = knownPlayer).Name,
+                        Number = knownPlayer.Number,
+                        TeamId = knownPlayer.TeamId,
+                        Name = knownPlayer.Name,
                         GameId = gameId,
                     };
                     continue;
