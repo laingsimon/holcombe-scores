@@ -29,7 +29,7 @@ namespace HolcombeScores.Api.Services.Adapters
             {
                 TeamId = game.TeamId,
                 Date = game.Date,
-                Goals = goals.Select(_goalAdapter.Adapt).ToArray(),
+                Goals = goals.Select(g => _goalAdapter.Adapt(g).Result).ToArray(), // TODO improve this, make this method Async too?
                 Id = game.Id,
                 Opponent = game.Opponent,
                 Squad = squad.Select(_gamePlayerAdapter.Adapt).ToArray(),
