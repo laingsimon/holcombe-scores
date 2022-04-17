@@ -14,17 +14,20 @@ namespace HolcombeScores.Api.Services
         private readonly IGameDtoAdapter _gameDtoAdapter;
         private readonly IAccessService _accessService;
         private readonly INewGameDtoAdapter _newGameDtoAdapter;
+        private readonly IGoalDtoAdapter _goalDtoAdapter;
 
         public GameService(
             IGameRepository gameRepository,
             IGameDtoAdapter gameDtoAdapter,
             IAccessService accessService,
-            INewGameDtoAdapter newGameDtoAdapter)
+            INewGameDtoAdapter newGameDtoAdapter,
+            IGoalDtoAdapter goalDtoAdapter)
         {
             _gameRepository = gameRepository;
             _gameDtoAdapter = gameDtoAdapter;
             _accessService = accessService;
             _newGameDtoAdapter = newGameDtoAdapter;
+            _goalDtoAdapter = goalDtoAdapter;
         }
 
         public async IAsyncEnumerable<GameDto> GetAllGames()
