@@ -8,12 +8,12 @@ namespace HolcombeScores.Api.Services.Adapters
 {
     public class GoalDtoAdapter : IGoalDtoAdapter
     {
-        private readonly IPlayerDtoAdapter _playerDtoAdapter;
+        private readonly IPlayerDtoAdapter _playerAdapter;
         private readonly IPlayerRepository _playerRepository;
 
-        public GoalDtoAdapter(IPlayerDtoAdapter playerDtoAdapter, IPlayerRepository playerRepository)
+        public GoalDtoAdapter(IPlayerDtoAdapter playerAdapter, IPlayerRepository playerRepository)
         {
-            _playerDtoAdapter = playerDtoAdapter;
+            _playerAdapter = playerAdapter;
             _playerRepository = playerRepository;
         }
 
