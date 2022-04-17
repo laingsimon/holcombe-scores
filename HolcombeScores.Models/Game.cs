@@ -11,7 +11,6 @@ namespace HolcombeScores.Models
         public string Opponent { get; set; }
         public bool PlayingAtHome { get; set; }
         public DateTime Date { get; set; }
-        public Goal[] Goals { get; set; }
 
         /// <summary>
         /// TeamId
