@@ -4,21 +4,19 @@ using Azure.Data.Tables;
 
 namespace HolcombeScores.Models
 {
-    public class Goal : ITableEntity
+    public class GamePlayer : ITableEntity
     {
-        public DateTime Time { get; set; }
-        public bool HolcombeGoal { get; set; }
-        public int PlayerNumber { get; set; }
         public Guid TeamId { get; set; }
+        public string Name { get; set; }
+        public int Number { get; set; }
         public Guid GameId { get; set; }
 
         /// <summary>
         /// GameId
         /// </summary>
         public string PartitionKey { get; set; }
-
         /// <summary>
-        /// GoalId
+        /// (Player) Number
         /// </summary>
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
