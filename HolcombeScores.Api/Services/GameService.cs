@@ -113,7 +113,7 @@ namespace HolcombeScores.Api.Services
             var game = await _gameRepository.Get(goal.GameId);
             if (game == null)
             {
-                return NotFound();
+                return NotFound("Game not found");
             }
 
             if (!await _accessService.CanAccessTeam(game.TeamId))
