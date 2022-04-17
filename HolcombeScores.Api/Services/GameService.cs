@@ -38,7 +38,8 @@ namespace HolcombeScores.Api.Services
             await foreach (var game in _gameRepository.GetAll(access.Admin ? null : access.TeamId))
             {
                 var gamePlayers = await _gameRepository.GetPlayers(game.Id);
-                yield return _gameDtoAdapter.Adapt(game, gamePlayers);
+                var goals = await _gameRepository.GetGoals(game.Id);
+                yield return _gameDtoAdapter.Adapt(game, gamePlayers, goals);
             }
         }
 
@@ -57,7 +58,8 @@ namespace HolcombeScores.Api.Services
             }
 
             var gamePlayers = await _gameRepository.GetPlayers(game.Id);
-            return _gameDtoAdapter.Adapt(game, gamePlayers);
+            var goals = await _gameRepository.GetGoals(game.Id);
+            return _gameDtoAdapter.Adapt(game, gamePlayers, goals);
         }
 
         public async Task<ActionResultDto<GameDto>> CreateGame(NewGameDto newGameDto)
