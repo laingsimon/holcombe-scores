@@ -5,21 +5,27 @@ namespace HolcombeScores.Api.Services.Adapters
 {
     public class GoalDtoAdapter : IGoalDtoAdapter
     {
-        public GoalDto Adapt(Goal goal)
+        private readonly IPlayerDtoAdapter _playerDtoAdapter;
+        private readonly IPlayerRepository _playerRepository;
+
+        public GoalDtoAdapter(IPlayerDtoAdapter playerDtoAdapter, IPlayerRepository playerRepository)
+        {
+            _playerDtoAdapter = playerDtoAdapter;
+            _playerRepository = playerRepository;
+        }
+
+        public await Task<GoalDto> Adapt(Goal goal)
         {
             if (goal == null)
             {
                 return null;
             }
 
+            var player = await _playerRepository.GetPlayer(goal.TeamId, goal.PlayerNumber);
+
             return new GoalDto
             {
-                Player = new PlayerDto
-                {
-                    Number = goal.PlayerNumber,
-                    TeamId = goal.TeamId,
-                    Name = "Todo",
-                },
+                Player = _playerDtoAdapter.Adapt(player),
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
                 GameId = goal.GameId,
