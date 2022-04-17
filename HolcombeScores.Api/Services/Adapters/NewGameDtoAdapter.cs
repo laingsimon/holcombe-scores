@@ -27,7 +27,6 @@ namespace HolcombeScores.Api.Services.Adapters
             return Task.FromResult(new Game
             {
                 Date = newGameDto.Date ?? DateTime.Today,
-                Goals = Array.Empty<Goal>(),
                 Id = Guid.NewGuid(),
                 Opponent = newGameDto.Opponent,
                 PlayingAtHome = newGameDto.PlayingAtHome,
