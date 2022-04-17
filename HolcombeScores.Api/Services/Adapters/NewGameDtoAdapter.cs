@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Models;
