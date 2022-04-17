@@ -28,7 +28,7 @@ namespace HolcombeScores.Api.Services.Adapters
 
             return new GoalDto
             {
-                Player = _playerDtoAdapter.Adapt(player),
+                Player = _playerAdapter.Adapt(player),
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
                 GameId = goal.GameId,
