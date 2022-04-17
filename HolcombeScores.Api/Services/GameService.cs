@@ -90,7 +90,7 @@ namespace HolcombeScores.Api.Services
                     gamePlayers.Add(gamePlayer);
                 }
 
-                result.Outcome = _gameDtoAdapter.Adapt(game, gamePlayers);
+                result.Outcome = _gameDtoAdapter.Adapt(game, gamePlayers, new Goal[0]);
                 result.Success = true;
             }
             catch (Exception exc)
