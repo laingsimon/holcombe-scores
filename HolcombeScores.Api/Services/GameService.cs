@@ -126,7 +126,7 @@ namespace HolcombeScores.Api.Services
             return Success("Goal recorded", await GetGame(goal.GameId));
         }
 
-        private static ActionResultDto<GameDto> Success(string message, TeamDto outcome = null)
+        private static ActionResultDto<GameDto> Success(string message, GoalDto outcome = null)
         {
            return new ActionResultDto<GameDto>
            {
