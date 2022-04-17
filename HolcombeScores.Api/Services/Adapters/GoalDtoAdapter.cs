@@ -14,7 +14,7 @@ namespace HolcombeScores.Api.Services.Adapters
             _playerRepository = playerRepository;
         }
 
-        public await Task<GoalDto> Adapt(Goal goal)
+        public async Task<GoalDto> Adapt(Goal goal)
         {
             if (goal == null)
             {
