@@ -5,13 +5,6 @@ namespace HolcombeScores.Api.Services.Adapters
 {
     public class GoalDtoAdapter : IGoalDtoAdapter
     {
-        private readonly IPlayerDtoAdapter _playerAdapter;
-
-        public GoalDtoAdapter(IPlayerDtoAdapter playerAdapter)
-        {
-            _playerAdapter = playerAdapter;
-        }
-
         public GoalDto Adapt(Goal goal)
         {
             if (goal == null)
