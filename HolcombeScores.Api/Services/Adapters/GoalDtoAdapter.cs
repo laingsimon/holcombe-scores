@@ -21,9 +21,15 @@ namespace HolcombeScores.Api.Services.Adapters
 
             return new GoalDto
             {
-                Player = _playerAdapter.Adapt(goal.Player),
+                Player = new PlayerDto
+                {
+                    Number = goal.PlayerNumber,
+                    TeamId = goal.TeamId,
+                    Name = "Todo",
+                },
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
+                GameId = goal.GameId,
             };
         }
 
@@ -36,9 +42,11 @@ namespace HolcombeScores.Api.Services.Adapters
 
             return new Goal
             {
-                Player = _playerAdapter.Adapt(goal.Player),
+                PlayerNumber = goal.Player.Number,
+                TeamId = goal.Player.TeamId,
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
+                GameId = goal.GameId,
             };
         }
     }
