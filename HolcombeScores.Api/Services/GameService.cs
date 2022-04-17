@@ -91,7 +91,7 @@ namespace HolcombeScores.Api.Services
 
                 result.Success = true;
                 result.Messages.Add("Game created");
-                result.Outcome = _gameDtoAdapter.Adapt(game, gamePlayers, new Goal[0]));
+                result.Outcome = _gameDtoAdapter.Adapt(game, gamePlayers, new Goal[0]);
                 return result;
             }
             catch (Exception exc)
