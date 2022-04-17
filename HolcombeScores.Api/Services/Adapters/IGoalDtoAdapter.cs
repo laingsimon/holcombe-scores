@@ -8,6 +8,6 @@ namespace HolcombeScores.Api.Services.Adapters
     public interface IGoalDtoAdapter
     {
         Task<GoalDto> Adapt(Goal goal);
-        Goal Adapt(GoalDto goal, Guid gameId);
+        Goal Adapt(GoalDto goal);
     }
 }
