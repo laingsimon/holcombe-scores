@@ -83,5 +83,33 @@ namespace HolcombeScores.Api.Repositories
 
             await _goalTableClient.AddEntityAsync(goal);
         }
+
+        public async Task DeleteGame(Guid id)
+        {
+            var game = await GetGame(id);
+            if (game == null)
+            {
+                return;
+            }
+
+            await _gameTableClient.DeleteEntityAsync(game.PartitionKey, game.RowId);
+        }
+
+        public async Task DeleteGamePlayer(Guid gameId, int playerNumber)
+        {
+            var players = await GetGamePlayers(gameId);
+            var player = players.SingleOrDefault(p => p.Number == playerNumber);
+
+            if (player == null)
+            {
+                return;
+            }
+
+            await _gamePlayerTableClient.DeleteEntityAsync(player.PartitionKey, player.RowKey);
+        }
+
+        public async Task DeleteGoal(Guid gameId, Guid goalId)
+        {
+        }
     }
 }

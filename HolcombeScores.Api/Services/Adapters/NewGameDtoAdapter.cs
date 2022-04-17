@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Models;
@@ -17,21 +16,21 @@ namespace HolcombeScores.Api.Services.Adapters
             _playerRepository = playerRepository;
         }
 
-        public Task<Game> AdaptToGame(NewGameDto newGameDto, ActionResultDto<GameDto> actionResult)
+        public Game AdaptToGame(NewGameDto newGameDto, ActionResultDto<GameDto> actionResult)
         {
             if (newGameDto == null)
             {
-                return Task.FromResult<Game>(null);
+                return null;
             }
 
-            return Task.FromResult(new Game
+            return new Game
             {
                 Date = newGameDto.Date ?? DateTime.Today,
-                Goals = Array.Empty<Goal>(),
                 Id = Guid.NewGuid(),
                 Opponent = newGameDto.Opponent,
                 PlayingAtHome = newGameDto.PlayingAtHome,
-            });
+                TeamId = newGameDto.TeamId,
+            };
         }
 
         public async IAsyncEnumerable<GamePlayer> AdaptSquad(NewGameDto newGameDto, Guid gameId, ActionResultDto<GameDto> actionResult)
