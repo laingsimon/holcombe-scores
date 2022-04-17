@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using HolcombeScores.Api.Models;
+using HolcombeScores.Api.Repositories;
 using HolcombeScores.Models;
-using HolcombeScores.Repositories;
 
 namespace HolcombeScores.Api.Services.Adapters
 {
