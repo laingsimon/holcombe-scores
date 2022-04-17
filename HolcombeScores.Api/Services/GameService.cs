@@ -95,5 +95,31 @@ namespace HolcombeScores.Api.Services
 
             return result;
         }
+
+        public async Task<ActionResultDto<GameDto>> RecordGoal(GoalDto goalDto)
+        {
+            var access = await _accessService.GetAccess();
+            if (access == null || access.Revoked != null)
+            {
+                return NotLoggedIn();
+            }
+
+            var goal = _goalDtoAdapter.Adapt(goalDto);
+
+            var game = await _gameRepository.Get(goal.GameId);
+            if (game == null)
+            {
+                return NotFound();
+            }
+
+            if (!await _accessService.CanAccessTeam(game.TeamId))
+            {
+                return NotPermitted();
+            }
+
+            await _gameRepository.AddGoal(goal);
+
+            return await GetGame(goal.GameId);
+        }
     }
 }
