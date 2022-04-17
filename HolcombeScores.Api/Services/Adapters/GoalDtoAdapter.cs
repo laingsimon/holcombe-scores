@@ -31,10 +31,11 @@ namespace HolcombeScores.Api.Services.Adapters
                 Player = _playerDtoAdapter.Adapt(player),
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
+                GameId = goal.GameId,
             };
         }
 
-        public Goal Adapt(GoalDto goal, Guid gameId)
+        public Goal Adapt(GoalDto goal)
         {
             if (goal == null)
             {
@@ -47,7 +48,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 TeamId = goal.Player.TeamId,
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
-                GameId = gameId,
+                GameId = goal.GameId,
             };
         }
     }
