@@ -23,18 +23,17 @@ namespace HolcombeScores.Api.Services.Adapters
                 return null;
             }
 
-            var player = await _playerRepository.GetPlayer(goal.TeamId, goal.PlayerNumber);
+            var player = await _playerRepository.GetByNumber(goal.TeamId, goal.PlayerNumber);
 
             return new GoalDto
             {
                 Player = _playerDtoAdapter.Adapt(player),
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
-                GameId = goal.GameId,
             };
         }
 
-        public Goal Adapt(GoalDto goal)
+        public Goal Adapt(GoalDto goal, Guid gameId)
         {
             if (goal == null)
             {
@@ -47,7 +46,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 TeamId = goal.Player.TeamId,
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
-                GameId = goal.GameId,
+                GameId = gameId,
             };
         }
     }
