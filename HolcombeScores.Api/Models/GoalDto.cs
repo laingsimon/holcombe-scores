@@ -10,5 +10,6 @@ namespace HolcombeScores.Api.Models
         public DateTime Time { get; set; }
         public bool HolcombeGoal { get; set; }
         public PlayerDto Player { get; set; }
+        public Guid GameId { get; set; }
     }
 }
