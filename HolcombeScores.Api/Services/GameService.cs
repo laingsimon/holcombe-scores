@@ -124,7 +124,7 @@ namespace HolcombeScores.Api.Services
 
             await _gameRepository.AddGoal(goal);
 
-            return await GetGame(goal.GameId);
+            return Success("Goal recorded", await GetGame(goal.GameId));
         }
     }
 }
