@@ -77,7 +77,7 @@ namespace HolcombeScores.Api.Services
                 // TODO: Add Validation
 
                 var result = new ActionResultDto<GameDto>();
-                var game = await _newGameDtoAdapter.AdaptToGame(newGameDto, result);
+                var game = _newGameDtoAdapter.AdaptToGame(newGameDto, result);
                 game.Id = Guid.NewGuid();
                 var squad = _newGameDtoAdapter.AdaptSquad(newGameDto, game.Id, result);
                 await _gameRepository.Add(game);
