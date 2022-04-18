@@ -15,19 +15,22 @@ namespace HolcombeScores.Api.Services
         private readonly IAccessService _accessService;
         private readonly INewGameDtoAdapter _newGameDtoAdapter;
         private readonly IGoalDtoAdapter _goalDtoAdapter;
+        private readonly ITeamRepository _teamRepository;
 
         public GameService(
             IGameRepository gameRepository,
             IGameDtoAdapter gameDtoAdapter,
             IAccessService accessService,
             INewGameDtoAdapter newGameDtoAdapter,
-            IGoalDtoAdapter goalDtoAdapter)
+            IGoalDtoAdapter goalDtoAdapter,
+            ITeamRepository teamRepository)
         {
             _gameRepository = gameRepository;
             _gameDtoAdapter = gameDtoAdapter;
             _accessService = accessService;
             _newGameDtoAdapter = newGameDtoAdapter;
             _goalDtoAdapter = goalDtoAdapter;
+            _teamRepository = teamRepository;
         }
 
         public async IAsyncEnumerable<GameDto> GetAllGames()
@@ -67,6 +70,11 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<GameDto>> CreateGame(NewGameDto newGameDto)
         {
+            if (await _teamRepository.Get(newGameDto.TeamId) == null)
+            {
+                return NotFound("Team not found");
+            }
+
             if (!await _accessService.CanAccessTeam(newGameDto.TeamId))
             {
                 return NotPermitted("Not permitted to interact with this team");
