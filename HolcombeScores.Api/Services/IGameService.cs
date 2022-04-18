@@ -10,5 +10,8 @@ namespace HolcombeScores.Api.Services
         Task<ActionResultDto<GameDto>> CreateGame(NewGameDto newGameDto);
         IAsyncEnumerable<GameDto> GetAllGames();
         Task<GameDto> GetGame(Guid id);
+        Task<ActionResultDto<GameDto>> DeleteGame(Guid id);
+        Task<ActionResultDto<GameDto>> DeleteGamePlayer(Guid gameId, int playerNumber);
+        Task<ActionResultDto<GameDto>> DeleteGoal(Guid gameId, Guid goalId);
     }
 }

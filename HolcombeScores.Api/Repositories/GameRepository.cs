@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
@@ -47,7 +48,7 @@ namespace HolcombeScores.Api.Repositories
         public async Task<IEnumerable<GamePlayer>> GetPlayers(Guid gameId)
         {
             var players = new List<GamePlayer>();
-            await foreach (var gamePlayer in _gameTableClient.QueryAsync<GamePlayer>(g => g.GameId == gameId))
+            await foreach (var gamePlayer in _gamePlayerTableClient.QueryAsync<GamePlayer>(g => g.GameId == gameId))
             {
                 players.Add(gamePlayer);
             }
@@ -72,7 +73,7 @@ namespace HolcombeScores.Api.Repositories
             gamePlayer.RowKey = gamePlayer.Number.ToString();
             gamePlayer.ETag = ETag.All;
 
-            await _gameTableClient.AddEntityAsync(gamePlayer);
+            await _gamePlayerTableClient.AddEntityAsync(gamePlayer);
         }
 
         public async Task AddGoal(Goal goal)
@@ -86,18 +87,18 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task DeleteGame(Guid id)
         {
-            var game = await GetGame(id);
+            var game = await Get(id);
             if (game == null)
             {
                 return;
             }
 
-            await _gameTableClient.DeleteEntityAsync(game.PartitionKey, game.RowId);
+            await _gameTableClient.DeleteEntityAsync(game.PartitionKey, game.RowKey);
         }
 
         public async Task DeleteGamePlayer(Guid gameId, int playerNumber)
         {
-            var players = await GetGamePlayers(gameId);
+            var players = await GetPlayers(gameId);
             var player = players.SingleOrDefault(p => p.Number == playerNumber);
 
             if (player == null)
@@ -110,6 +111,15 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task DeleteGoal(Guid gameId, Guid goalId)
         {
+            var goals = await GetGoals(gameId);
+            var goal = goals.SingleOrDefault(g => g.RowKey == goalId.ToString());
+
+            if (goal == null)
+            {
+                return;
+            }
+
+            await _goalTableClient.DeleteEntityAsync(goal.PartitionKey, goal.RowKey);
         }
     }
 }

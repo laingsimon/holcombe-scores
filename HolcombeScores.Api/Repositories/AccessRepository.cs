@@ -79,11 +79,6 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task UpdateAccess(Access access)
         {
-            access.Timestamp = DateTimeOffset.UtcNow;
-            access.PartitionKey = access.TeamId.ToString();
-            access.RowKey = access.UserId.ToString();
-            access.ETag = ETag.All;
-
             await _accessTableClient.UpdateEntityAsync(access, ETag.All);
         }
 

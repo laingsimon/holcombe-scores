@@ -23,7 +23,14 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task<Team> Get(Guid teamId)
         {
-            return await _teamTableClient.GetEntityAsync<Team>(teamId.ToString(), teamId.ToString());
+            try
+            {
+                return await _teamTableClient.GetEntityAsync<Team>(teamId.ToString(), teamId.ToString());
+            }
+            catch (RequestFailedException)
+            {
+                return null;
+            }
         }
 
         public async Task CreateTeam(Team team)

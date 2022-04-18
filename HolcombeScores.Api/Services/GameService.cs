@@ -15,19 +15,22 @@ namespace HolcombeScores.Api.Services
         private readonly IAccessService _accessService;
         private readonly INewGameDtoAdapter _newGameDtoAdapter;
         private readonly IGoalDtoAdapter _goalDtoAdapter;
+        private readonly ITeamRepository _teamRepository;
 
         public GameService(
             IGameRepository gameRepository,
             IGameDtoAdapter gameDtoAdapter,
             IAccessService accessService,
             INewGameDtoAdapter newGameDtoAdapter,
-            IGoalDtoAdapter goalDtoAdapter)
+            IGoalDtoAdapter goalDtoAdapter,
+            ITeamRepository teamRepository)
         {
             _gameRepository = gameRepository;
             _gameDtoAdapter = gameDtoAdapter;
             _accessService = accessService;
             _newGameDtoAdapter = newGameDtoAdapter;
             _goalDtoAdapter = goalDtoAdapter;
+            _teamRepository = teamRepository;
         }
 
         public async IAsyncEnumerable<GameDto> GetAllGames()
@@ -55,7 +58,7 @@ namespace HolcombeScores.Api.Services
             }
 
             var game = await _gameRepository.Get(id);
-            if (game != null && !await _accessService.CanAccessTeam(game.TeamId))
+            if (game == null || !await _accessService.CanAccessTeam(game.TeamId))
             {
                 return null;
             }
@@ -67,6 +70,11 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<GameDto>> CreateGame(NewGameDto newGameDto)
         {
+            if (await _teamRepository.Get(newGameDto.TeamId) == null)
+            {
+                return NotFound("Team not found");
+            }
+
             if (!await _accessService.CanAccessTeam(newGameDto.TeamId))
             {
                 return NotPermitted("Not permitted to interact with this team");
@@ -124,6 +132,45 @@ namespace HolcombeScores.Api.Services
             await _gameRepository.AddGoal(goal);
 
             return Success("Goal recorded", await GetGame(goal.GameId));
+        }
+
+        public async Task<ActionResultDto<GameDto>> DeleteGame(Guid id)
+        {
+            var game = await GetGame(id);
+            if (game == null)
+            {
+                return NotFound("Game not found");
+            }
+
+            await _gameRepository.DeleteGame(id);
+
+            return Success("Game deleted", game);
+        }
+
+        public async Task<ActionResultDto<GameDto>> DeleteGamePlayer(Guid gameId, int playerNumber)
+        {
+            var game = await GetGame(gameId);
+            if (game == null)
+            {
+                return NotFound("Game not found");
+            }
+
+            await _gameRepository.DeleteGamePlayer(gameId, playerNumber);
+
+            return Success("Game player deleted", await GetGame(gameId));
+        }
+
+        public async Task<ActionResultDto<GameDto>> DeleteGoal(Guid gameId, Guid goalId)
+        {
+            var game = await GetGame(gameId);
+            if (game == null)
+            {
+                return NotFound("Game not found");
+            }
+
+            await _gameRepository.DeleteGoal(gameId, goalId);
+
+            return Success("Goal deleted", await GetGame(gameId));
         }
 
         private static ActionResultDto<GameDto> Success(string message, GameDto outcome = null)

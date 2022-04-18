@@ -286,6 +286,7 @@ namespace HolcombeScores.Api.Services
              {
                  return NotLoggedIn<AccessDto>();
              }
+             var isAdmin = accessToUpdate.Admin;
 
              if (accessToUpdate.Revoked != null)
              {
@@ -294,7 +295,7 @@ namespace HolcombeScores.Api.Services
 
              if (updated.UserId != accessToUpdate.UserId)
              {
-                 if (!accessToUpdate.Admin)
+                 if (!isAdmin)
                  {
                      return NotPermitted<AccessDto>("Only an admin can change another users' details");
                  }
@@ -305,7 +306,10 @@ namespace HolcombeScores.Api.Services
                  {
                      return NotFound<AccessDto>("Access not found");
                  }
+             }
 
+             if (isAdmin)
+             {
                  accessToUpdate.Admin = updated.Admin;
                  accessToUpdate.TeamId = updated.TeamId;
              }
