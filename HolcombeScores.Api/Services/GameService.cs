@@ -55,7 +55,7 @@ namespace HolcombeScores.Api.Services
             }
 
             var game = await _gameRepository.Get(id);
-            if (game != null && !await _accessService.CanAccessTeam(game.TeamId))
+            if (game == null && !await _accessService.CanAccessTeam(game.TeamId))
             {
                 return null;
             }
