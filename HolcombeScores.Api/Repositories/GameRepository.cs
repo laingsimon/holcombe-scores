@@ -110,6 +110,15 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task DeleteGoal(Guid gameId, Guid goalId)
         {
+            var goals = await GetGoals(gameId);
+            var goal = goals.SingleOrDefault(g => g.GoalId == goalId);
+
+            if (goal == null)
+            {
+                return;
+            }
+
+            await _goalTableClient.DeleteEntityAsync(goal.PartitionKey, goal.RowKey);
         }
     }
 }
