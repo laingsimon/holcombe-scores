@@ -14,5 +14,6 @@ namespace HolcombeScores.Api.Repositories
         Task AddGamePlayer(GamePlayer gamePlayer);
         Task<IEnumerable<Goal>> GetGoals(Guid gameId);
         Task AddGoal(Goal goal);
+        Task DeleteGame(Guid id);
     }
 }
