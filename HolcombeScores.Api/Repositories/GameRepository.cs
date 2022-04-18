@@ -86,6 +86,13 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task DeleteGame(Guid id)
         {
+            var game = await GetGame(id);
+            if (game == null)
+            {
+                return;
+            }
+
+            await _gameTableClient.DeleteEntityAsync(game.PartitionKey, game.RowId);
         }
 
         public async Task DeleteGamePlayer(Guid id, int playerNumber)
