@@ -83,5 +83,17 @@ namespace HolcombeScores.Api.Repositories
 
             await _goalTableClient.AddEntityAsync(goal);
         }
+
+        public async Task DeleteGame(Guid id)
+        {
+        }
+
+        public async Task DeleteGamePlayer(Guid id, int playerNumber)
+        {
+        }
+
+        public async Task DeleteGoal(Guid gameId, Guid goalId)
+        {
+        }
     }
 }
