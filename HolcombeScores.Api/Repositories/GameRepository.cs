@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
@@ -92,7 +93,7 @@ namespace HolcombeScores.Api.Repositories
                 return;
             }
 
-            await _gameTableClient.DeleteEntityAsync(game.PartitionKey, game.RowId);
+            await _gameTableClient.DeleteEntityAsync(game.PartitionKey, game.RowKey);
         }
 
         public async Task DeleteGamePlayer(Guid gameId, int playerNumber)
