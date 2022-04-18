@@ -86,7 +86,7 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task DeleteGame(Guid id)
         {
-            var game = await GetGame(id);
+            var game = await Get(id);
             if (game == null)
             {
                 return;
