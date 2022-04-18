@@ -126,6 +126,45 @@ namespace HolcombeScores.Api.Services
             return Success("Goal recorded", await GetGame(goal.GameId));
         }
 
+        public async Task<ActionResultDto<GameDto>> DeleteGame(Guid id)
+        {
+            var game = await GetGame(id);
+            if (game == null)
+            {
+                return NotFound("Game not found");
+            }
+
+            await _gameRepository.DeleteGame(id);
+
+            return Success("Game deleted", game);
+        }
+
+        public async Task<ActionResultDto<GameDto>> DeleteGamePlayer(Guid gameId, int playerNumber)
+        {
+            var game = await GetGame(gameId);
+            if (game == null)
+            {
+                return NotFound("Game not found");
+            }
+
+            await _gameRepository.DeleteGamePlayer(gameId, playerNumber);
+
+            return Success("Game player deleted", await GetGame(gameId));
+        }
+
+        public async Task<ActionResultDto<GameDto>> DeleteGoal(Guid gameId, Guid goalId)
+        {
+            var game = await GetGame(gameId);
+            if (game == null)
+            {
+                return NotFound("Game not found");
+            }
+
+            await _gameRepository.DeleteGoal(gameId, goalId);
+
+            return Success("Goal deleted", await GetGame(gameId));
+        }
+
         private static ActionResultDto<GameDto> Success(string message, GameDto outcome = null)
         {
            return new ActionResultDto<GameDto>

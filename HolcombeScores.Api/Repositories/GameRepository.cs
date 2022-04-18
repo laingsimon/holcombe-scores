@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
@@ -82,6 +83,43 @@ namespace HolcombeScores.Api.Repositories
             goal.ETag = ETag.All;
 
             await _goalTableClient.AddEntityAsync(goal);
+        }
+
+        public async Task DeleteGame(Guid id)
+        {
+            var game = await Get(id);
+            if (game == null)
+            {
+                return;
+            }
+
+            await _gameTableClient.DeleteEntityAsync(game.PartitionKey, game.RowKey);
+        }
+
+        public async Task DeleteGamePlayer(Guid gameId, int playerNumber)
+        {
+            var players = await GetPlayers(gameId);
+            var player = players.SingleOrDefault(p => p.Number == playerNumber);
+
+            if (player == null)
+            {
+                return;
+            }
+
+            await _gamePlayerTableClient.DeleteEntityAsync(player.PartitionKey, player.RowKey);
+        }
+
+        public async Task DeleteGoal(Guid gameId, Guid goalId)
+        {
+            var goals = await GetGoals(gameId);
+            var goal = goals.SingleOrDefault(g => g.RowKey == goalId.ToString());
+
+            if (goal == null)
+            {
+                return;
+            }
+
+            await _goalTableClient.DeleteEntityAsync(goal.PartitionKey, goal.RowKey);
         }
     }
 }
