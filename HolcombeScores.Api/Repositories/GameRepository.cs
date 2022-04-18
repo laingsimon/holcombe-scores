@@ -97,7 +97,7 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task DeleteGamePlayer(Guid gameId, int playerNumber)
         {
-            var players = await GetGamePlayers(gameId);
+            var players = await GetPlayers(gameId);
             var player = players.SingleOrDefault(p => p.Number == playerNumber);
 
             if (player == null)
