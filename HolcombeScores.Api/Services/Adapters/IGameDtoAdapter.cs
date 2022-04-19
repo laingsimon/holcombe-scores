@@ -1,12 +1,13 @@
 using System.Collections.Generic;
-using HolcombeScores.Api.Models;
-using HolcombeScores.Models;
+using System.Threading.Tasks;
+using HolcombeScores.Api.Models.AzureTables;
+using HolcombeScores.Api.Models.Dtos;
 
 namespace HolcombeScores.Api.Services.Adapters
 {
     public interface IGameDtoAdapter
     {
-        GameDto Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals);
+        Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals);
         Game Adapt(GameDto game);
     }
 }

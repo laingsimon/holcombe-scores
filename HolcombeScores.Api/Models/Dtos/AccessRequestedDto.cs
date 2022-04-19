@@ -1,6 +1,6 @@
 using System;
 
-namespace HolcombeScores.Api.Models
+namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
     /// Represents a received request for access to the data

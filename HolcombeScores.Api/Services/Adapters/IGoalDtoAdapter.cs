@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using HolcombeScores.Api.Models;
-using HolcombeScores.Models;
+using HolcombeScores.Api.Models.AzureTables;
+using HolcombeScores.Api.Models.Dtos;
 
 namespace HolcombeScores.Api.Services.Adapters
 {

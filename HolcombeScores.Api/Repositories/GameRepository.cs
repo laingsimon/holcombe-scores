@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure;
-using HolcombeScores.Models;
+using HolcombeScores.Api.Models.AzureTables;
+using HolcombeScores.Api.Services;
 
 namespace HolcombeScores.Api.Repositories
 {
@@ -22,11 +23,9 @@ namespace HolcombeScores.Api.Repositories
 
         public IAsyncEnumerable<Game> GetAll(Guid? teamId)
         {
-            if (teamId == null)
-            {
-                return _gameTableClient.QueryAsync();
-            }
-            return _gameTableClient.QueryAsync(g => g.TeamId == teamId);
+            return teamId == null
+                ? _gameTableClient.QueryAsync()
+                : _gameTableClient.QueryAsync(g => g.TeamId == teamId);
         }
 
         public async Task<Game> Get(Guid id)
@@ -46,24 +45,12 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task<IEnumerable<GamePlayer>> GetPlayers(Guid gameId)
         {
-            var players = new List<GamePlayer>();
-            await foreach (var gamePlayer in _gamePlayerTableClient.QueryAsync(g => g.GameId == gameId))
-            {
-                players.Add(gamePlayer);
-            }
-
-            return players;
+            return await _gamePlayerTableClient.QueryAsync(g => g.GameId == gameId).ToEnumerable();
         }
 
         public async Task<IEnumerable<Goal>> GetGoals(Guid gameId)
         {
-            var goals = new List<Goal>();
-            await foreach (var goal in _goalTableClient.QueryAsync(g => g.GameId == gameId))
-            {
-                goals.Add(goal);
-            }
-
-            return goals;
+            return await _goalTableClient.QueryAsync(g => g.GameId == gameId).ToEnumerable();
         }
 
         public async Task AddGamePlayer(GamePlayer gamePlayer)

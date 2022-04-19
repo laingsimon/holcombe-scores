@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using HolcombeScores.Api.Models;
-using HolcombeScores.Models;
+using System.Threading.Tasks;
+using HolcombeScores.Api.Models.AzureTables;
+using HolcombeScores.Api.Models.Dtos;
 
 namespace HolcombeScores.Api.Services.Adapters
 {
@@ -16,7 +17,7 @@ namespace HolcombeScores.Api.Services.Adapters
             _gamePlayerAdapter = gamePlayerAdapter;
         }
 
-        public GameDto Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals)
+        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals)
         {
             if (game == null)
             {
@@ -27,7 +28,7 @@ namespace HolcombeScores.Api.Services.Adapters
             {
                 TeamId = game.TeamId,
                 Date = game.Date,
-                Goals = goals.Select(g => _goalAdapter.Adapt(g).Result).ToArray(), // TODO improve this, make this method Async too?
+                Goals = (await goals.SelectAsync(g => _goalAdapter.Adapt(g))).ToArray(),
                 Id = game.Id,
                 Opponent = game.Opponent,
                 Squad = squad.Select(_gamePlayerAdapter.Adapt).ToArray(),

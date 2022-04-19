@@ -1,6 +1,6 @@
 using System;
 
-namespace HolcombeScores.Api.Models
+namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
     /// A representation of an existing access record, granted or revoked

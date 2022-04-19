@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HolcombeScores.Api.Models;
+using HolcombeScores.Api.Models.Dtos;
 
 namespace HolcombeScores.Api.Services
 {

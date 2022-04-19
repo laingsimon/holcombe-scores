@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HolcombeScores.Api.Models;
+using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
-using HolcombeScores.Models;
 
 namespace HolcombeScores.Api.Services
 {
@@ -48,7 +47,7 @@ namespace HolcombeScores.Api.Services
             {
                 var gamePlayers = await _gameRepository.GetPlayers(game.Id);
                 var goals = await _gameRepository.GetGoals(game.Id);
-                yield return _gameDtoAdapter.Adapt(game, gamePlayers, goals);
+                yield return await _gameDtoAdapter.Adapt(game, gamePlayers, goals);
             }
         }
 
@@ -68,7 +67,7 @@ namespace HolcombeScores.Api.Services
 
             var gamePlayers = await _gameRepository.GetPlayers(game.Id);
             var goals = await _gameRepository.GetGoals(game.Id);
-            return _gameDtoAdapter.Adapt(game, gamePlayers, goals);
+            return await _gameDtoAdapter.Adapt(game, gamePlayers, goals);
         }
 
         public async Task<ActionResultDto<GameDto>> CreateGame(NewGameDto newGameDto)
@@ -87,22 +86,24 @@ namespace HolcombeScores.Api.Services
             {
                 // TODO: Add Validation
 
-                var result = new ActionResultDto<GameDto>();
-                var game = _newGameDtoAdapter.AdaptToGame(newGameDto, result);
+                var game = _newGameDtoAdapter.AdaptToGame(newGameDto);
                 game.Id = Guid.NewGuid();
-                var squad = _newGameDtoAdapter.AdaptSquad(newGameDto, game.Id, result);
+                var missingPlayers = new List<string>();
+                var squad = _newGameDtoAdapter.AdaptSquad(newGameDto, game.Id, missingPlayers);
                 await _gameRepository.Add(game);
 
-                var gamePlayers = new List<GamePlayer>();
                 await foreach (var gamePlayer in squad)
                 {
                     await _gameRepository.AddGamePlayer(gamePlayer);
-                    gamePlayers.Add(gamePlayer);
                 }
 
-                result.Success = true;
-                result.Messages.Add("Game created");
-                result.Outcome = _gameDtoAdapter.Adapt(game, gamePlayers, Array.Empty<Goal>());
+                var result = _serviceHelper.Success("Game created", await GetGame(game.Id));
+
+                foreach (var player in missingPlayers)
+                {
+                    result.Warnings.Add($"Player not found: `{player}`");
+                }
+
                 return result;
             }
             catch (Exception exc)

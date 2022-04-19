@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HolcombeScores.Api.Models;
+using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
-using HolcombeScores.Models;
 
 namespace HolcombeScores.Api.Services
 {
@@ -54,7 +53,7 @@ namespace HolcombeScores.Api.Services
 
             var team = _teamDtoAdapter.Adapt(teamDto);
 
-            var existingTeams = (await GetTeamsMatching(t => t.Name == team.Name)).ToArray();
+            var existingTeams = (await _teamRepository.GetAll().ToEnumerable()).Where(t => t.Name == team.Name).ToArray();
 
             if (existingTeams.Any())
             {
@@ -76,7 +75,7 @@ namespace HolcombeScores.Api.Services
 
             var updatedTeam = _teamDtoAdapter.Adapt(teamDto);
 
-            var existingTeam = (await GetTeamsMatching(t => t.Id == updatedTeam.Id)).SingleOrDefault();
+            var existingTeam = (await _teamRepository.GetAll().ToEnumerable()).SingleOrDefault(t => t.Id == updatedTeam.Id);
 
             if (existingTeam == null)
             {
@@ -97,7 +96,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotAnAdmin<TeamDto>();
             }
 
-            var teamToDelete = (await GetTeamsMatching(t => t.Id == id)).SingleOrDefault();
+            var teamToDelete = (await _teamRepository.GetAll().ToEnumerable()).SingleOrDefault(t => t.Id == id);
 
             if (teamToDelete == null)
             {
@@ -112,20 +111,6 @@ namespace HolcombeScores.Api.Services
 
             await _teamRepository.DeleteTeam(teamToDelete.Id);
             return _serviceHelper.Success("Team and players deleted", _teamDtoAdapter.Adapt(teamToDelete));
-        }
-
-        private async Task<IEnumerable<Team>> GetTeamsMatching(Predicate<Team> predicate)
-        {
-            var teams = new List<Team>();
-            await foreach (var team in _teamRepository.GetAll())
-            {
-                if (predicate(team))
-                {
-                    teams.Add(team);
-                }
-            }
-
-            return teams;
         }
     }
 }

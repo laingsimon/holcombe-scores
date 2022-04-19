@@ -2,21 +2,20 @@ using System;
 using Azure;
 using Azure.Data.Tables;
 
-namespace HolcombeScores.Models
+namespace HolcombeScores.Api.Models.AzureTables
 {
-    public class GamePlayer : ITableEntity
+    public class Player : ITableEntity
     {
         public Guid TeamId { get; set; }
         public string Name { get; set; }
         public int Number { get; set; }
-        public Guid GameId { get; set; }
 
         /// <summary>
-        /// GameId
+        /// TeamId
         /// </summary>
         public string PartitionKey { get; set; }
         /// <summary>
-        /// (Player) Number
+        /// Number
         /// </summary>
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace HolcombeScores.Api.Models
+namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
     /// Represents the outcome of an action with its data and any pertinent messages

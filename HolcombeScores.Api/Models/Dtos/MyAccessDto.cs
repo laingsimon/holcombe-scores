@@ -1,4 +1,4 @@
-namespace HolcombeScores.Api.Models
+namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
     /// A representation of a user's current access

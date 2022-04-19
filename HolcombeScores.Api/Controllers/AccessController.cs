@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HolcombeScores.Api.Models;
+using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +11,12 @@ namespace HolcombeScores.Api.Controllers
     public class AccessController : Controller
     {
         private readonly IAccessService _accessService;
+        private readonly IServiceHelper _serviceHelper;
 
-        public AccessController(IAccessService accessService)
+        public AccessController(IAccessService accessService, IServiceHelper serviceHelper)
         {
             _accessService = accessService;
+            _serviceHelper = serviceHelper;
         }
 
         [HttpGet("/api/Access")]
@@ -50,13 +52,7 @@ namespace HolcombeScores.Api.Controllers
             }
             catch (Exception exc)
             {
-                return new ActionResultDto<AccessDto>
-                {
-                    Errors =
-                    {
-                        exc.ToString()
-                    }
-                };
+                return _serviceHelper.Error<AccessDto>(exc.ToString());
             }
         }
 
@@ -81,13 +77,7 @@ namespace HolcombeScores.Api.Controllers
             }
             catch (Exception exc)
             {
-                return new ActionResultDto<AccessDto>
-                {
-                    Errors =
-                    {
-                        exc.ToString()
-                    }
-                };
+                return _serviceHelper.Error<AccessDto>(exc.ToString());
             }
         }
 
@@ -106,13 +96,7 @@ namespace HolcombeScores.Api.Controllers
             }
             catch (Exception exc)
             {
-                return new ActionResultDto<AccessDto>
-                {
-                    Errors =
-                    {
-                        exc.ToString()
-                    }
-                };
+                return _serviceHelper.Error<AccessDto>(exc.ToString());
             }
         }
     }

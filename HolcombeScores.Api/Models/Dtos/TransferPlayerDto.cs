@@ -1,6 +1,6 @@
 using System;
 
-namespace HolcombeScores.Api.Models
+namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
     /// Represents the request to transfer a player from one team to another

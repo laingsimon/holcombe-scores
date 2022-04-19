@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using HolcombeScores.Api.Models;
+using System.Linq;
+using HolcombeScores.Api.Models.AzureTables;
+using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
-using HolcombeScores.Models;
 
 namespace HolcombeScores.Api.Services.Adapters
 {
@@ -15,7 +16,7 @@ namespace HolcombeScores.Api.Services.Adapters
             _playerRepository = playerRepository;
         }
 
-        public Game AdaptToGame(NewGameDto newGameDto, ActionResultDto<GameDto> actionResult)
+        public Game AdaptToGame(NewGameDto newGameDto)
         {
             if (newGameDto == null)
             {
@@ -32,29 +33,25 @@ namespace HolcombeScores.Api.Services.Adapters
             };
         }
 
-        public async IAsyncEnumerable<GamePlayer> AdaptSquad(NewGameDto newGameDto, Guid gameId, ActionResultDto<GameDto> actionResult)
+        public async IAsyncEnumerable<GamePlayer> AdaptSquad(NewGameDto newGameDto, Guid gameId, List<string> missingPlayers)
         {
-            var knownPlayersLookup = new Dictionary<string, Player>();
-            await foreach (var player in _playerRepository.GetAll(newGameDto.TeamId))
-            {
-                knownPlayersLookup.Add(player.Name, player);
-            }
+            var knownPlayersLookup = (await _playerRepository.GetAll(newGameDto.TeamId).ToEnumerable()).ToDictionary(p => p.Name);
 
             foreach (var player in newGameDto.Players)
             {
-                if (knownPlayersLookup.TryGetValue(player, out var knownPlayer))
+                if (!knownPlayersLookup.TryGetValue(player, out var knownPlayer))
                 {
-                    yield return new GamePlayer
-                    {
-                        Number = knownPlayer.Number,
-                        TeamId = knownPlayer.TeamId,
-                        Name = knownPlayer.Name,
-                        GameId = gameId,
-                    };
+                    missingPlayers.Add(player);
                     continue;
                 }
 
-                actionResult.Warnings.Add($"Player not found: `{player}`");
+                yield return new GamePlayer
+                {
+                    Number = knownPlayer.Number,
+                    TeamId = knownPlayer.TeamId,
+                    Name = knownPlayer.Name,
+                    GameId = gameId,
+                };
             }
         }
     }

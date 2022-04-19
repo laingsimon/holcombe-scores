@@ -2,7 +2,7 @@ using System;
 using Azure;
 using Azure.Data.Tables;
 
-namespace HolcombeScores.Models
+namespace HolcombeScores.Api.Models.AzureTables
 {
     public class Goal : ITableEntity
     {
