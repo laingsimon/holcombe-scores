@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
@@ -12,7 +13,7 @@ namespace HolcombeScores.Api.Services
         private readonly IGameRepository _gameRepository;
         private readonly IGameDtoAdapter _gameDtoAdapter;
         private readonly IAccessService _accessService;
-        private readonly INewGameDtoAdapter _newGameDtoAdapter;
+        private readonly IGameDetailsDtoAdapter _gameDetailsDtoAdapter;
         private readonly IGoalDtoAdapter _goalDtoAdapter;
         private readonly ITeamRepository _teamRepository;
         private readonly IServiceHelper _serviceHelper;
@@ -21,7 +22,7 @@ namespace HolcombeScores.Api.Services
             IGameRepository gameRepository,
             IGameDtoAdapter gameDtoAdapter,
             IAccessService accessService,
-            INewGameDtoAdapter newGameDtoAdapter,
+            IGameDetailsDtoAdapter gameDetailsDtoAdapter,
             IGoalDtoAdapter goalDtoAdapter,
             ITeamRepository teamRepository,
             IServiceHelper serviceHelper)
@@ -29,7 +30,7 @@ namespace HolcombeScores.Api.Services
             _gameRepository = gameRepository;
             _gameDtoAdapter = gameDtoAdapter;
             _accessService = accessService;
-            _newGameDtoAdapter = newGameDtoAdapter;
+            _gameDetailsDtoAdapter = gameDetailsDtoAdapter;
             _goalDtoAdapter = goalDtoAdapter;
             _teamRepository = teamRepository;
             _serviceHelper = serviceHelper;
@@ -70,14 +71,14 @@ namespace HolcombeScores.Api.Services
             return await _gameDtoAdapter.Adapt(game, gamePlayers, goals);
         }
 
-        public async Task<ActionResultDto<GameDto>> CreateGame(NewGameDto newGameDto)
+        public async Task<ActionResultDto<GameDto>> CreateGame(GameDetailsDto gameDetailsDto)
         {
-            if (await _teamRepository.Get(newGameDto.TeamId) == null)
+            if (await _teamRepository.Get(gameDetailsDto.TeamId) == null)
             {
                 return _serviceHelper.NotFound<GameDto>("Team not found");
             }
 
-            if (!await _accessService.CanAccessTeam(newGameDto.TeamId))
+            if (!await _accessService.CanAccessTeam(gameDetailsDto.TeamId))
             {
                 return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
             }
@@ -86,10 +87,10 @@ namespace HolcombeScores.Api.Services
             {
                 // TODO: Add Validation
 
-                var game = _newGameDtoAdapter.AdaptToGame(newGameDto);
+                var game = _gameDetailsDtoAdapter.AdaptToGame(gameDetailsDto);
                 game.Id = Guid.NewGuid();
                 var missingPlayers = new List<string>();
-                var squad = _newGameDtoAdapter.AdaptSquad(newGameDto, game.Id, missingPlayers);
+                var squad = _gameDetailsDtoAdapter.AdaptSquad(gameDetailsDto, game.Id, missingPlayers);
                 await _gameRepository.Add(game);
 
                 await foreach (var gamePlayer in squad)
@@ -102,6 +103,115 @@ namespace HolcombeScores.Api.Services
                 foreach (var player in missingPlayers)
                 {
                     result.Warnings.Add($"Player not found: `{player}`");
+                }
+
+                return result;
+            }
+            catch (Exception exc)
+            {
+                return _serviceHelper.Error<GameDto>(exc.ToString());
+            }
+        }
+
+        public async Task<ActionResultDto<GameDto>> UpdateGame(ExistingGameDetailsDto gameDetailsDto)
+        {
+            if (await _teamRepository.Get(gameDetailsDto.TeamId) == null)
+            {
+                return _serviceHelper.NotFound<GameDto>("Team not found");
+            }
+
+            try
+            {
+                // TODO: Add Validation
+
+                var update = _gameDetailsDtoAdapter.AdaptToGame(gameDetailsDto);
+
+                var game = await _gameRepository.Get(update.Id);
+                if (game == null)
+                {
+                    return _serviceHelper.NotFound<GameDto>("Game not found");
+                }
+
+                if (!await _accessService.CanAccessTeam(game.TeamId))
+                {
+                    return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
+                }
+
+                var updates = new List<string>();
+                if (game.PlayingAtHome != update.PlayingAtHome)
+                {
+                    updates.Add("PlayingAtHome updated");
+                }
+
+                game.PlayingAtHome = update.PlayingAtHome;
+
+                if (update.Date != default && game.Date != update.Date)
+                {
+                    game.Date = update.Date;
+                    updates.Add("Date updated");
+                }
+
+                if (!string.IsNullOrEmpty(update.Opponent) && game.Opponent != update.Opponent)
+                {
+                    game.Opponent = update.Opponent;
+                    updates.Add("Opponent updated");
+                }
+
+                if (update.TeamId != default && game.TeamId != update.TeamId)
+                {
+                    if (!await _accessService.IsAdmin())
+                    {
+                        return _serviceHelper.NotAnAdmin<GameDto>();
+                    }
+
+                    game.TeamId = update.TeamId;
+                    updates.Add("Team updated");
+                }
+
+                if (updates.Any())
+                {
+                    await _gameRepository.Update(game);
+                }
+
+                var missingPlayers = new List<string>();
+                if (gameDetailsDto.Players != null && gameDetailsDto.Players.Any())
+                {
+                    var squad = (await _gameDetailsDtoAdapter.AdaptSquad(gameDetailsDto, game.Id, missingPlayers).ToEnumerable()).ToArray();
+
+                    // remove existing players
+                    foreach (var player in await _gameRepository.GetPlayers(game.Id))
+                    {
+                        if (squad.Any(p => p.Name == player.Name))
+                        {
+                            // player in new squad, don't remove
+                            squad = squad.Where(p => p.Name != player.Name).ToArray();
+                            continue;
+                        }
+                        updates.Add($"`{player.Name}` removed from game");
+                        await _gameRepository.DeleteGamePlayer(game.Id, player.Number);
+                    }
+
+                    foreach (var gamePlayer in squad)
+                    {
+                        updates.Add($"`{gamePlayer.Name}` added to game");
+                        await _gameRepository.AddGamePlayer(gamePlayer);
+                    }
+                }
+
+                var statement = updates.Any()
+                    ? "Game updated"
+                    : "No changes to game";
+
+                var result = _serviceHelper.Success(statement, await GetGame(game.Id));
+
+                foreach (var player in missingPlayers)
+                {
+                    result.Warnings.Add($"Player not found: `{player}`");
+                }
+
+                foreach (var message in updates)
+                {
+                    result.Messages.Add(message);
                 }
 
                 return result;

@@ -107,5 +107,10 @@ namespace HolcombeScores.Api.Repositories
 
             await _goalTableClient.DeleteEntityAsync(goal.PartitionKey, goal.RowKey);
         }
+
+        public async Task Update(Game game)
+        {
+            await _gameTableClient.UpdateEntityAsync(game, ETag.All);
+        }
     }
 }

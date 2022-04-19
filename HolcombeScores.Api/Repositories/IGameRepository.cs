@@ -17,5 +17,6 @@ namespace HolcombeScores.Api.Repositories
         Task DeleteGame(Guid id);
         Task DeleteGamePlayer(Guid gameId, int playerNumber);
         Task DeleteGoal(Guid gameId, Guid goalId);
+        Task Update(Game game);
     }
 }

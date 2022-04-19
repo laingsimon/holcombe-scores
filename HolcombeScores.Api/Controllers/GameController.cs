@@ -30,9 +30,15 @@ namespace HolcombeScores.Api.Controllers
         }
 
         [HttpPost("/api/Game/")]
-        public async Task<ActionResultDto<GameDto>> NewGame(NewGameDto newGameDto)
+        public async Task<ActionResultDto<GameDto>> NewGame(GameDetailsDto gameDetailsDto)
         {
-            return await _gameService.CreateGame(newGameDto);
+            return await _gameService.CreateGame(gameDetailsDto);
+        }
+
+        [HttpPatch("/api/Game/")]
+        public async Task<ActionResultDto<GameDto>> UpdateGame(ExistingGameDetailsDto gameDetailsDto)
+        {
+            return await _gameService.UpdateGame(gameDetailsDto);
         }
 
         [HttpDelete("/api/Game/{id}")]
