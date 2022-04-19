@@ -15,17 +15,20 @@ namespace HolcombeScores.Api.Services
         private readonly ITeamDtoAdapter _teamDtoAdapter;
         private readonly IAccessService _accessService;
         private readonly IPlayerRepository _playerRepository;
+        private readonly IServiceHelper _serviceHelper;
 
         public TeamService(
             ITeamRepository teamRepository,
             ITeamDtoAdapter teamDtoAdapter,
             IAccessService accessService,
-            IPlayerRepository playerRepository)
+            IPlayerRepository playerRepository,
+            IServiceHelper serviceHelper)
         {
             _teamRepository = teamRepository;
             _teamDtoAdapter = teamDtoAdapter;
             _accessService = accessService;
             _playerRepository = playerRepository;
+            _serviceHelper = serviceHelper;
         }
 
         public async IAsyncEnumerable<TeamDto> GetAllTeams()
@@ -46,7 +49,7 @@ namespace HolcombeScores.Api.Services
         {
             if (!await _accessService.IsAdmin())
             {
-                return NotAnAdmin();
+                return _serviceHelper.NotAnAdmin<TeamDto>();
             }
 
             var team = _teamDtoAdapter.Adapt(teamDto);
@@ -55,20 +58,20 @@ namespace HolcombeScores.Api.Services
 
             if (existingTeams.Any())
             {
-                return NotSuccess("Team exists with this name already");
+                return _serviceHelper.NotSuccess<TeamDto>("Team exists with this name already");
             }
 
             team.Id = Guid.NewGuid();
             await _teamRepository.CreateTeam(team);
 
-            return Success("Team created", _teamDtoAdapter.Adapt(team));
+            return _serviceHelper.Success("Team created", _teamDtoAdapter.Adapt(team));
         }
 
         public async Task<ActionResultDto<TeamDto>> UpdateTeam(TeamDto teamDto)
         {
             if (!await _accessService.IsAdmin())
             {
-                return NotAnAdmin();
+                return _serviceHelper.NotAnAdmin<TeamDto>();
             }
 
             var updatedTeam = _teamDtoAdapter.Adapt(teamDto);
@@ -77,28 +80,28 @@ namespace HolcombeScores.Api.Services
 
             if (existingTeam == null)
             {
-                return NotFound("Team not found");
+                return _serviceHelper.NotFound<TeamDto>("Team not found");
             }
 
             existingTeam.Name = updatedTeam.Name;
             existingTeam.Coach = updatedTeam.Coach;
             await _teamRepository.UpdateTeam(existingTeam);
 
-            return Success("Team updated", _teamDtoAdapter.Adapt(existingTeam));
+            return _serviceHelper.Success("Team updated", _teamDtoAdapter.Adapt(existingTeam));
         }
 
         public async Task<ActionResultDto<TeamDto>> DeleteTeam(Guid id)
         {
             if (!await _accessService.IsAdmin())
             {
-                return NotAnAdmin();
+                return _serviceHelper.NotAnAdmin<TeamDto>();
             }
 
             var teamToDelete = (await GetTeamsMatching(t => t.Id == id)).SingleOrDefault();
 
             if (teamToDelete == null)
             {
-                return NotFound("Team not found");
+                return _serviceHelper.NotFound<TeamDto>("Team not found");
             }
 
             var playersToDelete = _playerRepository.GetAll(teamToDelete.Id);
@@ -108,53 +111,7 @@ namespace HolcombeScores.Api.Services
             }
 
             await _teamRepository.DeleteTeam(teamToDelete.Id);
-            return Success("Team and players deleted", _teamDtoAdapter.Adapt(teamToDelete));
-        }
-
-        private static ActionResultDto<TeamDto> Success(string message, TeamDto outcome = null)
-        {
-           return new ActionResultDto<TeamDto>
-           {
-               Messages =
-               {
-                   message,
-               },
-               Outcome = outcome,
-               Success = true,
-           };
-        }
-
-        private static ActionResultDto<TeamDto> NotSuccess(string message)
-        {
-           return new ActionResultDto<TeamDto>
-           {
-               Messages =
-               {
-                   message,
-               }
-           };
-        }
-
-        private static ActionResultDto<TeamDto> NotFound(string message)
-        {
-           return new ActionResultDto<TeamDto>
-           {
-               Warnings =
-               {
-                   message,
-               },
-           };
-        }
-
-        private static ActionResultDto<TeamDto> NotAnAdmin()
-        {
-           return new ActionResultDto<TeamDto>
-           {
-               Errors =
-               {
-                   "Not an admin",
-               },
-           };
+            return _serviceHelper.Success("Team and players deleted", _teamDtoAdapter.Adapt(teamToDelete));
         }
 
         private async Task<IEnumerable<Team>> GetTeamsMatching(Predicate<Team> predicate)

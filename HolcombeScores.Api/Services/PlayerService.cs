@@ -13,17 +13,20 @@ namespace HolcombeScores.Api.Services
         private readonly IPlayerDtoAdapter _playerDtoAdapter;
         private readonly IAccessService _accessService;
         private readonly ITeamRepository _teamRepository;
+        private readonly IServiceHelper _serviceHelper;
 
         public PlayerService(
             IPlayerRepository playerRepository,
             IPlayerDtoAdapter playerDtoAdapter,
             IAccessService accessService,
-            ITeamRepository teamRepository)
+            ITeamRepository teamRepository,
+            IServiceHelper serviceHelper)
         {
             _playerRepository = playerRepository;
             _playerDtoAdapter = playerDtoAdapter;
             _accessService = accessService;
             _teamRepository = teamRepository;
+            _serviceHelper = serviceHelper;
         }
 
         public async IAsyncEnumerable<PlayerDto> GetAllPlayers()
@@ -46,7 +49,7 @@ namespace HolcombeScores.Api.Services
 
             if (!await _accessService.CanAccessTeam(playerDto.TeamId))
             {
-                return CannotAccessTeam();
+                return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
             }
 
             var existingPlayer = await _playerRepository.GetByNumber(player.TeamId, player.Number);
@@ -54,11 +57,11 @@ namespace HolcombeScores.Api.Services
             if (existingPlayer == null)
             {
                 await _playerRepository.AddPlayer(player);
-                return Success("Player created", await GetPlayerDto(player.TeamId, player.Number));
+                return _serviceHelper.Success("Player created", await GetPlayerDto(player.TeamId, player.Number));
             }
 
             await _playerRepository.UpdatePlayer(player.TeamId, player.Number, player.Name);
-            return Success("Player updated", await GetPlayerDto(player.TeamId, player.Number));
+            return _serviceHelper.Success("Player updated", await GetPlayerDto(player.TeamId, player.Number));
         }
 
         public async Task<ActionResultDto<PlayerDto>> DeletePlayer(PlayerDto playerDto)
@@ -67,38 +70,38 @@ namespace HolcombeScores.Api.Services
 
             if (!await _accessService.CanAccessTeam(playerDto.TeamId))
             {
-                return CannotAccessTeam();
+                return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
             }
 
             var existingPlayer = await _playerRepository.GetByNumber(player.TeamId, player.Number);
 
             if (existingPlayer == null)
             {
-                return NotFound("Player not found");
+                return _serviceHelper.NotFound<PlayerDto>("Player not found");
             }
 
             await _playerRepository.DeletePlayer(existingPlayer.TeamId, existingPlayer.Number);
 
-            return Success("Player deleted", _playerDtoAdapter.Adapt(existingPlayer));
+            return _serviceHelper.Success("Player deleted", _playerDtoAdapter.Adapt(existingPlayer));
         }
 
         public async Task<ActionResultDto<PlayerDto>> TransferPlayer(TransferPlayerDto transferDto)
         {
             if (!await _accessService.CanAccessTeam(transferDto.CurrentTeamId))
             {
-                return CannotAccessTeam();
+                return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
             }
 
             var newTeam = await _teamRepository.Get(transferDto.NewTeamId);
             if (newTeam == null)
             {
-                return NotFound("New team not found");
+                return _serviceHelper.NotFound<PlayerDto>("New team not found");
             }
 
             var playerToTransfer = await _playerRepository.GetByNumber(transferDto.CurrentTeamId, transferDto.CurrentNumber);
             if (playerToTransfer == null)
             {
-                return NotFound("Player not found");
+                return _serviceHelper.NotFound<PlayerDto>("Player not found");
             }
 
             var newPlayer = await _playerRepository.GetByNumber(transferDto.CurrentTeamId, transferDto.CurrentNumber);
@@ -107,69 +110,19 @@ namespace HolcombeScores.Api.Services
 
             if (await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number) != null)
             {
-                return NotSuccess($"Player already exists with this number in team {newTeam.Name}");
+                return _serviceHelper.NotSuccess<PlayerDto>($"Player already exists with this number in team {newTeam.Name}");
             }
 
             await _playerRepository.AddPlayer(newPlayer);
             await _playerRepository.DeletePlayer(transferDto.CurrentTeamId, transferDto.CurrentNumber);
 
-            return Success($"Player transferred to {newTeam.Name}", _playerDtoAdapter.Adapt(newPlayer));
+            return _serviceHelper.Success($"Player transferred to {newTeam.Name}", _playerDtoAdapter.Adapt(newPlayer));
         }
 
         private async Task<PlayerDto> GetPlayerDto(Guid teamId, int number)
         {
             var existingPlayer = await _playerRepository.GetByNumber(teamId, number);
             return _playerDtoAdapter.Adapt(existingPlayer);
-        }
-
-        private static ActionResultDto<PlayerDto> CannotAccessTeam()
-        {
-            return new ActionResultDto<PlayerDto>
-            {
-                Success = false,
-                Errors =
-                {
-                    "Cannot access team"
-                },
-            };
-        }
-
-        private static ActionResultDto<PlayerDto> NotSuccess (string message)
-        {
-            return new ActionResultDto<PlayerDto>
-            {
-                Success = false,
-                Errors =
-                {
-                    message,
-                },
-            };
-        }
-
-
-        private static ActionResultDto<PlayerDto> NotFound(string message)
-        {
-            return new ActionResultDto<PlayerDto>
-            {
-                Success = false,
-                Errors =
-                {
-                    message,
-                },
-            };
-        }
-
-        private static ActionResultDto<PlayerDto> Success(string message, PlayerDto outcome = null)
-        {
-            return new ActionResultDto<PlayerDto>
-            {
-                Success = true,
-                Messages =
-                {
-                    message,
-                },
-                Outcome = outcome,
-            };
         }
     }
 }

@@ -16,6 +16,7 @@ namespace HolcombeScores.Api.Services
         private readonly INewGameDtoAdapter _newGameDtoAdapter;
         private readonly IGoalDtoAdapter _goalDtoAdapter;
         private readonly ITeamRepository _teamRepository;
+        private readonly IServiceHelper _serviceHelper;
 
         public GameService(
             IGameRepository gameRepository,
@@ -23,7 +24,8 @@ namespace HolcombeScores.Api.Services
             IAccessService accessService,
             INewGameDtoAdapter newGameDtoAdapter,
             IGoalDtoAdapter goalDtoAdapter,
-            ITeamRepository teamRepository)
+            ITeamRepository teamRepository,
+            IServiceHelper serviceHelper)
         {
             _gameRepository = gameRepository;
             _gameDtoAdapter = gameDtoAdapter;
@@ -31,6 +33,7 @@ namespace HolcombeScores.Api.Services
             _newGameDtoAdapter = newGameDtoAdapter;
             _goalDtoAdapter = goalDtoAdapter;
             _teamRepository = teamRepository;
+            _serviceHelper = serviceHelper;
         }
 
         public async IAsyncEnumerable<GameDto> GetAllGames()
@@ -72,12 +75,12 @@ namespace HolcombeScores.Api.Services
         {
             if (await _teamRepository.Get(newGameDto.TeamId) == null)
             {
-                return NotFound("Team not found");
+                return _serviceHelper.NotFound<GameDto>("Team not found");
             }
 
             if (!await _accessService.CanAccessTeam(newGameDto.TeamId))
             {
-                return NotPermitted("Not permitted to interact with this team");
+                return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
             }
 
             try
@@ -104,7 +107,7 @@ namespace HolcombeScores.Api.Services
             }
             catch (Exception exc)
             {
-                return Error(exc.ToString());
+                return _serviceHelper.Error<GameDto>(exc.ToString());
             }
         }
 
@@ -113,7 +116,7 @@ namespace HolcombeScores.Api.Services
             var access = await _accessService.GetAccess();
             if (access == null || access.Revoked != null)
             {
-                return NotLoggedIn();
+                return _serviceHelper.NotLoggedIn<GameDto>();
             }
 
             var goal = _goalDtoAdapter.Adapt(goalDto);
@@ -121,17 +124,17 @@ namespace HolcombeScores.Api.Services
             var game = await _gameRepository.Get(goal.GameId);
             if (game == null)
             {
-                return NotFound("Game not found");
+                return _serviceHelper.NotFound<GameDto>("Game not found");
             }
 
             if (!await _accessService.CanAccessTeam(game.TeamId))
             {
-                return NotPermitted("Not permitted to interact with this team");
+                return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
             }
 
             await _gameRepository.AddGoal(goal);
 
-            return Success("Goal recorded", await GetGame(goal.GameId));
+            return _serviceHelper.Success("Goal recorded", await GetGame(goal.GameId));
         }
 
         public async Task<ActionResultDto<GameDto>> DeleteGame(Guid id)
@@ -139,12 +142,12 @@ namespace HolcombeScores.Api.Services
             var game = await GetGame(id);
             if (game == null)
             {
-                return NotFound("Game not found");
+                return _serviceHelper.NotFound<GameDto>("Game not found");
             }
 
             await _gameRepository.DeleteGame(id);
 
-            return Success("Game deleted", game);
+            return _serviceHelper.Success("Game deleted", game);
         }
 
         public async Task<ActionResultDto<GameDto>> DeleteGamePlayer(Guid gameId, int playerNumber)
@@ -152,12 +155,12 @@ namespace HolcombeScores.Api.Services
             var game = await GetGame(gameId);
             if (game == null)
             {
-                return NotFound("Game not found");
+                return _serviceHelper.NotFound<GameDto>("Game not found");
             }
 
             await _gameRepository.DeleteGamePlayer(gameId, playerNumber);
 
-            return Success("Game player deleted", await GetGame(gameId));
+            return _serviceHelper.Success("Game player deleted", await GetGame(gameId));
         }
 
         public async Task<ActionResultDto<GameDto>> DeleteGoal(Guid gameId, Guid goalId)
@@ -165,69 +168,12 @@ namespace HolcombeScores.Api.Services
             var game = await GetGame(gameId);
             if (game == null)
             {
-                return NotFound("Game not found");
+                return _serviceHelper.NotFound<GameDto>("Game not found");
             }
 
             await _gameRepository.DeleteGoal(gameId, goalId);
 
-            return Success("Goal deleted", await GetGame(gameId));
-        }
-
-        private static ActionResultDto<GameDto> Success(string message, GameDto outcome = null)
-        {
-           return new ActionResultDto<GameDto>
-           {
-               Messages =
-               {
-                   message,
-               },
-               Outcome = outcome,
-               Success = true,
-           };
-        }
-
-        private static ActionResultDto<GameDto> Error(string error)
-        {
-           return new ActionResultDto<GameDto>
-           {
-               Errors =
-               {
-                   error,
-               }
-           };
-        }
-
-        private static ActionResultDto<GameDto> NotFound(string message)
-        {
-           return new ActionResultDto<GameDto>
-           {
-               Warnings =
-               {
-                   message,
-               },
-           };
-        }
-
-        private static ActionResultDto<GameDto> NotPermitted(string message)
-        {
-           return new ActionResultDto<GameDto>
-           {
-               Errors =
-               {
-                   message,
-               },
-           };
-        }
-
-        private static ActionResultDto<GameDto> NotLoggedIn()
-        {
-           return new ActionResultDto<GameDto>
-           {
-               Warnings =
-               {
-                   "Not logged in",
-               },
-           };
+            return _serviceHelper.Success("Goal deleted", await GetGame(gameId));
         }
     }
 }

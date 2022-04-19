@@ -39,6 +39,7 @@ namespace HolcombeScores.Api
             services.AddScoped<IPlayerService, PlayerService>();
             services.AddScoped<IAccessService, AccessService>();
             services.AddScoped<ITeamService, TeamService>();
+            services.AddSingleton<IServiceHelper, ServiceHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
