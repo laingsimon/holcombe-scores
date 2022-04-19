@@ -58,5 +58,11 @@ namespace HolcombeScores.Api.Controllers
         {
             return await _gameService.DeleteGoal(gameId, goalId);
         }
+
+        [HttpPost("/api/Game/Goal")]
+        public async Task<ActionResultDto<GameDto>> RecordGoal(GoalDto goalDto)
+        {
+            return await _gameService.RecordGoal(goalDto);
+        }
     }
 }
