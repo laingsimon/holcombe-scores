@@ -10,8 +10,8 @@ namespace HolcombeScores.Api.Models
     {
         public T Outcome { get; set; }
         public bool Success { get; set; }
-        public List<string> Messages { get; set; } = new List<string>();
-        public List<string> Warnings { get; set; } = new List<string>();
-        public List<string> Errors { get; set; } = new List<string>();
+        public List<string> Messages { get; } = new();
+        public List<string> Warnings { get; } = new();
+        public List<string> Errors { get; } = new();
     }
 }

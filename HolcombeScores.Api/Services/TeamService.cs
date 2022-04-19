@@ -157,28 +157,6 @@ namespace HolcombeScores.Api.Services
            };
         }
 
-        private static ActionResultDto<TeamDto> NotPermitted(string message)
-        {
-           return new ActionResultDto<TeamDto>
-           {
-               Errors =
-               {
-                   message,
-               },
-           };
-        }
-
-        private static ActionResultDto<TeamDto> NotLoggedIn()
-        {
-           return new ActionResultDto<TeamDto>
-           {
-               Warnings =
-               {
-                   "Not logged in",
-               },
-           };
-        }
-
         private async Task<IEnumerable<Team>> GetTeamsMatching(Predicate<Team> predicate)
         {
             var teams = new List<Team>();

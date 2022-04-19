@@ -179,7 +179,7 @@ namespace HolcombeScores.Api.Services
             var existingAccess = await _accessRepository.GetAccess(response.UserId);
             if (existingAccess != null)
             {
-                return Success<AccessDto>("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
+                return Success("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
             }
 
             if (response.Allow)
@@ -200,7 +200,7 @@ namespace HolcombeScores.Api.Services
                 // clean up the access request
                 await _accessRepository.RemoveAccessRequest(response.UserId);
 
-                return Success<AccessDto>("Access granted", _accessDtoAdapter.Adapt(newAccess));
+                return Success("Access granted", _accessDtoAdapter.Adapt(newAccess));
             }
 
             return NotSuccess<AccessDto>("Access request ignored");
@@ -233,7 +233,7 @@ namespace HolcombeScores.Api.Services
             }
 
             await _accessRepository.RemoveAccess(access.UserId);
-            return Success<AccessDto>("Access removed", _accessDtoAdapter.Adapt(access));
+            return Success("Access removed", _accessDtoAdapter.Adapt(access));
         }
 
         public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId)
@@ -250,7 +250,7 @@ namespace HolcombeScores.Api.Services
             }
 
             await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
-            return Success<AccessRequestDto>("Access request removed", _accessRequestDtoAdapter.Adapt(accessRequest));
+            return Success("Access request removed", _accessRequestDtoAdapter.Adapt(accessRequest));
         }
 
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
@@ -268,14 +268,14 @@ namespace HolcombeScores.Api.Services
 
             if (access.Revoked != null)
             {
-                return Success<AccessDto>("Access already revoked", _accessDtoAdapter.Adapt(access));
+                return Success("Access already revoked", _accessDtoAdapter.Adapt(access));
             }
 
             access.Revoked = DateTime.UtcNow;
             access.RevokedReason = accessResponseDto.Reason;
             await _accessRepository.UpdateAccess(access);
 
-            return Success<AccessDto>("Access revoked", _accessDtoAdapter.Adapt(access));
+            return Success("Access revoked", _accessDtoAdapter.Adapt(access));
         }
 
         public async Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated)
@@ -318,7 +318,7 @@ namespace HolcombeScores.Api.Services
 
              await _accessRepository.UpdateAccess(accessToUpdate);
 
-             return Success<AccessDto>("Access updated", _accessDtoAdapter.Adapt(accessToUpdate));
+             return Success("Access updated", _accessDtoAdapter.Adapt(accessToUpdate));
         }
 
         private string GetToken()
@@ -357,7 +357,7 @@ namespace HolcombeScores.Api.Services
 
             SetToken(newToken);
 
-            return Success<AccessDto>("Access recovered", _accessDtoAdapter.Adapt(access));
+            return Success("Access recovered", _accessDtoAdapter.Adapt(access));
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(AccessRequest accessRequest)
@@ -370,7 +370,7 @@ namespace HolcombeScores.Api.Services
             var existingAccess = await _accessRepository.GetAccess(accessRequest.UserId);
             if (existingAccess != null)
             {
-                return Success<AccessDto>("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
+                return Success("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
             }
 
             var newAccess = new Access
@@ -389,7 +389,7 @@ namespace HolcombeScores.Api.Services
             // clean up the access request
             await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
 
-            return Success<AccessDto>("Access request removed", _accessDtoAdapter.Adapt(newAccess));
+            return Success("Access request removed", _accessDtoAdapter.Adapt(newAccess));
         }
 
         private static ActionResultDto<T> Success<T>(string message, T outcome = default)

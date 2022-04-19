@@ -8,13 +8,11 @@ namespace HolcombeScores.Api.Services.Adapters
     public class GameDtoAdapter : IGameDtoAdapter
     {
         private readonly IGoalDtoAdapter _goalAdapter;
-        private readonly IPlayerDtoAdapter _playerAdapter;
         private readonly IGamePlayerDtoAdapter _gamePlayerAdapter;
 
-        public GameDtoAdapter(IGoalDtoAdapter goalAdapter, IPlayerDtoAdapter playerAdapter, IGamePlayerDtoAdapter gamePlayerAdapter)
+        public GameDtoAdapter(IGoalDtoAdapter goalAdapter, IGamePlayerDtoAdapter gamePlayerAdapter)
         {
             _goalAdapter = goalAdapter;
-            _playerAdapter = playerAdapter;
             _gamePlayerAdapter = gamePlayerAdapter;
         }
 

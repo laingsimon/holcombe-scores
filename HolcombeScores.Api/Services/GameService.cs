@@ -99,7 +99,7 @@ namespace HolcombeScores.Api.Services
 
                 result.Success = true;
                 result.Messages.Add("Game created");
-                result.Outcome = _gameDtoAdapter.Adapt(game, gamePlayers, new Goal[0]);
+                result.Outcome = _gameDtoAdapter.Adapt(game, gamePlayers, Array.Empty<Goal>());
                 return result;
             }
             catch (Exception exc)
@@ -204,17 +204,6 @@ namespace HolcombeScores.Api.Services
                Warnings =
                {
                    message,
-               },
-           };
-        }
-
-        private static ActionResultDto<GameDto> NotAnAdmin()
-        {
-           return new ActionResultDto<GameDto>
-           {
-               Errors =
-               {
-                   "Not an admin",
                },
            };
         }

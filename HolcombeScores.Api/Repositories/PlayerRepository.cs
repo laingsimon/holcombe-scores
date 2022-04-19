@@ -2,33 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Data.Tables;
 using HolcombeScores.Models;
 
 namespace HolcombeScores.Api.Repositories
 {
     public class PlayerRepository : IPlayerRepository
     {
-        private readonly TableClient _playerTableClient;
+        private readonly TypedTableClient<Player> _playerTableClient;
 
         public PlayerRepository(ITableServiceClientFactory tableServiceClientFactory)
         {
-            _playerTableClient = tableServiceClientFactory.CreateTableClient("Player");
+            _playerTableClient = new TypedTableClient<Player>(tableServiceClientFactory.CreateTableClient("Player"));
         }
 
         public IAsyncEnumerable<Player> GetAll(Guid? teamId)
         {
             if (teamId == null)
             {
-                return _playerTableClient.QueryAsync<Player>();
+                return _playerTableClient.QueryAsync();
             }
 
-            return _playerTableClient.QueryAsync<Player>(p => p.TeamId == teamId);
+            return _playerTableClient.QueryAsync(p => p.TeamId == teamId);
         }
 
         public async Task<Player> GetByNumber(Guid? teamId, int number)
         {
-            return await _playerTableClient.SingleOrDefaultAsync<Player>(p =>
+            return await _playerTableClient.SingleOrDefaultAsync(p =>
                 (p.TeamId == teamId) && p.Number == number);
         }
 

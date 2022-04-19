@@ -2,35 +2,27 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Data.Tables;
 using HolcombeScores.Models;
 
 namespace HolcombeScores.Api.Repositories
 {
     public class TeamRepository : ITeamRepository
     {
-        private readonly TableClient _teamTableClient;
+        private readonly TypedTableClient<Team> _teamTableClient;
 
         public TeamRepository(ITableServiceClientFactory tableServiceClientFactory)
         {
-            _teamTableClient = tableServiceClientFactory.CreateTableClient("Team");
+            _teamTableClient = new TypedTableClient<Team>(tableServiceClientFactory.CreateTableClient("Team"));
         }
 
         public IAsyncEnumerable<Team> GetAll()
         {
-            return _teamTableClient.QueryAsync<Team>();
+            return _teamTableClient.QueryAsync();
         }
 
         public async Task<Team> Get(Guid teamId)
         {
-            try
-            {
-                return await _teamTableClient.GetEntityAsync<Team>(teamId.ToString(), teamId.ToString());
-            }
-            catch (RequestFailedException)
-            {
-                return null;
-            }
+            return await _teamTableClient.SingleOrDefaultAsync(t => t.Id == teamId);
         }
 
         public async Task CreateTeam(Team team)

@@ -3,36 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Data.Tables;
 using HolcombeScores.Models;
 
 namespace HolcombeScores.Api.Repositories
 {
     public class GameRepository : IGameRepository
     {
-        private readonly TableClient _gameTableClient;
-        private readonly TableClient _gamePlayerTableClient;
-        private readonly TableClient _goalTableClient;
+        private readonly TypedTableClient<Game> _gameTableClient;
+        private readonly TypedTableClient<GamePlayer> _gamePlayerTableClient;
+        private readonly TypedTableClient<Goal> _goalTableClient;
 
         public GameRepository(ITableServiceClientFactory tableServiceClientFactory)
         {
-            _gameTableClient = tableServiceClientFactory.CreateTableClient("Game");
-            _gamePlayerTableClient = tableServiceClientFactory.CreateTableClient("GamePlayer");
-            _goalTableClient = tableServiceClientFactory.CreateTableClient("Goal");
+            _gameTableClient = new TypedTableClient<Game>(tableServiceClientFactory.CreateTableClient("Game"));
+            _gamePlayerTableClient = new TypedTableClient<GamePlayer>(tableServiceClientFactory.CreateTableClient("GamePlayer"));
+            _goalTableClient = new TypedTableClient<Goal>(tableServiceClientFactory.CreateTableClient("Goal"));
         }
 
         public IAsyncEnumerable<Game> GetAll(Guid? teamId)
         {
             if (teamId == null)
             {
-                return _gameTableClient.QueryAsync<Game>();
+                return _gameTableClient.QueryAsync();
             }
-            return _gameTableClient.QueryAsync<Game>(g => g.TeamId == teamId);
+            return _gameTableClient.QueryAsync(g => g.TeamId == teamId);
         }
 
         public async Task<Game> Get(Guid id)
         {
-            return await _gameTableClient.SingleOrDefaultAsync<Game>(gte => gte.Id == id);
+            return await _gameTableClient.SingleOrDefaultAsync(gte => gte.Id == id);
         }
 
         public async Task Add(Game game)
@@ -48,7 +47,7 @@ namespace HolcombeScores.Api.Repositories
         public async Task<IEnumerable<GamePlayer>> GetPlayers(Guid gameId)
         {
             var players = new List<GamePlayer>();
-            await foreach (var gamePlayer in _gamePlayerTableClient.QueryAsync<GamePlayer>(g => g.GameId == gameId))
+            await foreach (var gamePlayer in _gamePlayerTableClient.QueryAsync(g => g.GameId == gameId))
             {
                 players.Add(gamePlayer);
             }
@@ -59,7 +58,7 @@ namespace HolcombeScores.Api.Repositories
         public async Task<IEnumerable<Goal>> GetGoals(Guid gameId)
         {
             var goals = new List<Goal>();
-            await foreach (var goal in _goalTableClient.QueryAsync<Goal>(g => g.GameId == gameId))
+            await foreach (var goal in _goalTableClient.QueryAsync(g => g.GameId == gameId))
             {
                 goals.Add(goal);
             }

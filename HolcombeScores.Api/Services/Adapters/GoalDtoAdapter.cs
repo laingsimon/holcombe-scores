@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using HolcombeScores.Api.Models;
 using HolcombeScores.Api.Repositories;

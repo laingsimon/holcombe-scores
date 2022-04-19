@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using HolcombeScores.Api.Models;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Models;
