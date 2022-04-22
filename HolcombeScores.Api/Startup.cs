@@ -39,6 +39,7 @@ namespace HolcombeScores.Api
             services.AddSingleton<IRecoverAccessDtoAdapter, RecoverAccessDtoAdapter>();
             services.AddSingleton<IMyAccessDtoAdapter, MyAccessDtoAdapter>();
             services.AddSingleton<ITeamDtoAdapter, TeamDtoAdapter>();
+            services.AddSingleton<IClientService, ClientService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
