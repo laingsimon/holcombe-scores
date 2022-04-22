@@ -87,7 +87,7 @@ namespace HolcombeScores.Api.Controllers
             return _accessService.GetAccessRequests();
         }
 
-        [HttpGet("/api/Access/Revoke")]
+        [HttpPost("/api/Access/Revoke")]
         public async Task<ActionResultDto<AccessDto>> RevokeRequest(AccessResponseDto response)
         {
             try
