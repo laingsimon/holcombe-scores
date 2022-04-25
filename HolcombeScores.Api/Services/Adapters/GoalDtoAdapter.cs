@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using HolcombeScores.Api.Models.AzureTables;
 using HolcombeScores.Api.Models.Dtos;
@@ -23,7 +24,9 @@ namespace HolcombeScores.Api.Services.Adapters
                 return null;
             }
 
-            var player = await _playerRepository.GetByNumber(goal.TeamId, goal.PlayerNumber);
+            var player = goal.HolcombeGoal 
+                ? await _playerRepository.GetByNumber(goal.TeamId ?? Guid.Empty, goal.PlayerNumber ?? -1)
+                : null;
 
             return new GoalDto
             {
@@ -34,7 +37,7 @@ namespace HolcombeScores.Api.Services.Adapters
             };
         }
 
-        public Goal Adapt(GoalDto goal)
+        public Goal Adapt(GoalDto goal, Game game)
         {
             if (goal == null)
             {
@@ -43,8 +46,8 @@ namespace HolcombeScores.Api.Services.Adapters
 
             return new Goal
             {
-                PlayerNumber = goal.Player.Number,
-                TeamId = goal.Player.TeamId,
+                PlayerNumber = goal.HolcombeGoal ? goal.Player.Number : null,
+                TeamId = goal.HolcombeGoal ? game.TeamId : null,
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
                 GameId = goal.GameId,

@@ -25,10 +25,10 @@ namespace HolcombeScores.Api.Repositories
             return _playerTableClient.QueryAsync(p => p.TeamId == teamId);
         }
 
-        public async Task<Player> GetByNumber(Guid? teamId, int number)
+        public async Task<Player> GetByNumber(Guid teamId, int number)
         {
             return await _playerTableClient.SingleOrDefaultAsync(p =>
-                (p.TeamId == teamId) && p.Number == number);
+                p.TeamId == teamId && p.Number == number);
         }
 
         public async Task AddPlayer(Player player)

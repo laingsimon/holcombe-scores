@@ -230,9 +230,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotLoggedIn<GameDto>();
             }
 
-            var goal = _goalDtoAdapter.Adapt(goalDto);
-
-            var game = await _gameRepository.Get(goal.GameId);
+            var game = await _gameRepository.Get(goalDto.GameId);
             if (game == null)
             {
                 return _serviceHelper.NotFound<GameDto>("Game not found");
@@ -243,6 +241,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
             }
 
+            var goal = _goalDtoAdapter.Adapt(goalDto, game);
             await _gameRepository.AddGoal(goal);
 
             return _serviceHelper.Success("Goal recorded", await GetGame(goal.GameId));
