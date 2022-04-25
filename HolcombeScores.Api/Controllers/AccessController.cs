@@ -25,7 +25,7 @@ namespace HolcombeScores.Api.Controllers
             return _accessService.GetAllAccess();
         }
 
-        [HttpDelete("/api/Access")]
+        [HttpDelete("/api/Access/{userId}")]
         public async Task<ActionResultDto<AccessDto>> RequestAccess(Guid userId)
         {
             return await _accessService.RemoveAccess(userId);
@@ -62,7 +62,7 @@ namespace HolcombeScores.Api.Controllers
             return await _accessService.RequestAccess(requestDto);
         }
 
-        [HttpDelete("/api/Access/Request")]
+        [HttpDelete("/api/Access/Request/{userId}")]
         public async Task<ActionResultDto<AccessRequestDto>> RequestAccessRequest(Guid userId)
         {
             return await _accessService.RemoveAccessRequest(userId);

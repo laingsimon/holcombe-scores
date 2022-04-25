@@ -8,7 +8,7 @@ class Access {
     }
     
     deleteAccess(userId) {
-        return this.api.http.delete(`/api/Access?userId=${userId}`);
+        return this.api.http.delete(`/api/Access/${userId}`);
     }
     
     updateAccess(teamId, userId, name, admin) {
@@ -49,7 +49,7 @@ class Access {
     }
     
     deleteAccessRequest(userId) {
-        return this.api.http.delete(`/api/AccessRequest?userId=${userId}`);
+        return this.api.http.delete(`/api/AccessRequest/${userId}`);
     }
     
     getAllAccessRequests() {
