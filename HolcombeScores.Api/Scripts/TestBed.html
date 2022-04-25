@@ -9,6 +9,8 @@
   <script>
       window.addEventListener("load", function() {
           var x = new HolcombeScores();
+          console.log(`API host: ${x.settings.apiHost}`);
+          x.api.access.getMyAccess().then(access => console.log(access));
       });
   </script>
 </body>
