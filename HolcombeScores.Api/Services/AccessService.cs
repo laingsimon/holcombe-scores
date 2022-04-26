@@ -13,7 +13,8 @@ namespace HolcombeScores.Api.Services
 {
     public class AccessService : IAccessService
     {
-        private const string CookieName = "HS_Token";
+        private const string TokenCookieName = "HS_Token";
+        private const string UserCookieName = "HS_User";
 
         private readonly IAccessRepository _accessRepository;
         private readonly IAccessRequestedDtoAdapter _accessRequestedDtoAdapter;
@@ -49,23 +50,36 @@ namespace HolcombeScores.Api.Services
 
         public async Task<MyAccessDto> GetMyAccess()
         {
-            var token = GetToken();
-            var access = token == null ? null : await _accessRepository.GetAccess(token);
-            var accessRequest = token == null ? null : await _accessRepository.GetAccessRequest(token);
+            var access = await GetAccessInternal(permitRevoked: true);
+            var accessRequest = await GetAccessRequestInternal();
 
             return _myAccessDtoAdapter.Adapt(access, accessRequest);
         }
 
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
         {
+            var userId = GetRequestUserId();
+
             await foreach (var access in _accessRepository.GetAllAccess())
             {
-               yield return _recoverAccessDtoAdapter.Adapt(access);
+                if (userId != null && access.UserId != userId)
+                {
+                    // if the userId cookie was set, then only show the users access requests
+                    continue;
+                }
+
+                yield return _recoverAccessDtoAdapter.Adapt(access);
             }
 
             await foreach (var accessRequest in _accessRepository.GetAllAccessRequests())
             {
-               yield return _recoverAccessDtoAdapter.Adapt(accessRequest);
+                if (userId != null && accessRequest.UserId != userId)
+                {
+                    // if the userId cookie was set, then only show the users access
+                    continue;
+                }
+
+                yield return _recoverAccessDtoAdapter.Adapt(accessRequest);
             }
         }
 
@@ -116,13 +130,7 @@ namespace HolcombeScores.Api.Services
         /// <returns></returns>
         public async Task<AccessDto> GetAccess()
         {
-            var token = GetToken();
-            if (token == null)
-            {
-                return null;
-            }
-
-            return _accessDtoAdapter.Adapt(await _accessRepository.GetAccess(token));
+            return _accessDtoAdapter.Adapt(await GetAccessInternal());
         }
 
         public async Task<bool> IsAdmin()
@@ -144,15 +152,11 @@ namespace HolcombeScores.Api.Services
 
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto)
         {
-            var token = GetToken();
-            if (token != null)
+            var existingAccessRequest = await GetAccessRequestInternal();
+            if (existingAccessRequest != null)
             {
                 // access already requested
-                var existingAccessRequest = await _accessRepository.GetAccessRequest(token);
-                if (existingAccessRequest != null)
-                {
-                    return _accessRequestedDtoAdapter.Adapt(existingAccessRequest);
-                }
+                return _accessRequestedDtoAdapter.Adapt(existingAccessRequest);
             }
 
             var accessRequest = _accessRequestDtoAdapter.Adapt(accessRequestDto);
@@ -161,7 +165,7 @@ namespace HolcombeScores.Api.Services
 
             await _accessRepository.AddAccessRequest(accessRequest);
 
-            SetToken(accessRequest.Token);
+            SetCookies(accessRequest.Token, accessRequest.UserId);
 
             return _accessRequestedDtoAdapter.Adapt(accessRequest);
         }
@@ -283,52 +287,53 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated)
         {
-             var accessToUpdate = await _accessRepository.GetAccess(GetToken());
+            var accessToUpdate = await GetAccessInternal();
 
-             if (accessToUpdate == null)
-             {
-                 return _serviceHelper.NotLoggedIn<AccessDto>();
-             }
-             var isAdmin = accessToUpdate.Admin;
+            if (accessToUpdate == null)
+            {
+                return _serviceHelper.NotLoggedIn<AccessDto>();
+            }
 
-             if (accessToUpdate.Revoked != null)
-             {
-                 return _serviceHelper.NotPermitted<AccessDto>("Unable to update revoked access");
-             }
+            var isAdmin = accessToUpdate.Admin;
 
-             if (updated.UserId != accessToUpdate.UserId)
-             {
-                 if (!isAdmin)
-                 {
-                     return _serviceHelper.NotPermitted<AccessDto>("Only an admin can change another users' details");
-                 }
+            if (updated.UserId != accessToUpdate.UserId)
+            {
+                if (!isAdmin)
+                {
+                    return _serviceHelper.NotPermitted<AccessDto>("Only an admin can change another users' details");
+                }
 
-                 accessToUpdate = await _accessRepository.GetAccess(updated.UserId);
+                accessToUpdate = await _accessRepository.GetAccess(updated.UserId);
 
-                 if (accessToUpdate == null)
-                 {
-                     return _serviceHelper.NotFound<AccessDto>("Access not found");
-                 }
-             }
+                if (accessToUpdate == null)
+                {
+                    return _serviceHelper.NotFound<AccessDto>($"Access not found for user ${updated.UserId}");
+                }
+            }
 
-             if (isAdmin)
-             {
-                 accessToUpdate.Admin = updated.Admin;
-                 accessToUpdate.TeamId = updated.TeamId;
-             }
+            if (accessToUpdate.Revoked != null)
+            {
+                return _serviceHelper.NotPermitted<AccessDto>("Unable to update revoked access");
+            }
 
-             accessToUpdate.Name = updated.Name;
+            if (isAdmin)
+            {
+                accessToUpdate.Admin = updated.Admin;
+                accessToUpdate.TeamId = updated.TeamId;
+            }
 
-             await _accessRepository.UpdateAccess(accessToUpdate);
+            accessToUpdate.Name = updated.Name;
 
-             return _serviceHelper.Success("Access updated", _accessDtoAdapter.Adapt(accessToUpdate));
+            await _accessRepository.UpdateAccess(accessToUpdate);
+
+            return _serviceHelper.Success("Access updated", _accessDtoAdapter.Adapt(accessToUpdate));
         }
 
-        private string GetToken()
+        private string GetRequestToken()
         {
             var request = _httpContextAccessor.HttpContext?.Request;
             var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
-            if (cookies.TryGetValue(CookieName, out var token))
+            if (cookies.TryGetValue(TokenCookieName, out var token))
             {
                 return token;
             }
@@ -336,7 +341,21 @@ namespace HolcombeScores.Api.Services
             return null;
         }
 
-        private void SetToken(string token)
+        private Guid? GetRequestUserId()
+        {
+            var request = _httpContextAccessor.HttpContext?.Request;
+            var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
+            if (cookies.TryGetValue(UserCookieName, out var userIdString))
+            {
+                return Guid.TryParse(userIdString, out var userId)
+                    ? userId
+                    : null;
+            }
+
+            return null;
+        }
+
+        private void SetCookies(string token, Guid userId)
         {
             var response = _httpContextAccessor.HttpContext?.Response;
             var options = new CookieOptions
@@ -345,7 +364,44 @@ namespace HolcombeScores.Api.Services
                 Secure = true,
                 Expires = DateTime.UtcNow.AddYears(1),
             };
-            response?.Cookies.Append(CookieName, token, options);
+            response?.Cookies.Append(TokenCookieName, token, options);
+            response?.Cookies.Append(UserCookieName, userId.ToString(), options);
+        }
+
+        private async Task<Access> GetAccessInternal(bool permitRevoked = false)
+        {
+            var token = GetRequestToken();
+            var userId = GetRequestUserId();
+            if (token == null || userId == null)
+            {
+                return null;
+            }
+
+            var access = await _accessRepository.GetAccess(token, userId.Value);
+            if (permitRevoked)
+            {
+                return access;
+            }
+
+            if (access?.Revoked != null)
+            {
+                // the access has been revoked
+                return null;
+            }
+
+            return access;
+        }
+
+        private async Task<AccessRequest> GetAccessRequestInternal()
+        {
+            var token = GetRequestToken();
+            var userId = GetRequestUserId();
+            if (token == null || userId == null)
+            {
+                return null;
+            }
+
+            return await _accessRepository.GetAccessRequest(token, userId.Value);
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
@@ -358,7 +414,7 @@ namespace HolcombeScores.Api.Services
             var newToken = Guid.NewGuid().ToString();
             await _accessRepository.UpdateAccessToken(access.Token, newToken);
 
-            SetToken(newToken);
+            SetCookies(newToken, access.UserId);
 
             return _serviceHelper.Success("Access recovered", _accessDtoAdapter.Adapt(access));
         }
@@ -368,7 +424,7 @@ namespace HolcombeScores.Api.Services
             var newToken = Guid.NewGuid().ToString();
             await _accessRepository.UpdateAccessRequestToken(accessRequest.Token, newToken);
 
-            SetToken(newToken);
+            SetCookies(newToken, accessRequest.UserId);
 
             var existingAccess = await _accessRepository.GetAccess(accessRequest.UserId);
             if (existingAccess != null)
