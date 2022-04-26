@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
@@ -8,5 +10,8 @@ namespace HolcombeScores.Api.Models.Dtos
         public string RecoveryId { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
+        
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string AdminPassCode { get; set; }
     }
 }

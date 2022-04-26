@@ -32,10 +32,11 @@ class Access {
     
     recoverAccess(recoveryId, adminPassCode) {
         let accessToRecover = {
-            recoveryId: recoveryId
-        }
+            recoveryId: recoveryId,
+            adminPassCode: adminPassCode
+        };
         
-        return this.api.http.post(`/api/Access/Recover/${adminPassCode}`, accessToRecover);
+        return this.api.http.post(`/api/Access/Recover`, accessToRecover);
     }
     
     createAccessRequest(userId, name, teamId) {

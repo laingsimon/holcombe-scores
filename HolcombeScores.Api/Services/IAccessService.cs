@@ -17,7 +17,7 @@ namespace HolcombeScores.Api.Services
         Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto);
         IAsyncEnumerable<AccessDto> GetAllAccess();
         IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery();
-        Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto, string adminPassCode);
+        Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto);
         Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId);
         Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId);
         Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated);

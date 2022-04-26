@@ -69,11 +69,11 @@ namespace HolcombeScores.Api.Services
             }
         }
 
-        public async Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto, string adminPassCode)
+        public async Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto)
         {
-            if (_adminPassCode != adminPassCode)
+            if (_adminPassCode != recoverAccessDto.AdminPassCode)
             {
-                return _serviceHelper.NotPermitted<AccessDto>("Admin pass code mismatch");
+                return _serviceHelper.NotPermitted<AccessDto>("Admin passcode mismatch");
             }
 
             await foreach (var access in _accessRepository.GetAllAccess())
