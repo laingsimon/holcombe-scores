@@ -27,9 +27,9 @@ namespace HolcombeScores.Api.Repositories
             return _accessRequestTableClient.QueryAsync();
         }
 
-        public async Task<AccessRequest> GetAccessRequest(string token)
+        public async Task<AccessRequest> GetAccessRequest(string token, Guid userId)
         {
-            return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.Token == token);
+            return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.Token == token && a.UserId == userId);
         }
 
         public async Task<AccessRequest> GetAccessRequest(Guid userId)
@@ -37,9 +37,9 @@ namespace HolcombeScores.Api.Repositories
             return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.UserId == userId);
         }
 
-        public async Task<Access> GetAccess(string token)
+        public async Task<Access> GetAccess(string token, Guid userId)
         {
-            return await _accessTableClient.SingleOrDefaultAsync(a => a.Token == token);
+            return await _accessTableClient.SingleOrDefaultAsync(a => a.Token == token && a.UserId == userId);
         }
 
         public async Task<Access> GetAccess(Guid userId)

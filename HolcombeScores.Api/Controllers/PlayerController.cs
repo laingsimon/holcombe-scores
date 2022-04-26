@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
@@ -28,10 +29,10 @@ namespace HolcombeScores.Api.Controllers
             return await _playerService.CreateOrUpdatePlayer(player);
         }
 
-        [HttpDelete("/api/Player")]
-        public async Task<ActionResultDto<PlayerDto>> Delete(PlayerDto player)
+        [HttpDelete("/api/Player/{teamId}/{number}")]
+        public async Task<ActionResultDto<PlayerDto>> Delete(Guid teamId, int number)
         {
-            return await _playerService.DeletePlayer(player);
+            return await _playerService.DeletePlayer(teamId, number);
         }
 
         [HttpPost("/api/Player/Transfer")]
