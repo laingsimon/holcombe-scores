@@ -13,18 +13,12 @@ class Player {
             number: number,
             teamId: teamId
         };
-        
+
         return this.api.http.put(`/api/Player`, playerDetail);
     }
 
-    deletePlayer(teamId, number, name) {
-        let playerDetail = {
-            name: name,
-            number: number,
-            teamId: teamId
-        };
-
-        return this.api.http.delete(`/api/Player`, playerDetail);
+    deletePlayer(teamId, number) {
+        return this.api.http.delete(`/api/Player/${teamId}/${number}`);
     }
 
     transferPlayer(currentTeamId, currentNumber, newTeamId, optionalNewNumber) {
@@ -34,7 +28,7 @@ class Player {
             newNumber: optionalNewNumber,
             newTeamId: newTeamId
         };
-        
+
         return this.api.http.post(`/api/Player/Transfer`, transferDetail);
     }
 }

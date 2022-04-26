@@ -64,16 +64,14 @@ namespace HolcombeScores.Api.Services
             return _serviceHelper.Success("Player updated", await GetPlayerDto(player.TeamId, player.Number));
         }
 
-        public async Task<ActionResultDto<PlayerDto>> DeletePlayer(PlayerDto playerDto)
+        public async Task<ActionResultDto<PlayerDto>> DeletePlayer(Guid teamId, int number)
         {
-            var player = _playerDtoAdapter.Adapt(playerDto);
-
-            if (!await _accessService.CanAccessTeam(playerDto.TeamId))
+            if (!await _accessService.CanAccessTeam(teamId))
             {
                 return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
             }
 
-            var existingPlayer = await _playerRepository.GetByNumber(player.TeamId, player.Number);
+            var existingPlayer = await _playerRepository.GetByNumber(teamId, number);
 
             if (existingPlayer == null)
             {

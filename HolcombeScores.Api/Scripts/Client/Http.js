@@ -2,7 +2,7 @@ class Http {
     constructor(settings) {
         this.settings = settings;
     }
-    
+
     get(relativeUrl) {
         return this.send('GET', relativeUrl, null);
     }
@@ -27,9 +27,9 @@ class Http {
         if (relativeUrl.indexOf('/') !== 0) {
             relativeUrl = '/' + relativeUrl;
         }
-        
+
         let absoluteUrl = this.settings.apiHost + relativeUrl;
-        
+
         if (content) {
             return fetch(absoluteUrl, { method: httpMethod, body: JSON.stringify(content), headers: { 'Content-Type': 'application/json' } }).then(response => response.json());
         }

@@ -7,13 +7,12 @@ class Team {
         return this.api.http.get(`/api/Teams`);
     }
 
-    createTeam(id, name, coach) {
+    createTeam(name, coach) {
         let teamDetail = {
           name: name,
-          coach: coach,
-          id: id
+          coach: coach
         };
-        
+
         return this.api.http.post(`/api/Team`, teamDetail);
     }
 
