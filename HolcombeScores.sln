@@ -2,8 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HolcombeScores.Api", "HolcombeScores.Api\HolcombeScores.Api.csproj", "{02F494B2-75D6-45DC-B57E-81EDABE16122}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HolcombeScores.Web", "HolcombeScores.Web\HolcombeScores.Web.csproj", "{4263A42B-9A81-4120-8888-77CD25D1895B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,9 +12,5 @@ Global
 		{02F494B2-75D6-45DC-B57E-81EDABE16122}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02F494B2-75D6-45DC-B57E-81EDABE16122}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02F494B2-75D6-45DC-B57E-81EDABE16122}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4263A42B-9A81-4120-8888-77CD25D1895B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4263A42B-9A81-4120-8888-77CD25D1895B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4263A42B-9A81-4120-8888-77CD25D1895B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4263A42B-9A81-4120-8888-77CD25D1895B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
