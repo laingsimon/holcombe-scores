@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-export class Counter extends Component {
+export class Games extends Component {
   constructor(props) {
     super(props);
     this.state = { currentCount: 0 };
@@ -16,7 +16,7 @@ export class Counter extends Component {
   render() {
     return (
       <div>
-        <h1>Counter</h1>
+        <h1>Games</h1>
 
         <p aria-live="polite">Current count: <strong>{this.state.currentCount}</strong></p>
 
