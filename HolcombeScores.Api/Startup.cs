@@ -54,6 +54,12 @@ namespace HolcombeScores.Api
             app.UseSwaggerUI();
 
             app.UseRouting();
+            app.UseCors(cors =>
+            {
+                cors.WithOrigins("https://localhost:44419");
+                cors.AllowAnyMethod();
+                cors.AllowAnyHeader();
+            });
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
