@@ -448,7 +448,7 @@ namespace HolcombeScores.Api.Services
             // clean up the access request
             await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
 
-            return _serviceHelper.Success("Access request removed", _accessDtoAdapter.Adapt(newAccess));
+            return _serviceHelper.Success("Access request recovered", _accessDtoAdapter.Adapt(newAccess));
         }
     }
 }
