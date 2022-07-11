@@ -53,6 +53,7 @@ namespace HolcombeScores.Api.Repositories
             accessRequest.PartitionKey = accessRequest.TeamId.ToString();
             accessRequest.RowKey = accessRequest.UserId.ToString();
             accessRequest.ETag = ETag.All;
+            accessRequest.Requested = DateTime.UtcNow;
 
             await _accessRequestTableClient.AddEntityAsync(accessRequest);
         }

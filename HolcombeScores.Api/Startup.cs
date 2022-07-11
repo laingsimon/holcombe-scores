@@ -59,6 +59,7 @@ namespace HolcombeScores.Api
                 cors.WithOrigins("https://localhost:44419");
                 cors.AllowAnyMethod();
                 cors.AllowAnyHeader();
+                cors.AllowCredentials();
             });
             app.UseEndpoints(endpoints =>
             {

@@ -14,7 +14,7 @@ namespace HolcombeScores.Api.Services
     public class AccessService : IAccessService
     {
         private const string TokenCookieName = "HS_Token";
-        private const string UserCookieName = "HS_User";
+        private const string UserIdCookieName = "HS_User";
 
         private readonly IAccessRepository _accessRepository;
         private readonly IAccessRequestedDtoAdapter _accessRequestedDtoAdapter;
@@ -345,7 +345,7 @@ namespace HolcombeScores.Api.Services
         {
             var request = _httpContextAccessor.HttpContext?.Request;
             var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
-            if (cookies.TryGetValue(UserCookieName, out var userIdString))
+            if (cookies.TryGetValue(UserIdCookieName, out var userIdString))
             {
                 return Guid.TryParse(userIdString, out var userId)
                     ? userId
@@ -360,12 +360,11 @@ namespace HolcombeScores.Api.Services
             var response = _httpContextAccessor.HttpContext?.Response;
             var options = new CookieOptions
             {
-                HttpOnly = true,
                 Secure = true,
                 Expires = DateTime.UtcNow.AddYears(1),
             };
             response?.Cookies.Append(TokenCookieName, token, options);
-            response?.Cookies.Append(UserCookieName, userId.ToString(), options);
+            response?.Cookies.Append(UserIdCookieName, userId.ToString(), options);
         }
 
         private async Task<Access> GetAccessInternal(bool permitRevoked = false)
