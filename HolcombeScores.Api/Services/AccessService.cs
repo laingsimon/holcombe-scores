@@ -362,6 +362,7 @@ namespace HolcombeScores.Api.Services
             {
                 Secure = true,
                 Expires = DateTime.UtcNow.AddYears(1),
+                SameSite = SameSiteMode.None,
             };
             response?.Cookies.Append(TokenCookieName, token, options);
             response?.Cookies.Append(UserIdCookieName, userId.ToString(), options);
