@@ -33,8 +33,9 @@ namespace HolcombeScores.Api.Services
         public async IAsyncEnumerable<TeamDto> GetAllTeams()
         {
             var access = await _accessService.GetAccess();
-            if (access == null || access.Revoked != null)
+            if (access?.Revoked != null)
             {
+                // if someone has revoked access don't permit them access to the list of teams
                 yield break;
             }
 
