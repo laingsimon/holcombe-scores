@@ -11,6 +11,7 @@ const rootElement = document.getElementById('root');
 
 ReactDOM.render(
   <BrowserRouter basename={baseUrl}>
+      <script src="https://localhost:5001/api/Client/"></script>
     <App />
   </BrowserRouter>,
   rootElement);
