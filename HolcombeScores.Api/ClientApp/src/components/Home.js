@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 export class Home extends Component {
   constructor(props) {
     super(props);
-    this.apiBaseUrl = 'https://holcombe-scores.azurewebsites.net';
+    this.apiBaseUrl = 'https://holcombe-scores.azurewebsites.net/data';
     this.state = { access: null, loading: true, request: { name: '' }, mode: 'access', recovery: { adminPassCode: '' } };
     this.requestAccess = this.requestAccess.bind(this);
     this.recoverAccess = this.recoverAccess.bind(this);

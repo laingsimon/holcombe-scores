@@ -1,5 +1,3 @@
-using System.IO;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
