@@ -5,16 +5,11 @@ export class TeamOverview extends Component {
         super(props);
         this.team = props.team;
         this.history = props.history;
-        this.showGames = this.showGames.bind(this);
-    }
-
-    showGames(event) {
-        this.history.push('/games/' + this.team.id);
     }
 
     // renderers
     render() {
-        return (<a href="#" className="list-group-item list-group-item-action flex-column align-items-start" onClick={this.showGames}>
+        return (<a href="/games/{this.team.id}" className="list-group-item list-group-item-action flex-column align-items-start" onClick={this.showGames}>
             <strong>{this.team.name}</strong> coached by {this.team.coach}
         </a>);
     }
