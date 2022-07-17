@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
+import { HolcombeScores } from 'https://holcombe-scores.azurewebsites.net/data/api/Client';
 
 export class Home extends Component {
   constructor(props) {
     super(props);
-    this.apiBaseUrl = 'https://holcombe-scores.azurewebsites.net/data';
     this.state = { access: null, loading: true, request: { name: '' }, mode: 'access', recovery: { adminPassCode: '' } };
     this.requestAccess = this.requestAccess.bind(this);
     this.recoverAccess = this.recoverAccess.bind(this);
     this.requestChanged = this.requestChanged.bind(this);
     this.recoveryChanged = this.recoveryChanged.bind(this);
+    this.api = new HolcombeScores();
   }
 
   // hooks
   componentDidMount() {
+    // noinspection JSIgnoredPromiseFromCall
     this.populateMyAccess();
   }
   
@@ -33,12 +35,14 @@ export class Home extends Component {
       return;
     }
     
+    // noinspection JSIgnoredPromiseFromCall
     this.sendAccessRequest(this.state.request);
   }
 
   recoverAccess() {
     if (this.state.mode !== 'recover') {
       this.setState({ mode: 'recover', loading: true });
+      // noinspection JSIgnoredPromiseFromCall
       this.populateRecoveryOptions();
       return;
     }
@@ -54,6 +58,7 @@ export class Home extends Component {
     }
 
     this.setState({ mode: 'recover', loading: true });
+    // noinspection JSIgnoredPromiseFromCall
     this.sendAccessRecovery(this.state.recovery);
   }
 
@@ -194,11 +199,8 @@ export class Home extends Component {
   // api access
   async populateMyAccess() {
     try {
-      const accessResponse = await fetch(this.apiBaseUrl + '/api/My/Access', { credentials: 'include' });
-      const access = await accessResponse.json();
-
-      const teamsResponse = await fetch(this.apiBaseUrl + '/api/Teams', { credentials: 'include' });
-      const teams = await teamsResponse.json();
+      const access = await this.api.access.getMyAccess();
+      const teams = await this.api.teams.getAllTeams();
       
       this.setState({ mode: 'access', access: access, teams: teams, loading: false});
     } catch (e) {
@@ -209,18 +211,8 @@ export class Home extends Component {
   async sendAccessRequest(details) {
     this.setState({error: null, loading: true});
     try {
-      const response = await fetch(this.apiBaseUrl + '/api/Access/Request', {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(details),
-      });
-      
-      let data = await response.json();
-      if (response.status !== 200) {
+      const data = await this.api.access.sendAccessRequest(details);
+      if (data.errors) {
         this.setState({error: JSON.stringify(data.errors), loading: false});
         return;
       }
@@ -233,8 +225,7 @@ export class Home extends Component {
   
   async populateRecoveryOptions() {
     try {
-      const recoveryResponse = await fetch(this.apiBaseUrl + '/api/Access/Recover', { credentials: 'include' });
-      const recoveryAccounts = await recoveryResponse.json();
+      const recoveryAccounts = await this.api.access.getAccessForRecovery();
 
       this.setState({recoveryAccounts: recoveryAccounts, loading: false});
     } catch (e) {
@@ -245,18 +236,8 @@ export class Home extends Component {
   async sendAccessRecovery(recovery) {
     this.setState({error: null, loading: true});
     try {
-      const response = await fetch(this.apiBaseUrl + '/api/Access/Recover', {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(recovery),
-      });
-
-      let data = await response.json();
-      if (response.status !== 200) {
+      const data = await this.api.access.sendAccessRecovery(recovery);
+      if (data.errors) {
         this.setState({error: JSON.stringify(data.errors), loading: false});
         return;
       }

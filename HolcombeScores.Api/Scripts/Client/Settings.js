@@ -4,7 +4,7 @@ class Settings {
     
     get apiHost() {
         if (!this._apiHost) {
-            this._apiHost = document.location.origin;
+            this._apiHost = '%API_HOST%';
         }
         
         return this._apiHost;

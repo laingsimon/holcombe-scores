@@ -5,3 +5,5 @@ class HolcombeScores {
         this.api = new Api(this.settings, this.http);
     }
 }
+
+export { HolcombeScores };
