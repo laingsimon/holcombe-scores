@@ -7,6 +7,11 @@ export class GameOverview extends Component {
         this.team = props.team;
         this.history = props.history;
         this.showTeam = props.showTeam;
+        this.showGame = this.showGame.bind(this);
+    }
+
+    showGame(event) {
+        this.history.push('/game/' + this.game.id);
     }
 
     // renderers
@@ -19,10 +24,10 @@ export class GameOverview extends Component {
             ? `${holcombeGoals}-${opponentGoals}`
                 : `${opponentGoals}-${holcombeGoals}`;
 
-        return (<li className="list-group-item d-flex justify-content-between align-items-center">
+        return (<a href="#" onClick={this.showGame} className="list-group-item d-flex justify-content-between align-items-center">
             {this.renderTeam()} {this.showTeam ? location : location.toLowerCase()} to {this.game.opponent} on {date.toDateString()}
           <span className="badge rounded-pill bg-primary">{score}</span>
-        </li>);
+        </a>);
     }
     
     renderTeam() {

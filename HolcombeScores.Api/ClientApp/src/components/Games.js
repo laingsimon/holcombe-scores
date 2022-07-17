@@ -45,9 +45,9 @@ export class Games extends Component {
   }
   
   renderGames(games, showTeam) {
-    return (<ul className="list-group">
+    return (<div className="list-group">
       {games.map(g => (<GameOverview key={g.id} game={g} team={this.getTeam(g)} history={this.history} showTeam={showTeam} />))}
-    </ul>);
+    </div>);
   }
   
   getTeam(game) {

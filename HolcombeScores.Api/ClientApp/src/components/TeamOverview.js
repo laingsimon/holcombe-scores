@@ -14,7 +14,7 @@ export class TeamOverview extends Component {
 
     // renderers
     render() {
-        return (<a className="list-group-item list-group-item-action flex-column align-items-start" onClick={this.showGames}>
+        return (<a href="#" className="list-group-item list-group-item-action flex-column align-items-start" onClick={this.showGames}>
             <strong>{this.team.name}</strong> coached by {this.team.coach}
         </a>);
     }
