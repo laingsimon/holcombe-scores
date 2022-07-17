@@ -131,7 +131,7 @@ export class Home extends Component {
     // access granted
     let team = teams.filter(t => t.id === access.access.teamId)[0];
     return (<div>
-      Hello <strong>{access.access.name}</strong>, you have access to <a onClick={this.showGames}>{this.renderTeam(team)}</a>
+      Hello <strong>{access.access.name}</strong>, you have access to <a href="#" onClick={this.showGames}>{this.renderTeam(team)}</a>
       <hr />
       <button onClick={this.showGames} type="button" className="btn btn-primary">Show games</button>
     </div>);
