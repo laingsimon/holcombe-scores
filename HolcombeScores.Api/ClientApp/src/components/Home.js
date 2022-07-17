@@ -129,7 +129,7 @@ export class Home extends Component {
     return (<div>
       Hello <strong>{access.access.name}</strong>, you have access to <a href={gamesAddress} onClick={this.showGames}>{this.renderTeam(team)}</a>
       <hr />
-      <button onClick={this.showGames} type="button" className="btn btn-primary">Show games</button>
+      <a href={gamesAddress} className="btn btn-primary">Show games</a>
     </div>);
   }
 
