@@ -125,11 +125,10 @@ export class Home extends Component {
   renderAccess(access, teams) {
     // access granted
     let team = teams.filter(t => t.id === access.access.teamId)[0];
-    let gamesAddress = `/games/${team.id}`;
     return (<div>
-      Hello <strong>{access.access.name}</strong>, you have access to <a href={gamesAddress} onClick={this.showGames}>{this.renderTeam(team)}</a>
+      Hello <strong>{access.access.name}</strong>, you have access to <a href={`/games/${team.id}`} onClick={this.showGames}>{this.renderTeam(team)}</a>
       <hr />
-      <a href={gamesAddress} className="btn btn-primary">Show games</a>
+      <a href={`/games/${team.id}`} className="btn btn-primary">Show games</a>
     </div>);
   }
 
