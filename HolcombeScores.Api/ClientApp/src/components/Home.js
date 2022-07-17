@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import { HolcombeScores } from 'https://holcombe-scores.azurewebsites.net/data/api/Client';
+import {Settings} from '../api/settings';
+import {Http} from '../api/http';
+import {Team} from '../api/team';
+import {Access} from '../api/access';
 
 export class Home extends Component {
   constructor(props) {
@@ -9,7 +12,12 @@ export class Home extends Component {
     this.recoverAccess = this.recoverAccess.bind(this);
     this.requestChanged = this.requestChanged.bind(this);
     this.recoveryChanged = this.recoveryChanged.bind(this);
-    this.api = new HolcombeScores();
+    this.removeError = this.removeError.bind(this);
+    this.showGames = this.showGames.bind(this);
+    let http = new Http(new Settings());
+    this.accessApi = new Access(http);
+    this.teamApi = new Team(http);
+    this.history = props.history;
   }
 
   // hooks
@@ -78,6 +86,14 @@ export class Home extends Component {
     this.setState(stateUpdate);
   }
 
+  removeError() {
+    this.setState({ error: null });
+  }
+
+  showGames(event) {
+    this.history.push('/games/' + this.state.access.access.teamId);
+  }
+
   // renderers
   renderTeams(teams) {
     let setSelectedTeam = function(event) {
@@ -114,7 +130,11 @@ export class Home extends Component {
   renderAccess(access, teams) {
     // access granted
     let team = teams.filter(t => t.id === access.access.teamId)[0];
-    return (<p>Hello <strong>{access.access.name}</strong>, you have access to {this.renderTeam(team)}</p>);
+    return (<div>
+      Hello <strong>{access.access.name}</strong>, you have access to <a onClick={this.showGames}>{this.renderTeam(team)}</a>
+      <hr />
+      <button onClick={this.showGames} type="button" className="btn btn-primary">Show games</button>
+    </div>);
   }
 
   renderRequestAccess(access, teams) {
@@ -166,44 +186,62 @@ export class Home extends Component {
     </div>);
   }
 
+  renderLoading() {
+    // show a spinner?
+    return (<div>
+      <h1>Loading...</h1>
+      Working...
+    </div>);
+  }
+  
+  renderError(error) {
+    return (<div>
+      <h1>Error!</h1>
+      {error}
+      <hr />
+      <button type="button" className="btn btn-primary" onClick={this.removeError}>Back</button>
+    </div>);
+  }
+  
+  renderCreateAccessRequest(access, teams) {
+    return (<div>
+      <h1>Request access</h1>
+      {this.renderRequestAccess(access, teams)}
+    </div>);
+  }
+  
+  renderRecoverAccess(recoveryAccounts) {
+    return (<div>
+      <h1>Recover access</h1>
+      {this.renderRecoveryOptions(recoveryAccounts)}
+    </div>);
+  }
+  
   render () {
-    let heading;
-    let content;
-    
     if (this.state.loading) {
-      heading = (<span>Loading...</span>);
-      content = (<p>Working...</p>);
-      // set <content> to a spinner?
+      return this.renderLoading();
     } else if (this.state.error) {
-      heading = (<span>Error getting your access</span>);
-      content = (<pre>{JSON.stringify(this.state.error)}</pre>);
+      return this.renderError(this.state.error);
     } else if (this.state.mode === 'access' && ((this.state.access.request && this.state.access.access) || (this.state.access.access && this.state.access.access.admin))) {
-      heading = (<span>Welcome</span>);
-      content = this.renderAccess(this.state.access, this.state.teams);
+      return this.renderAccess(this.state.access, this.state.teams);
     } else if (this.state.mode === 'access') {
-      heading = (<span>Request access</span>);
-      content = this.renderRequestAccess(this.state.access, this.state.teams);
+      return this.renderCreateAccessRequest(this.state.access, this.state.teams);
     } else if (this.state.mode === 'recover') {
-      heading = (<span>Recover access</span>);
-      content = this.renderRecoveryOptions(this.state.recoveryAccounts);
+      return this.renderRecoverAccess(this.state.recoveryAccounts);
     }
     
-    return (
-      <div>
-        <h1>{heading}</h1>
-        {content}
-      </div>
-    );
+    return (<div>Unset: {this.state.mode}</div>);
   }
 
   // api access
   async populateMyAccess() {
     try {
-      const access = await this.api.access.getMyAccess();
-      const teams = await this.api.teams.getAllTeams();
+      const access = await this.accessApi.getMyAccess();
+      const teams = await this.teamApi.getAllTeams();
       
       this.setState({ mode: 'access', access: access, teams: teams, loading: false});
     } catch (e) {
+      console.log(e);
       this.setState({ mode: 'access', error: e.message, loading: false});
     }
   }
@@ -211,24 +249,26 @@ export class Home extends Component {
   async sendAccessRequest(details) {
     this.setState({error: null, loading: true});
     try {
-      const data = await this.api.access.sendAccessRequest(details);
-      if (data.errors) {
-        this.setState({error: JSON.stringify(data.errors), loading: false});
+      const data = await this.accessApi.createAccessRequest(details.name, details.teamId);
+      if (data.errors && data.errors.length > 0) {
+        this.setState({error: data.errors, loading: false});
         return;
       }
       
       await this.populateMyAccess(); // reload the component
     } catch (e) {
+      console.log(e);
       this.setState({error: e.message, loading: false});
     }
   }
   
   async populateRecoveryOptions() {
     try {
-      const recoveryAccounts = await this.api.access.getAccessForRecovery();
+      const recoveryAccounts = await this.accessApi.getAccessForRecovery();
 
       this.setState({recoveryAccounts: recoveryAccounts, loading: false});
     } catch (e) {
+      console.log(e);
       this.setState({error: e.message, loading: false});
     }
   }
@@ -236,14 +276,15 @@ export class Home extends Component {
   async sendAccessRecovery(recovery) {
     this.setState({error: null, loading: true});
     try {
-      const data = await this.api.access.sendAccessRecovery(recovery);
-      if (data.errors) {
-        this.setState({error: JSON.stringify(data.errors), loading: false});
+      const data = await this.accessApi.recoverAccess(recovery.recoveryId, recovery.adminPassCode);
+      if (data.errors && data.errors.length > 0) {
+        this.setState({error: data.errors, loading: false});
         return;
       }
 
       await this.populateMyAccess(); // reload the component
     } catch (e) {
+      console.log(e);
       this.setState({ error: e.message, loading: false});
     }
   }

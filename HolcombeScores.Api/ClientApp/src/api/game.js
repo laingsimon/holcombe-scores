@@ -1,18 +1,18 @@
 class Game {
-    constructor(api) {
-        this.api = api;
+    constructor(http) {
+        this.http = http;
     }
 
     getAllGames() {
-        return this.api.http.get(`/api/Games`);
+        return this.http.get(`/api/Games`);
     }
 
     getGame(id) {
-        return this.api.http.get(`/api/Game/${id}`);
+        return this.http.get(`/api/Game/${id}`);
     }
 
     deleteGame(id) {
-        return this.api.http.delete(`/api/Game/${id}`);
+        return this.http.delete(`/api/Game/${id}`);
     }
 
     createGame(teamId, date, opponent, playingAtHome, playerNames) {
@@ -23,8 +23,8 @@ class Game {
             playingAtHome: playingAtHome,
             players: playerNames
         };
-        
-        return this.api.http.post(`/api/Game`, gameDetail);
+
+        return this.http.post(`/api/Game`, gameDetail);
     }
 
     updateGame(id, teamId, date, opponent, playingAtHome, playerNames) {
@@ -37,15 +37,15 @@ class Game {
             players: playerNames
         };
 
-        return this.api.http.patch(`/api/Game`, gameDetail);
+        return this.http.patch(`/api/Game`, gameDetail);
     }
-    
+
     removePlayer(id, playerNumber) {
-        return this.api.http.delete(`/api/Game/${id}/${playerNumber}`);
+        return this.http.delete(`/api/Game/${id}/${playerNumber}`);
     }
 
     removeGoal(id, goalId) {
-        return this.api.http.delete(`/api/Game/${id}/${goalId}`);
+        return this.http.delete(`/api/Game/${id}/${goalId}`);
     }
 
     recordGoal(id, time, holcombeGoal, playerNumber) {
@@ -55,9 +55,9 @@ class Game {
             player: holcombeGoal ? { number: playerNumber } : null,
             gameId: id
         };
-        
-        return this.api.http.post(`/api/Game/Goal`, goalDetail);
+
+        return this.http.post(`/api/Game/Goal`, goalDetail);
     }
 }
 
-registerHolcombeScoresApi(api => { api.game = new Game(api) });
+export { Game };

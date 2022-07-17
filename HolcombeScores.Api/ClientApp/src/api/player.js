@@ -1,10 +1,10 @@
 class Player {
-    constructor(api) {
-        this.api = api;
+    constructor(http) {
+        this.http = http;
     }
 
     getAllPlayers() {
-        return this.api.http.get(`/api/Players`);
+        return this.http.get(`/api/Players`);
     }
 
     updatePlayer(teamId, number, name) {
@@ -14,11 +14,11 @@ class Player {
             teamId: teamId
         };
 
-        return this.api.http.put(`/api/Player`, playerDetail);
+        return this.http.put(`/api/Player`, playerDetail);
     }
 
     deletePlayer(teamId, number) {
-        return this.api.http.delete(`/api/Player/${teamId}/${number}`);
+        return this.http.delete(`/api/Player/${teamId}/${number}`);
     }
 
     transferPlayer(currentTeamId, currentNumber, newTeamId, optionalNewNumber) {
@@ -29,8 +29,8 @@ class Player {
             newTeamId: newTeamId
         };
 
-        return this.api.http.post(`/api/Player/Transfer`, transferDetail);
+        return this.http.post(`/api/Player/Transfer`, transferDetail);
     }
 }
 
-registerHolcombeScoresApi(api => { api.player = new Player(api) });
+export { Player };

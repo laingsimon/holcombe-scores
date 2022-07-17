@@ -1,14 +1,14 @@
 class Access {
-    constructor(api) {
-        this.api = api;
+    constructor(http) {
+        this.http = http;
     }
 
     getAllAccess() {
-        return this.api.http.get(`/api/Access`);
+        return this.http.get(`/api/Access`);
     }
 
     deleteAccess(userId) {
-        return this.api.http.delete(`/api/Access/${userId}`);
+        return this.http.delete(`/api/Access/${userId}`);
     }
 
     updateAccess(teamId, userId, name, admin) {
@@ -19,15 +19,15 @@ class Access {
             name: name,
         };
 
-        return this.api.http.patch(`/api/Access`, access);
+        return this.http.patch(`/api/Access`, access);
     }
 
     getMyAccess() {
-        return this.api.http.get(`/api/My/Access`);
+        return this.http.get(`/api/My/Access`);
     }
 
     getAccessForRecovery() {
-        return this.api.http.get(`/api/Access/Recover`);
+        return this.http.get(`/api/Access/Recover`);
     }
 
     recoverAccess(recoveryId, adminPassCode) {
@@ -36,25 +36,24 @@ class Access {
             adminPassCode: adminPassCode
         };
 
-        return this.api.http.post(`/api/Access/Recover`, accessToRecover);
+        return this.http.post(`/api/Access/Recover`, accessToRecover);
     }
 
-    createAccessRequest(userId, name, teamId) {
+    createAccessRequest(name, teamId) {
         let access = {
-            userId: userId,
             teamId: teamId,
             name: name
         };
 
-        return this.api.http.post(`/api/Access/Request`, access);
+        return this.http.post(`/api/Access/Request`, access);
     }
 
     deleteAccessRequest(userId) {
-        return this.api.http.delete(`/api/Access/Request/${userId}`);
+        return this.http.delete(`/api/Access/Request/${userId}`);
     }
 
     getAllAccessRequests() {
-        return this.api.http.get(`/api/Access/Request`);
+        return this.http.get(`/api/Access/Request`);
     }
 
     respondToAccessRequest(userId, teamId, reason, allow) {
@@ -65,7 +64,7 @@ class Access {
             teamId: teamId
         };
 
-        return this.api.http.post(`/api/Access/Respond`, response);
+        return this.http.post(`/api/Access/Respond`, response);
     }
 
     revokeAccess(userId, teamId, reason) {
@@ -75,8 +74,8 @@ class Access {
             teamId: teamId
         };
 
-        return this.api.http.post(`/api/Access/Revoke`, accessToRevoke);
+        return this.http.post(`/api/Access/Revoke`, accessToRevoke);
     }
 }
 
-registerHolcombeScoresApi(api => { api.access = new Access(api) });
+export { Access };

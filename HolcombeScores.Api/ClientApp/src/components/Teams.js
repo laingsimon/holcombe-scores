@@ -1,27 +1,59 @@
 import React, { Component } from 'react';
+import {Settings} from '../api/settings';
+import {Http} from '../api/http';
+import {Team} from '../api/team';
+import {Access} from '../api/access';
+import {TeamOverview} from "./TeamOverview";
 
 export class Teams extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentCount: 0 };
-    this.incrementCounter = this.incrementCounter.bind(this);
+    const http = new Http(new Settings());
+    this.teamApi = new Team(http);
+    this.accessApi = new Access(http);
+    this.history = props.history;
+    this.state = {
+      loading: true,
+      teams: null,
+      error: null
+    }
   }
 
-  incrementCounter() {
-    this.setState({
-      currentCount: this.state.currentCount + 1
-    });
+  componentDidMount() {
+    // noinspection JSIgnoredPromiseFromCall
+    this.fetchTeams();
   }
 
+  // renderers
   render() {
-    return (
-      <div>
-        <h1>Teams</h1>
+    if (this.state.loading) {
+      return (<div>Loading...</div>);
+    }
+    if (this.state.error) {
+      return (<div>Error<br /><p>{this.state.error}</p></div>);
+    }
+    return this.renderTeams(this.state.teams);
+  }
 
-        <p aria-live="polite">Current count: <strong>{this.state.currentCount}</strong></p>
+  renderTeams(teams) {
+    return (<div className="list-group">
+      {teams.map(team => <TeamOverview key={team.id} team={team} history={this.history} />)}
+    </div>);
+  }
 
-        <button className="btn btn-primary" onClick={this.incrementCounter}>Increment</button>
-      </div>
-    );
+  // api access
+  async fetchTeams() {
+    try {
+      const access = await this.accessApi.getMyAccess();
+      if (access.access) {
+        const teams = await this.teamApi.getAllTeams();
+        this.setState({teams: teams, loading: false}); 
+      } else {
+        this.setState({loading: false, error: 'You need tor request access first' });  
+      }
+    } catch (e) {
+      console.log(e);
+      this.setState({loading: false, error: e.message });
+    }
   }
 }

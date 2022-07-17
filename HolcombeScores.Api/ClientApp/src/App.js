@@ -12,7 +12,7 @@ export default class App extends Component {
     return (
       <Layout>
         <Route exact path='/' component={Home} />
-        <Route path='/games' component={Games} />
+        <Route path='/games/:teamId?' component={Games} />
         <Route path='/teams' component={Teams} />
       </Layout>
     );

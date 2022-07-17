@@ -33,12 +33,18 @@ class Http {
         if (content) {
             return fetch(absoluteUrl, { 
                 method: httpMethod, 
+                mode: 'cors',
                 body: JSON.stringify(content), 
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include'
             }).then(response => response.json());
         }
 
-        return fetch(absoluteUrl).then(response => response.json());
+        return fetch(absoluteUrl, {
+            mode: 'cors',
+            credentials: 'include'
+        }).then(response => response.json());
     }
 }
+
+export { Http };
