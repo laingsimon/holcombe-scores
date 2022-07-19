@@ -3,7 +3,7 @@ import {Http} from "../api/http";
 import {Settings} from "../api/settings";
 import {Game} from '../api/game';
 
-export class GameComponent extends Component {
+export class GameDetails extends Component {
     constructor(props) {
         super(props);
         const http = new Http(new Settings());
@@ -17,7 +17,7 @@ export class GameComponent extends Component {
             error: null
         }
     }
-    
+
     componentDidMount() {
         // noinspection JSIgnoredPromiseFromCall
         this.fetchGame();
@@ -31,7 +31,7 @@ export class GameComponent extends Component {
         if (this.state.error) {
             return <div><h4>Error</h4>{this.state.error}</div>
         }
-        
+
         const game = this.state.game;
         const location = game.playingAtHome ? 'home' : 'away';
         const date = new Date(Date.parse(game.date));
