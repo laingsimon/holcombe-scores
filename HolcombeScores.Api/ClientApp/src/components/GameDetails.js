@@ -40,15 +40,53 @@ export class GameDetails extends Component {
         const score = game.playingAtHome
             ? `${holcombeGoals}-${opponentGoals}`
                 : `${opponentGoals}-${holcombeGoals}`;
+        const runningScore = {
+            holcombe: 0,
+            opponent: 0,
+        }
 
-        return (<div className="list-group-item d-flex justify-content-between align-items-center">
-            {location} to {game.opponent} on {date.toDateString()}
-            <span className="badge rounded-pill bg-primary">{score}</span>
-            <hr />
+        return (<div>
+            <h2>
+                {location} to {game.opponent} on {date.toDateString()} <span className="badge rounded-pill bg-primary">{score}</span>
+            </h2>
+            <h6>Start time: {date.toLocaleTimeString()}</h6>
             <div>
-                <p>Goals</p>
+                <h5>Goals</h5>
+                <ol>
+                    {game.goals.map(g => this.renderGoal(g, game, runningScore))}
+                </ol>
+            </div>
+            <div>
+                <h5>Holcombe Players</h5>
+                <ul>
+                    {game.squad.map(p => this.renderPlayer(p, game))}
+                </ul>
             </div>
         </div>);
+    }
+
+    renderGoal(goal, game, runningScore) {
+        const time = new Date(Date.parse(goal.time));
+
+        if (goal.holcombeGoal) {
+            runningScore.holcombe++;
+            return (<li>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time.getHours()}:${time.getMinutes()}`} - {goal.player.name}</li>);
+        }
+
+        runningScore.opponent++;
+        return (<li>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time.getHours()}:${time.getMinutes()}`} - {game.opponent}</li>);
+    }
+
+    renderRunningScore(runningScore, playingAtHome, colour) {
+        const score = playingAtHome
+            ? `${runningScore.holcombe} - ${runningScore.opponent}`
+            : `${runningScore.opponent} - ${runningScore.holcombe}`;
+
+        return (<span className={`badge rounded-pill ${colour}`}>{score}</span>);
+    }
+
+    renderPlayer(player, game) {
+        return (<li><span className="badge rounded-pill bg-primary">{player.number}</span> {player.name}</li>);
     }
 
     // api access
