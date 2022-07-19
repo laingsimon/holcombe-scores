@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="API &amp; UI" type="CompoundRunConfigurationType">
+    <toRun name="HolcombeScores.Api" type="LaunchSettings" />
+    <toRun name="HolcombeScores.Api: HolcombeScores.Web" type="LaunchSettings" />
+    <method v="2" />
+  </configuration>
+</component>
