@@ -100,8 +100,10 @@ export class Home extends Component {
     }.bind(this);
     
     return teams.map(team => {
-      let className = 'list-group-item' + (team.id === this.state.request.teamId ? ' active' : '');
-      return (<li key={team.id} className={className} data-id={team.id} onClick={setSelectedTeam}>{team.name}</li>) });
+      let selected = team.id === this.state.request.teamId;
+      return (<li key={team.id} className={`list-group-item ${selected ? ' active' : ''}`} data-id={team.id} onClick={setSelectedTeam}>
+        {team.name}
+      </li>) });
   }
   
   renderTeam(team) {
