@@ -40,12 +40,12 @@ class Game {
         return this.http.patch(`/api/Game`, gameDetail);
     }
 
-    removePlayer(id, playerNumber) {
-        return this.http.delete(`/api/Game/${id}/${playerNumber}`);
+    removePlayer(gameId, playerNumber) {
+        return this.http.delete(`/api/Game/Player/${gameId}/${playerNumber}`);
     }
 
-    removeGoal(id, goalId) {
-        return this.http.delete(`/api/Game/${id}/${goalId}`);
+    removeGoal(gameId, goalId) {
+        return this.http.delete(`/api/Game/Goal/${gameId}/${goalId}`);
     }
 
     recordGoal(gameId, time, holcombeGoal, playerNumber) {
