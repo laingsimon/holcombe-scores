@@ -159,8 +159,12 @@ export class GameDetails extends Component {
     }
 
     renderPlayGame() {
+        const game = this.state.game;
+        const homeTeam = game.playingAtHome ? this.state.team.name : game.opponent;
+        const awayTeam = game.playingAtHome ? game.opponent : this.state.team.name;
+
         return (<div>
-            {this.renderHeading()}
+            <h4>{homeTeam} vs {awayTeam}</h4>
             {this.renderNav()}
             <hr />
             <PlayGame teamId={this.state.team.id} gameId={this.state.game.id} onChanged={this.gameChanged} />
