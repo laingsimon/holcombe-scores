@@ -27,7 +27,11 @@ export class Teams extends Component {
   // renderers
   render() {
     if (this.state.loading) {
-      return (<div>Loading...</div>);
+      return (<div className="d-flex justify-content-center">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>);
     }
     if (this.state.error) {
       return (<div>Error<br /><p>{this.state.error}</p></div>);
@@ -47,9 +51,9 @@ export class Teams extends Component {
       const access = await this.accessApi.getMyAccess();
       if (access.access) {
         const teams = await this.teamApi.getAllTeams();
-        this.setState({teams: teams, loading: false}); 
+        this.setState({teams: teams, loading: false});
       } else {
-        this.setState({loading: false, error: 'You need tor request access first' });  
+        this.setState({loading: false, error: 'You need tor request access first' });
       }
     } catch (e) {
       console.log(e);

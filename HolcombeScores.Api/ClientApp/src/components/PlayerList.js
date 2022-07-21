@@ -57,10 +57,14 @@ export class PlayerList extends Component {
 
     render() {
         if (this.state.loading) {
-            return (<div className="list-group">Loading...</div>);
+            return (<div className="d-flex justify-content-center" style={{ height: '247px' }}>
+                <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>);
         }
 
-        return (<ul className="list-group">
+        return (<ul className="list-group" style={{ height: '247px', overflow: 'auto' }}>
             {this.state.players.map(player => this.renderPlayer(player))}
         </ul>);
     }

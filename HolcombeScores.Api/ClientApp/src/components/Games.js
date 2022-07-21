@@ -65,19 +65,23 @@ export class Games extends Component {
     }
 
     if (!this.state.team) {
-      return (<div>Loading...</div>);
+      return (<div className="d-flex justify-content-center">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>);
     }
 
     if (this.state.mode === 'view-games') {
       return (<div>
-        <h2>{this.state.team.name}</h2>
+        <h3>{this.state.team.name}</h3>
         {this.renderNav()}
         <hr />
         {this.renderGames(this.state.games)}
       </div>);
     } else if (this.state.mode === 'new-game') {
       return (<div>
-        <h2>{this.state.team.name}</h2>
+        <h3>{this.state.team.name}</h3>
         {this.renderNav()}
         <hr />
         <NewGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} />
@@ -89,8 +93,10 @@ export class Games extends Component {
 
   renderGames(games) {
     if (this.state.loadingGames) {
-      return (<div className="list-group">
-        Loading...
+      return (<div className="d-flex justify-content-center">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>)
     }
 
