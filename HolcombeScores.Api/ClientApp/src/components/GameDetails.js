@@ -5,6 +5,7 @@ import {Game} from '../api/game';
 import {Access} from '../api/access';
 import {Team} from '../api/team';
 import {Alert} from './Alert';
+import {EditGame} from "./EditGame";
 
 export class GameDetails extends Component {
     constructor(props) {
@@ -22,24 +23,13 @@ export class GameDetails extends Component {
             error: null,
             mode: 'view-game'
         };
-        this.deleteGame = this.deleteGame.bind(this);
         this.changeMode = this.changeMode.bind(this);
+        this.gameChanged = this.gameChanged.bind(this);
     }
 
     //event handlers
-    async deleteGame() {
-        if (!window.confirm('Are you sure you want to delete this game?')) {
-            return;
-        }
-
-        this.setState({
-            loading: true
-        });
-
-        const result = await this.gameApi.deleteGame(this.gameId);
-        if (result.success) {
-           document.location.href = `/team/${this.state.team.id}`;
-        }
+    async gameChanged() {
+        await this.fetchGame(); // don't set the state to loading
     }
 
     changeMode(event) {
@@ -150,8 +140,7 @@ export class GameDetails extends Component {
             {this.renderHeading()}
             {this.renderNav()}
             <hr />
-            <div>Edit...</div>
-            {this.renderOptions()}
+            <EditGame teamId={this.state.team.id} gameId={this.state.game.id} onChanged={this.gameChanged} />
         </div>);
     }
 
@@ -163,17 +152,6 @@ export class GameDetails extends Component {
         return (<ol>
             {game.goals.map(g => this.renderGoal(g, game, runningScore))}
         </ol>);
-    }
-
-    renderOptions() {
-        if (!this.state.access.access.admin) {
-            return null;
-        }
-
-        return (<div>
-            <hr />
-            <button className="btn btn-danger" onClick={this.deleteGame}>Delete game</button>
-        </div>)
     }
 
     renderGoal(goal, game, runningScore) {

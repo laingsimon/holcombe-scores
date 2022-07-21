@@ -9,7 +9,7 @@ export class PlayerList extends Component {
         this.state = {
             loading: true,
             players: [],
-            selected: {},
+            selected: props.selected || {},
         };
         const http = new Http(new Settings());
         this.playerApi = new Player(http);
