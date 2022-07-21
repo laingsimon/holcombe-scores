@@ -44,7 +44,9 @@ class Http {
             method: httpMethod,
             mode: 'cors',
             credentials: 'include'
-        }).then(response => response.json());
+        })
+            .then(response => response.json())
+            .catch(e => console.error("ERROR: " + e));
     }
 }
 

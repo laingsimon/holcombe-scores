@@ -24,7 +24,7 @@ export class Home extends Component {
     // noinspection JSIgnoredPromiseFromCall
     this.populateMyAccess();
   }
-  
+
   //event handlers
   requestAccess() {
     if (this.state.mode !== 'access') {
@@ -36,12 +36,12 @@ export class Home extends Component {
       alert('You must enter a name');
       return;
     }
-    
+
     if (!this.state.request.teamId) {
       alert('You must select a team');
       return;
     }
-    
+
     // noinspection JSIgnoredPromiseFromCall
     this.sendAccessRequest(this.state.request);
   }
@@ -98,14 +98,14 @@ export class Home extends Component {
       stateUpdate.request.teamId = id;
       this.setState(stateUpdate);
     }.bind(this);
-    
+
     return teams.map(team => {
       let selected = team.id === this.state.request.teamId;
       return (<li key={team.id} className={`list-group-item ${selected ? ' active' : ''}`} data-id={team.id} onClick={setSelectedTeam}>
         {team.name}
       </li>) });
   }
-  
+
   renderTeam(team) {
     return (<span><strong>{team.name}</strong> (Coach {team.coach})</span>);
   }
@@ -121,9 +121,9 @@ export class Home extends Component {
 
     return recoveryAccounts.map(recoveryAccount => {
       let className = 'list-group-item' + (recoveryAccount.recoveryId === this.state.recovery.recoveryId ? ' active' : '');
-      return (<li key={recoveryAccount.recoveryId} className={className} data-id={recoveryAccount.recoveryId} onClick={setSelectedAccount}>{recoveryAccount.recoveryId} {recoveryAccount.name}</li>) }); 
+      return (<li key={recoveryAccount.recoveryId} className={className} data-id={recoveryAccount.recoveryId} onClick={setSelectedAccount}>{recoveryAccount.recoveryId} {recoveryAccount.name}</li>) });
   }
-  
+
   renderAccess(access, teams) {
     // access granted
     let team = teams.filter(t => t.id === access.access.teamId)[0];
@@ -139,11 +139,11 @@ export class Home extends Component {
       // no access, but requested
       return (<p>Your access request hasn't been approved, yet...</p>);
     }
-    
+
     if (!teams.length) {
       return (<p>You don't currently have access. <strong>There are no teams to request access for</strong>.</p>);
     }
-    
+
     return (<div>
       <p>You don't currently have access, enter your details below to request access</p>
       <div className="input-group mb-3">
@@ -190,7 +190,7 @@ export class Home extends Component {
       Working...
     </div>);
   }
-  
+
   renderError(error) {
     return (<div>
       <h1>Error!</h1>
@@ -199,35 +199,41 @@ export class Home extends Component {
       <button type="button" className="btn btn-primary" onClick={this.removeError}>Back</button>
     </div>);
   }
-  
+
   renderCreateAccessRequest(access, teams) {
     return (<div>
       <h1>Request access</h1>
       {this.renderRequestAccess(access, teams)}
     </div>);
   }
-  
+
   renderRecoverAccess(recoveryAccounts) {
     return (<div>
       <h1>Recover access</h1>
       {this.renderRecoveryOptions(recoveryAccounts)}
     </div>);
   }
-  
+
   render () {
-    if (this.state.loading) {
-      return this.renderLoading();
-    } else if (this.state.error) {
-      return this.renderError(this.state.error);
-    } else if (this.state.mode === 'access' && ((this.state.access.request && this.state.access.access) || (this.state.access.access && this.state.access.access.admin))) {
-      return this.renderAccess(this.state.access, this.state.teams);
-    } else if (this.state.mode === 'access') {
-      return this.renderCreateAccessRequest(this.state.access, this.state.teams);
-    } else if (this.state.mode === 'recover') {
-      return this.renderRecoverAccess(this.state.recoveryAccounts);
+    try {
+      if (this.state.loading) {
+        return this.renderLoading();
+      } else if (this.state.error) {
+        return this.renderError(this.state.error);
+      } else if (this.state.mode === 'access' && this.state.access && ((this.state.access.request && this.state.access.access) || (this.state.access.access && this.state.access.access.admin))) {
+        return this.renderAccess(this.state.access, this.state.teams);
+      } else if (this.state.mode === 'access' && this.state.access) {
+        return this.renderCreateAccessRequest(this.state.access, this.state.teams);
+      } else if (this.state.mode === 'access') {
+        return (<div>Unable to retrieve your access, please check your internet connection</div>);
+      } else if (this.state.mode === 'recover') {
+        return this.renderRecoverAccess(this.state.recoveryAccounts);
+      }
+
+      return (<div>Unset: {this.state.mode}</div>);
+    } catch (e) {
+      return (<div>Error rendering component: {e.message}</div>);
     }
-    
-    return (<div>Unset: {this.state.mode}</div>);
   }
 
   // api access
@@ -235,14 +241,14 @@ export class Home extends Component {
     try {
       const access = await this.accessApi.getMyAccess();
       const teams = await this.teamApi.getAllTeams();
-      
+
       this.setState({ mode: 'access', access: access, teams: teams, loading: false});
     } catch (e) {
       console.log(e);
       this.setState({ mode: 'access', error: e.message, loading: false});
     }
   }
-  
+
   async sendAccessRequest(details) {
     this.setState({error: null, loading: true});
     try {
@@ -251,14 +257,14 @@ export class Home extends Component {
         this.setState({error: data.errors, loading: false});
         return;
       }
-      
+
       await this.populateMyAccess(); // reload the component
     } catch (e) {
       console.log(e);
       this.setState({error: e.message, loading: false});
     }
   }
-  
+
   async populateRecoveryOptions() {
     try {
       const recoveryAccounts = await this.accessApi.getAccessForRecovery();
