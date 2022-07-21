@@ -6,6 +6,7 @@ import {Access} from '../api/access';
 import {Team} from '../api/team';
 import {Alert} from './Alert';
 import {EditGame} from "./EditGame";
+import {PlayGame} from "./PlayGame";
 
 export class GameDetails extends Component {
     constructor(props) {
@@ -84,6 +85,8 @@ export class GameDetails extends Component {
             return this.renderViewGame();
         } else if (this.state.mode === 'edit-game') {
             return this.renderEditGame();
+        } else if (this.state.mode === 'play-game') {
+            return this.renderPlayGame();
         } else {
             return (<div>
                 {this.renderHeading()}
@@ -144,6 +147,15 @@ export class GameDetails extends Component {
         </div>);
     }
 
+    renderPlayGame() {
+        return (<div>
+            {this.renderHeading()}
+            {this.renderNav()}
+            <hr />
+            <PlayGame teamId={this.state.team.id} gameId={this.state.game.id} onChanged={this.gameChanged} />
+        </div>);
+    }
+
     renderGoals(game, runningScore) {
         if (game.goals.length === 0) {
             return (<p>No goals</p>);
@@ -159,11 +171,11 @@ export class GameDetails extends Component {
 
         if (goal.holcombeGoal) {
             runningScore.holcombe++;
-            return (<li>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time.getHours()}:${time.getMinutes()}`} - {goal.player.name}</li>);
+            return (<li key={goal.time}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time.getHours()}:${time.getMinutes()}`} - {goal.player.name}</li>);
         }
 
         runningScore.opponent++;
-        return (<li>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time.getHours()}:${time.getMinutes()}`} - {game.opponent}</li>);
+        return (<li key={goal.time}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time.getHours()}:${time.getMinutes()}`} - {game.opponent}</li>);
     }
 
     renderRunningScore(runningScore, playingAtHome, colour) {

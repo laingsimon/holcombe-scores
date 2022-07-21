@@ -3,6 +3,7 @@ import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
 import {Team} from '../api/team';
+import {Access} from '../api/access';
 import {GameOverview} from './GameOverview';
 import {NewGame} from './NewGame';
 import {EditTeam} from './EditTeam';
@@ -14,6 +15,7 @@ export class TeamDetails extends Component {
     const http = new Http(new Settings());
     this.gameApi = new Game(http);
     this.teamApi = new Team(http);
+    this.accessApi = new Access(http);
     this.teamId = props.match.params.teamId;
     this.history = props.history;
     this.state = {
@@ -91,6 +93,10 @@ export class TeamDetails extends Component {
         </div>
       </div>);
     }
+    
+    if (!this.state.access) {
+      return (<Alert warnings={[ "You need to login again, click on 'Home'" ]} />);
+    }
 
     if (this.state.mode === 'view-games') {
       return (<div>
@@ -143,7 +149,8 @@ export class TeamDetails extends Component {
       const allGames = await this.gameApi.getAllGames();
       const games = allGames.filter(g => !this.teamId || g.teamId === this.teamId);
       const team = await this.teamApi.getTeam(this.teamId);
-      this.setState({games: games, team: team, loadingGames: false});
+      const access = await this.accessApi.getMyAccess();
+      this.setState({games: games, team: team, access: access.access, loadingGames: false});
     } catch (e) {
       console.log(e);
       this.setState({loadingGames: false, error: e.message });

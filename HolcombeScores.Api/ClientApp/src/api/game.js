@@ -48,12 +48,12 @@ class Game {
         return this.http.delete(`/api/Game/${id}/${goalId}`);
     }
 
-    recordGoal(id, time, holcombeGoal, playerNumber) {
+    recordGoal(gameId, time, holcombeGoal, playerNumber) {
         let goalDetail = {
             time: time,
             holcombeGoal: holcombeGoal,
             player: holcombeGoal ? { number: playerNumber } : null,
-            gameId: id
+            gameId: gameId
         };
 
         return this.http.post(`/api/Game/Goal`, goalDetail);

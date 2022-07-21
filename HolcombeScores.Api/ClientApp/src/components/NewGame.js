@@ -15,7 +15,7 @@ export class NewGame extends Component {
             players: {},
             opponent: "",
             playingAtHome: true,
-            date: this.formatDate(new Date(new Date().setHours(0, 0, 0))),
+            date: new Date().toISOString().substring(0, 10) + 'T11:00',
             playersLoaded: false
         }
         const http = new Http(new Settings());
