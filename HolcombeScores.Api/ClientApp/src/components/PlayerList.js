@@ -57,12 +57,12 @@ export class PlayerList extends Component {
 
     render() {
         if (this.state.loading) {
-            return (<div>Loading...</div>);
+            return (<div className="list-group">Loading...</div>);
         }
 
-        return ((<ul className="list-group">
+        return (<ul className="list-group">
             {this.state.players.map(player => this.renderPlayer(player))}
-        </ul>));
+        </ul>);
     }
 
     // api interaction

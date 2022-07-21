@@ -14,7 +14,8 @@ export class NewGame extends Component {
             players: {},
             opponent: "",
             playingAtHome: true,
-            date: this.formatDate(new Date(new Date().setHours(0, 0, 0)))
+            date: this.formatDate(new Date(new Date().setHours(0, 0, 0))),
+            playersLoaded: false
         }
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
@@ -33,6 +34,10 @@ export class NewGame extends Component {
     // event handlers
     async createGame() {
         try {
+            if (!this.state.playersLoaded) {
+                return;
+            }
+
             const playerNumbers = Object.keys(this.state.players);
             const date = new Date(Date.parse(this.state.date));
             const formattedDate = this.formatDate(date) + this.dateSuffix;
@@ -84,50 +89,60 @@ export class NewGame extends Component {
     }
 
     onLoaded() {
+        this.setState({
+            playersLoaded: true
+        });
+
         if (this.props.onLoaded) {
             this.props.onLoaded();
         }
     }
 
     // renderers
+    renderError(error) {
+        const back = (() => {
+            this.setState({
+                error: null
+            });
+        });
+
+        return (<div>
+            <h4>Error</h4>
+            <p>{error}</p>
+            <hr />
+            <button type="button" className="btn btn-primary" onClick={back}>Back</button>
+        </div>);
+    }
+
+    renderCreated(created) {
+        const back = (() => {
+            this.setState({
+                error: null,
+                created: null,
+            });
+        });
+
+        return (<div>
+            {created.messages.map(message => (<p>{message}</p>))}
+            {created.warnings.map(warning => (<p>Warning: {warning}</p>))}
+            {created.errors.map(error => (<p>Error: {error}</p>))}
+            <hr />
+            <button type="button" className="btn btn-light" onClick={back}>Back</button>
+            <a href={`/game/${created.outcome.id}`} className="btn btn-primary">Open game</a>
+        </div>);
+    }
+
     render() {
         if (this.state.loading) {
             return (<div>Loading...</div>);
         }
 
         if (this.state.error) {
-            const back = (() => {
-                this.setState({
-                    error: null
-                });
-            });
-
-            return (<div>
-                <h4>Error</h4>
-                <p>{this.state.error}</p>
-                <hr />
-                <button type="button" className="btn btn-primary" onClick={back}>Back</button>
-            </div>);
+            return this.renderError(this.state.error);
         }
 
         if (this.state.created) {
-            const back = (() => {
-                this.setState({
-                    error: null,
-                    created: null,
-                });
-            });
-
-            const created = this.state.created;
-
-            return (<div>
-                {created.messages.map(message => (<p>{message}</p>))}
-                {created.warnings.map(warning => (<p>Warning: {warning}</p>))}
-                {created.errors.map(error => (<p>Error: {error}</p>))}
-                <hr />
-                <button type="button" className="btn btn-light" onClick={back}>Back</button>
-                <a href={`/game/${created.outcome.id}`} className="btn btn-primary">Open game</a>
-            </div>);
+            return this.renderCreated(this.state.created);
         }
 
         return (<div>
@@ -151,7 +166,7 @@ export class NewGame extends Component {
             </div>
             <PlayerList teamId={this.teamId} onPlayerChanged={this.onPlayerChanged} onLoaded={this.onLoaded} />
             <hr />
-            <button type="button" className="btn btn-primary" onClick={this.createGame}>Create game</button>
+            <button type="button" className={`btn ${this.state.playersLoaded ? 'btn-primary' : 'btn-light'}`} onClick={this.createGame}>Create game</button>
         </div>);
     }
 

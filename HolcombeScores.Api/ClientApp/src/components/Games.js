@@ -15,13 +15,15 @@ export class Games extends Component {
     this.teamId = props.match.params.teamId;
     this.history = props.history;
     this.state = {
-      loadingData: true,
+      loadingGames: true,
       loadingNewGame: false,
       games: null,
       error: null,
-      team: null
+      team: null,
+      mode: 'view-games'
     };
     this.onNewGameLoaded = this.onNewGameLoaded.bind(this);
+    this.changeMode = this.changeMode.bind(this);
   }
 
   componentDidMount() {
@@ -36,30 +38,61 @@ export class Games extends Component {
     });
   }
 
+  changeMode(event) {
+    event.preventDefault();
+    const mode = event.target.getAttribute('href');
+    this.setState({
+      mode: mode,
+      loadingNewGame: mode === 'new-game',
+    });
+  }
+
   // renderers
+  renderNav() {
+    return (<ul className="nav nav-pills">
+      <li className="nav-item">
+        <a className={`nav-link${this.state.mode === 'view-games' ? ' active' : ''}`} aria-current="page" href="view-games" onClick={this.changeMode}>View Games</a>
+      </li>
+      <li className="nav-item">
+        <a className={`nav-link${this.state.mode === 'new-game' ? ' active' : ''}`} href="new-game" onClick={this.changeMode}>New Game</a>
+      </li>
+    </ul>);
+  }
+
   render() {
-    if (this.state.loadingData || this.state.loadingNewGame) {
-      return (<div>Loading...</div>);
-    }
     if (this.state.error) {
       return (<div>Error<br /><p>{this.state.error}</p></div>);
     }
     if (this.state.team) {
-      return (<div>
-        <h2>{this.state.team.name}</h2>
-        {this.renderGames(this.state.games, false)}
-        <div>
+      if (this.state.mode === 'view-games') {
+        return (<div>
+          <h2>{this.state.team.name}</h2>
+          {this.renderNav()}
           <hr />
-          <h3>Create a new game...</h3>
+          {this.renderGames(this.state.games, false)}
+        </div>);
+      } else if (this.state.mode === 'new-game') {
+        return (<div>
+          <h2>{this.state.team.name}</h2>
+          {this.renderNav()}
+          <hr />
           <NewGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} />
-        </div>
-      </div>);
+        </div>)
+      }
+
+      return (<div>Unknown mode: {this.state.mode}</div>);
     }
 
     return this.renderGames(this.state.games, true);
   }
 
   renderGames(games, showTeam) {
+    if (this.state.loadingGames) {
+      return (<div className="list-group">
+        Loading...
+      </div>)
+    }
+
     return (<div className="list-group">
       {games.map(g => (<GameOverview key={g.id} game={g} team={this.getTeam(g)} history={this.history} showTeam={showTeam} />))}
     </div>);
@@ -76,10 +109,10 @@ export class Games extends Component {
       const games = allGames.filter(g => !this.teamId || g.teamId === this.teamId);
       const teams = await this.teamApi.getAllTeams();
       const team = this.teamId ? teams.filter(t => t.id === this.teamId)[0] : null;
-      this.setState({games: games, teams: teams, team: team, loadingData: false});
+      this.setState({games: games, teams: teams, team: team, loadingGames: false});
     } catch (e) {
       console.log(e);
-      this.setState({loadingData: false, error: e.message });
+      this.setState({loadingGames: false, error: e.message });
     }
   }
 }
