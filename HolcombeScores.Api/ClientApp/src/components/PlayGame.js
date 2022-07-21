@@ -3,7 +3,6 @@ import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
 import {Team} from '../api/team';
-import {Alert} from "./Alert";
 
 export class PlayGame extends Component {
     constructor(props) {

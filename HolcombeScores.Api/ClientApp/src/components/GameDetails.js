@@ -26,9 +26,20 @@ export class GameDetails extends Component {
         };
         this.changeMode = this.changeMode.bind(this);
         this.gameChanged = this.gameChanged.bind(this);
+        this.removeGoal = this.removeGoal.bind(this);
     }
 
     //event handlers
+    async removeGoal(event) {
+        const goalId = event.target.getAttribute('data-goal-id');
+        if (!window.confirm('Are you sure you want to remove this goal?')) {
+            return;
+        }
+        
+        await this.gameApi.removeGoal(this.gameId, goalId);
+        await this.fetchGame();
+    }
+    
     async gameChanged() {
         await this.fetchGame(); // don't set the state to loading
     }
@@ -177,11 +188,11 @@ export class GameDetails extends Component {
 
         if (goal.holcombeGoal) {
             runningScore.holcombe++;
-            return (<li key={goal.time}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time}`} - {goal.player.name}</li>);
+            return (<li key={goal.goalId}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time}`} - {goal.player.name} <button className="delete-goal" data-goal-id={goal.goalId} onClick={this.removeGoal}>&times;</button></li>);
         }
 
         runningScore.opponent++;
-        return (<li key={goal.time}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time}`} - {game.opponent}</li>);
+        return (<li key={goal.goalId}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time}`} - {game.opponent} <button className="delete-goal" data-goal-id={goal.goalId} onClick={this.removeGoal}>&times;</button></li>);
     }
 
     renderRunningScore(runningScore, playingAtHome, colour) {

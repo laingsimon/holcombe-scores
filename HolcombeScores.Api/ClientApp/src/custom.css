@@ -36,3 +36,9 @@ code {
   background-color: #ff88ff;
   box-shadow: 0 0 0 0.25rem #ff0000;
 }
+
+.delete-goal {
+  background: transparent;
+  border: none;
+  color: #ff8888;
+}
