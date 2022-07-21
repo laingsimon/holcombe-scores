@@ -160,6 +160,12 @@ export class GameDetails extends Component {
         if (game.goals.length === 0) {
             return (<p>No goals</p>);
         }
+        
+        game.goals.map(goal => {
+            goal.jsTime = new Date(goal.time);
+            return goal;
+        });
+        game.goals.sort((a, b) => a.jsTime - b.jsTime);
 
         return (<ol>
             {game.goals.map(g => this.renderGoal(g, game, runningScore))}
@@ -167,15 +173,15 @@ export class GameDetails extends Component {
     }
 
     renderGoal(goal, game, runningScore) {
-        const time = new Date(Date.parse(goal.time));
+        const time = new Date(Date.parse(goal.time)).toTimeString().substring(0, 5);
 
         if (goal.holcombeGoal) {
             runningScore.holcombe++;
-            return (<li key={goal.time}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time.getHours()}:${time.getMinutes()}`} - {goal.player.name}</li>);
+            return (<li key={goal.time}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time}`} - {goal.player.name}</li>);
         }
 
         runningScore.opponent++;
-        return (<li key={goal.time}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time.getHours()}:${time.getMinutes()}`} - {game.opponent}</li>);
+        return (<li key={goal.time}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time}`} - {game.opponent}</li>);
     }
 
     renderRunningScore(runningScore, playingAtHome, colour) {
