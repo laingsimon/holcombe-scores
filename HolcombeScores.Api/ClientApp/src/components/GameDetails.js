@@ -35,7 +35,7 @@ export class GameDetails extends Component {
 
         const result = await this.gameApi.deleteGame(this.gameId);
         if (result.success) {
-           document.location.href = '/games';
+           document.location.href = `/team/${this.state.team.id}`;
         }
     }
 

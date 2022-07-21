@@ -128,9 +128,9 @@ export class Home extends Component {
     // access granted
     let team = teams.filter(t => t.id === access.access.teamId)[0];
     return (<div>
-      Hello <strong>{access.access.name}</strong>, you have access to <a href={`/games/${team.id}`} onClick={this.showGames}>{this.renderTeam(team)}</a>
+      Hello <strong>{access.access.name}</strong>, you have access to <a href={`/team/${team.id}`} onClick={this.showGames}>{this.renderTeam(team)}</a>
       <hr />
-      <a href={`/games/${team.id}`} className="btn btn-primary">Show games</a>
+      <a href={`/team/${team.id}`} className="btn btn-primary">Show games</a>
     </div>);
   }
 

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Route } from 'react-router';
 import { Layout } from './components/Layout';
 import { Home } from './components/Home';
-import { Games } from './components/Games';
+import { TeamDetails } from './components/TeamDetails';
 import { GameDetails } from './components/GameDetails';
 import { Teams } from './components/Teams';
 
@@ -13,7 +13,7 @@ export default class App extends Component {
     return (
       <Layout>
         <Route exact path='/' component={Home} />
-        <Route path='/games/:teamId' component={Games} />
+        <Route path='/team/:teamId' component={TeamDetails} />
         <Route path='/teams' component={Teams} />
         <Route path='/game/:gameId' component={GameDetails} />
       </Layout>

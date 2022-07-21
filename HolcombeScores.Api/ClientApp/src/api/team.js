@@ -7,6 +7,14 @@ class Team {
         return this.http.get(`/api/Teams`);
     }
 
+    async getTeam(id) {
+        const teams = await this.getAllTeams();
+        const matchingTeams = teams.filter(t => t.id === id);
+        return matchingTeams.length > 0
+            ? matchingTeams[0]
+            : null;
+    }
+
     createTeam(name, coach) {
         let teamDetail = {
             name: name,

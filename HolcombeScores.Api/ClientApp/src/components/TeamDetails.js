@@ -5,8 +5,9 @@ import {Game} from '../api/game';
 import {Team} from '../api/team';
 import {GameOverview} from './GameOverview';
 import {NewGame} from './NewGame';
+import {EditTeam} from './EditTeam';
 
-export class Games extends Component {
+export class TeamDetails extends Component {
   constructor(props) {
     super(props);
     const http = new Http(new Settings());
@@ -24,6 +25,8 @@ export class Games extends Component {
     };
     this.onNewGameLoaded = this.onNewGameLoaded.bind(this);
     this.changeMode = this.changeMode.bind(this);
+    this.reloadGames = this.reloadGames.bind(this);
+    this.reloadTeam = this.reloadTeam.bind(this);
   }
 
   componentDidMount() {
@@ -32,6 +35,19 @@ export class Games extends Component {
   }
 
   // event handlers
+  async reloadGames() {
+    this.setState({
+      loadingGames: true,
+    });
+
+    await this.fetchGames();
+  }
+
+  async reloadTeam() {
+    const team = await this.teamApi.getTeam(this.teamId);
+    this.setState({team: team });
+  }
+
   onNewGameLoaded() {
     this.setState({
       loadingNewGame: false,
@@ -51,10 +67,13 @@ export class Games extends Component {
   renderNav() {
     return (<ul className="nav nav-pills">
       <li className="nav-item">
-        <a className={`nav-link${this.state.mode === 'view-games' ? ' active' : ''}`} aria-current="page" href="view-games" onClick={this.changeMode}>View Games</a>
+        <a className={`nav-link${this.state.mode === 'view-games' ? ' active' : ''}`} href="view-games" onClick={this.changeMode}>View Games</a>
       </li>
       <li className="nav-item">
         <a className={`nav-link${this.state.mode === 'new-game' ? ' active' : ''}`} href="new-game" onClick={this.changeMode}>New Game</a>
+      </li>
+      <li className="nav-item">
+        <a className={`nav-link${this.state.mode === 'edit-team' ? ' active' : ''}`} href="edit-team" onClick={this.changeMode}>Edit Team</a>
       </li>
     </ul>);
   }
@@ -84,7 +103,14 @@ export class Games extends Component {
         <h3>{this.state.team.name}</h3>
         {this.renderNav()}
         <hr />
-        <NewGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} />
+        <NewGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} onCreated={this.reloadGames} />
+      </div>)
+    } else if (this.state.mode === 'edit-team') {
+      return (<div>
+        <h3>{this.state.team.name}</h3>
+        {this.renderNav()}
+        <hr />
+        <EditTeam teamId={this.teamId} onChanged={this.reloadTeam} />
       </div>)
     }
 
@@ -97,16 +123,12 @@ export class Games extends Component {
         <div className="spinner-border" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
-      </div>)
+      </div>);
     }
 
     return (<div className="list-group">
-      {games.map(g => (<GameOverview key={g.id} game={g} team={this.getTeam(g)} history={this.history} />))}
+      {games.map(g => (<GameOverview key={g.id} game={g} team={this.state.team} history={this.history} />))}
     </div>);
-  }
-
-  getTeam(game) {
-    return this.state.teams.filter(t => t.id === game.teamId)[0];
   }
 
   // api access
@@ -114,9 +136,8 @@ export class Games extends Component {
     try {
       const allGames = await this.gameApi.getAllGames();
       const games = allGames.filter(g => !this.teamId || g.teamId === this.teamId);
-      const teams = await this.teamApi.getAllTeams();
-      const team = this.teamId ? teams.filter(t => t.id === this.teamId)[0] : null;
-      this.setState({games: games, teams: teams, team: team, loadingGames: false});
+      const team = await this.teamApi.getTeam(this.teamId);
+      this.setState({games: games, team: team, loadingGames: false});
     } catch (e) {
       console.log(e);
       this.setState({loadingGames: false, error: e.message });

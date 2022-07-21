@@ -3,6 +3,7 @@ import {Http} from "../api/http";
 import {Settings} from "../api/settings";
 import {Game} from "../api/game";
 import {PlayerList} from "./PlayerList";
+import {Alert} from "./Alert";
 
 export class NewGame extends Component {
     dateSuffix = ":00.000Z";
@@ -61,6 +62,10 @@ export class NewGame extends Component {
                 loading: false,
                 created: result
             });
+
+            if (result.success && this.props.onCreated) {
+                this.props.onCreated(result.outcome.id);
+            }
         } catch (e) {
             this.setState({
                 loading: false,
@@ -123,9 +128,7 @@ export class NewGame extends Component {
         });
 
         return (<div>
-            {created.messages.map(message => (<p>{message}</p>))}
-            {created.warnings.map(warning => (<p>Warning: {warning}</p>))}
-            {created.errors.map(error => (<p>Error: {error}</p>))}
+            <Alert messages={created.messages} warnings={created.warnings} errors={created.errors} />
             <hr />
             <button type="button" className="btn btn-light" onClick={back}>Back</button>
             <a href={`/game/${created.outcome.id}`} className="btn btn-primary">Open game</a>

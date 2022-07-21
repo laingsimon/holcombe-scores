@@ -9,7 +9,7 @@ export class TeamOverview extends Component {
 
     // renderers
     render() {
-        return (<a href={`/games/${this.team.id}`} className="list-group-item list-group-item-action flex-column align-items-start" onClick={this.showGames}>
+        return (<a href={`/team/${this.team.id}`} className="list-group-item list-group-item-action flex-column align-items-start" onClick={this.showGames}>
             <strong>{this.team.name}</strong> coached by {this.team.coach}
         </a>);
     }
