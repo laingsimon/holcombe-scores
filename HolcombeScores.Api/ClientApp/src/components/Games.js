@@ -63,30 +63,31 @@ export class Games extends Component {
     if (this.state.error) {
       return (<div>Error<br /><p>{this.state.error}</p></div>);
     }
-    if (this.state.team) {
-      if (this.state.mode === 'view-games') {
-        return (<div>
-          <h2>{this.state.team.name}</h2>
-          {this.renderNav()}
-          <hr />
-          {this.renderGames(this.state.games, false)}
-        </div>);
-      } else if (this.state.mode === 'new-game') {
-        return (<div>
-          <h2>{this.state.team.name}</h2>
-          {this.renderNav()}
-          <hr />
-          <NewGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} />
-        </div>)
-      }
 
-      return (<div>Unknown mode: {this.state.mode}</div>);
+    if (!this.state.team) {
+      return (<div>Loading...</div>);
     }
 
-    return this.renderGames(this.state.games, true);
+    if (this.state.mode === 'view-games') {
+      return (<div>
+        <h2>{this.state.team.name}</h2>
+        {this.renderNav()}
+        <hr />
+        {this.renderGames(this.state.games)}
+      </div>);
+    } else if (this.state.mode === 'new-game') {
+      return (<div>
+        <h2>{this.state.team.name}</h2>
+        {this.renderNav()}
+        <hr />
+        <NewGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} />
+      </div>)
+    }
+
+    return (<div>Unknown mode: {this.state.mode}</div>);
   }
 
-  renderGames(games, showTeam) {
+  renderGames(games) {
     if (this.state.loadingGames) {
       return (<div className="list-group">
         Loading...
@@ -94,7 +95,7 @@ export class Games extends Component {
     }
 
     return (<div className="list-group">
-      {games.map(g => (<GameOverview key={g.id} game={g} team={this.getTeam(g)} history={this.history} showTeam={showTeam} />))}
+      {games.map(g => (<GameOverview key={g.id} game={g} team={this.getTeam(g)} history={this.history} />))}
     </div>);
   }
 
