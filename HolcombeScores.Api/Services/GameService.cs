@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
@@ -89,7 +85,7 @@ namespace HolcombeScores.Api.Services
 
                 var game = _gameDetailsDtoAdapter.AdaptToGame(gameDetailsDto);
                 game.Id = Guid.NewGuid();
-                var missingPlayers = new List<string>();
+                var missingPlayers = new List<int>();
                 var squad = _gameDetailsDtoAdapter.AdaptSquad(gameDetailsDto, game.Id, missingPlayers);
                 await _gameRepository.Add(game);
 
@@ -98,7 +94,14 @@ namespace HolcombeScores.Api.Services
                     await _gameRepository.AddGamePlayer(gamePlayer);
                 }
 
-                var result = _serviceHelper.Success("Game created", await GetGame(game.Id));
+                if (missingPlayers.Count == gameDetailsDto.Players.Length)
+                {
+                    await _gameRepository.DeleteGame(game.Id);
+                }
+                
+                var result = missingPlayers.Count == gameDetailsDto.Players.Length 
+                    ? _serviceHelper.NotSuccess<GameDto>("Game not created, no players found")
+                    : _serviceHelper.Success("Game created", await GetGame(game.Id));
 
                 foreach (var player in missingPlayers)
                 {
@@ -173,7 +176,7 @@ namespace HolcombeScores.Api.Services
                     await _gameRepository.Update(game);
                 }
 
-                var missingPlayers = new List<string>();
+                var missingPlayers = new List<int>();
                 if (gameDetailsDto.Players != null && gameDetailsDto.Players.Any())
                 {
                     var squad = (await _gameDetailsDtoAdapter.AdaptSquad(gameDetailsDto, game.Id, missingPlayers).ToEnumerable()).ToArray();
