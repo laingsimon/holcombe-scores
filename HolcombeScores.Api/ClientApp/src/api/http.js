@@ -31,16 +31,17 @@ class Http {
         let absoluteUrl = this.settings.apiHost + relativeUrl;
 
         if (content) {
-            return fetch(absoluteUrl, { 
-                method: httpMethod, 
+            return fetch(absoluteUrl, {
+                method: httpMethod,
                 mode: 'cors',
-                body: JSON.stringify(content), 
+                body: JSON.stringify(content),
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include'
             }).then(response => response.json());
         }
 
         return fetch(absoluteUrl, {
+            method: httpMethod,
             mode: 'cors',
             credentials: 'include'
         }).then(response => response.json());

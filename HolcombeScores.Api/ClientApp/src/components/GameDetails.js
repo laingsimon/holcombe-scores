@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import {Http} from "../api/http";
 import {Settings} from "../api/settings";
 import {Game} from '../api/game';
+import {Access} from '../api/access';
 
 export class GameDetails extends Component {
     constructor(props) {
         super(props);
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
+        this.accessApi = new Access(http);
         this.history = props.history;
         this.gameId = props.match.params.gameId;
         this.state = {
@@ -15,6 +17,23 @@ export class GameDetails extends Component {
             game: null,
             team: null,
             error: null
+        };
+        this.deleteGame = this.deleteGame.bind(this);
+    }
+
+    //event handlers
+    async deleteGame() {
+        if (!window.confirm('Are you sure you want to delete this game?')) {
+            return;
+        }
+
+        this.setState({
+            loading: true
+        });
+
+        const result = await this.gameApi.deleteGame(this.gameId);
+        if (result.success) {
+           document.location.href = '/games';
         }
     }
 
@@ -30,6 +49,12 @@ export class GameDetails extends Component {
         }
         if (this.state.error) {
             return <div><h4>Error</h4>{this.state.error}</div>
+        }
+        if (!this.state.access.access) {
+            return <div>
+                <h4>Not logged in</h4>
+                <a href="/" className="btn btn-primary">Home</a>
+            </div>
         }
 
         const game = this.state.game;
@@ -62,7 +87,19 @@ export class GameDetails extends Component {
                     {game.squad.map(p => this.renderPlayer(p, game))}
                 </ul>
             </div>
+            {this.renderOptions()}
         </div>);
+    }
+
+    renderOptions() {
+        if (!this.state.access.access.admin) {
+            return null;
+        }
+
+        return (<div>
+            <hr />
+            <button className="btn btn-danger" onClick={this.deleteGame}>Delete game</button>
+        </div>)
     }
 
     renderGoal(goal, game, runningScore) {
@@ -86,14 +123,15 @@ export class GameDetails extends Component {
     }
 
     renderPlayer(player, game) {
-        return (<li><span className="badge rounded-pill bg-primary">{player.number}</span> {player.name}</li>);
+        return (<li key={player.number}><span className="badge rounded-pill bg-primary">{player.number}</span> {player.name}</li>);
     }
 
     // api access
     async fetchGame() {
         try {
             const game = await this.gameApi.getGame(this.gameId);
-            this.setState({game: game, loading: false});
+            const access = await this.accessApi.getMyAccess();
+            this.setState({game: game, access:access, loading: false});
         } catch (e) {
             console.log(e);
             this.setState({loading: false, error: e.message });
