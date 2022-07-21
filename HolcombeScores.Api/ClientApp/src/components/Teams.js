@@ -4,6 +4,7 @@ import {Http} from '../api/http';
 import {Team} from '../api/team';
 import {Access} from '../api/access';
 import {TeamOverview} from "./TeamOverview";
+import {Alert} from "./Alert";
 
 export class Teams extends Component {
   constructor(props) {
@@ -34,7 +35,7 @@ export class Teams extends Component {
       </div>);
     }
     if (this.state.error) {
-      return (<div>Error<br /><p>{this.state.error}</p></div>);
+      return (<Alert errors={[ this.state.error ]} />);
     }
     return this.renderTeams(this.state.teams);
   }

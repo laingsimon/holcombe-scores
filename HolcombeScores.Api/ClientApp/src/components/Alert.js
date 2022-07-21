@@ -1,10 +1,6 @@
 import React, { Component } from 'react';
 
 export class Alert extends Component {
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (<div>
             {this.renderMessages(this.props.messages, "alert-success")}

@@ -93,7 +93,7 @@ export class EditTeam extends Component {
         }
 
         if (this.state.error) {
-            return (<div>Error: {this.state.error}</div>);
+            return (<Alert errors={[ this.state.error ]} />);
         }
 
         return (<div>

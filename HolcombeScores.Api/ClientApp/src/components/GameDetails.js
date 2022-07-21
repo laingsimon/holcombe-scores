@@ -4,6 +4,7 @@ import {Settings} from "../api/settings";
 import {Game} from '../api/game';
 import {Access} from '../api/access';
 import {Team} from '../api/team';
+import {Alert} from './Alert';
 
 export class GameDetails extends Component {
     constructor(props) {
@@ -18,9 +19,11 @@ export class GameDetails extends Component {
             loading: true,
             game: null,
             team: null,
-            error: null
+            error: null,
+            mode: 'view-game'
         };
         this.deleteGame = this.deleteGame.bind(this);
+        this.changeMode = this.changeMode.bind(this);
     }
 
     //event handlers
@@ -39,12 +42,36 @@ export class GameDetails extends Component {
         }
     }
 
+    changeMode(event) {
+        event.preventDefault();
+        const mode = event.target.getAttribute('href');
+        this.setState({
+            mode: mode,
+        });
+    }
+
     componentDidMount() {
         // noinspection JSIgnoredPromiseFromCall
         this.fetchGame();
     }
 
     // renderers
+    renderNav() {
+        const editNav = <li className="nav-item">
+            <a className={`nav-link${this.state.mode === 'edit-game' ? ' active' : ''}`} href="edit-game" onClick={this.changeMode}>Edit Game</a>
+        </li>;
+
+        return (<ul className="nav nav-pills">
+            <li className="nav-item">
+                <a className={`nav-link${this.state.mode === 'view-game' ? ' active' : ''}`} href="view-game" onClick={this.changeMode}>View Game</a>
+            </li>
+            {this.state.access.access.admin ? editNav : null}
+            <li className="nav-item">
+                <a className={`nav-link${this.state.mode === 'play-game' ? ' active' : ''}`} href="play-game" onClick={this.changeMode}>Play Game</a>
+            </li>
+        </ul>);
+    }
+
     render() {
         if (this.state.loading) {
             return (<div className="d-flex justify-content-center">
@@ -54,7 +81,7 @@ export class GameDetails extends Component {
             </div>);
         }
         if (this.state.error) {
-            return <div><h4>Error</h4>{this.state.error}</div>
+            return (<Alert errors={[ this.state.error ]} />);
         }
         if (!this.state.access.access) {
             return <div>
@@ -63,6 +90,21 @@ export class GameDetails extends Component {
             </div>
         }
 
+        if (this.state.mode === 'view-game') {
+            return this.renderViewGame();
+        } else if (this.state.mode === 'edit-game') {
+            return this.renderEditGame();
+        } else {
+            return (<div>
+                {this.renderHeading()}
+                {this.renderNav()}
+                <hr />
+                <Alert warnings={[ `Unknown mode ${this.state.mode}` ]} />
+            </div>);
+        }
+    }
+
+    renderHeading() {
         const game = this.state.game;
         const location = game.playingAtHome ? 'Home' : 'Away';
         const date = new Date(Date.parse(game.date));
@@ -70,16 +112,25 @@ export class GameDetails extends Component {
         const opponentGoals = game.goals.filter(g => !g.holcombeGoal).length;
         const score = game.playingAtHome
             ? `${holcombeGoals}-${opponentGoals}`
-                : `${opponentGoals}-${holcombeGoals}`;
+            : `${opponentGoals}-${holcombeGoals}`;
+
+        return (<h4>
+                {this.state.team.name}: {location} to {game.opponent} on {date.toDateString()} <span className="badge rounded-pill bg-primary">{score}</span>
+            </h4>);
+    }
+
+    renderViewGame() {
+        const game = this.state.game;
+        const date = new Date(Date.parse(game.date));
         const runningScore = {
             holcombe: 0,
             opponent: 0,
         }
 
         return (<div>
-            <h4>
-                {this.state.team.name}: {location} to {game.opponent} on {date.toDateString()} <span className="badge rounded-pill bg-primary">{score}</span>
-            </h4>
+            {this.renderHeading()}
+            {this.renderNav()}
+            <hr />
             <h6>Start time: {date.toLocaleTimeString()}</h6>
             <div>
                 <h5>Goals</h5>
@@ -91,6 +142,15 @@ export class GameDetails extends Component {
                     {game.squad.map(p => this.renderPlayer(p))}
                 </ul>
             </div>
+        </div>);
+    }
+
+    renderEditGame() {
+        return (<div>
+            {this.renderHeading()}
+            {this.renderNav()}
+            <hr />
+            <div>Edit...</div>
             {this.renderOptions()}
         </div>);
     }

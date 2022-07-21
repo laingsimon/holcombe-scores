@@ -112,8 +112,7 @@ export class NewGame extends Component {
         });
 
         return (<div>
-            <h4>Error</h4>
-            <p>{error}</p>
+            (<Alert errors={[ error ]} />)
             <hr />
             <button type="button" className="btn btn-primary" onClick={back}>Back</button>
         </div>);

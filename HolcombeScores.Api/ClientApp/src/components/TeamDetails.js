@@ -6,6 +6,7 @@ import {Team} from '../api/team';
 import {GameOverview} from './GameOverview';
 import {NewGame} from './NewGame';
 import {EditTeam} from './EditTeam';
+import {Alert} from './Alert';
 
 export class TeamDetails extends Component {
   constructor(props) {
@@ -80,7 +81,7 @@ export class TeamDetails extends Component {
 
   render() {
     if (this.state.error) {
-      return (<div>Error<br /><p>{this.state.error}</p></div>);
+      return (<Alert errors={[ this.state.error ]} />);
     }
 
     if (!this.state.team) {
@@ -104,17 +105,22 @@ export class TeamDetails extends Component {
         {this.renderNav()}
         <hr />
         <NewGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} onCreated={this.reloadGames} />
-      </div>)
+      </div>);
     } else if (this.state.mode === 'edit-team') {
       return (<div>
         <h3>{this.state.team.name}</h3>
         {this.renderNav()}
         <hr />
         <EditTeam teamId={this.teamId} onChanged={this.reloadTeam} />
-      </div>)
+      </div>);
     }
 
-    return (<div>Unknown mode: {this.state.mode}</div>);
+    return (<div>
+      <h3>{this.state.team.name}</h3>
+      {this.renderNav()}
+      <hr />
+      <Alert warnings={[ `Unknown mode ${this.state.mode}` ]} />
+    </div>);
   }
 
   renderGames(games) {

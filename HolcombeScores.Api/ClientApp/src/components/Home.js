@@ -3,6 +3,7 @@ import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Team} from '../api/team';
 import {Access} from '../api/access';
+import {Alert} from "./Alert";
 
 export class Home extends Component {
   constructor(props) {
@@ -194,8 +195,7 @@ export class Home extends Component {
 
   renderError(error) {
     return (<div>
-      <h1>Error!</h1>
-      {error}
+      <Alert errors={[ error ]} />
       <hr />
       <button type="button" className="btn btn-primary" onClick={this.removeError}>Back</button>
     </div>);
@@ -233,7 +233,7 @@ export class Home extends Component {
 
       return (<div>Unset: {this.state.mode}</div>);
     } catch (e) {
-      return (<div>Error rendering component: {e.message}</div>);
+      return (<Alert errors={[ `Error rendering component: ${e.message}` ]} />);
     }
   }
 
