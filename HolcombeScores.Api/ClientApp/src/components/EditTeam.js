@@ -4,6 +4,7 @@ import {Http} from '../api/http';
 import {Game} from '../api/game';
 import {Team} from '../api/team';
 import {Access} from '../api/access';
+import {Player} from '../api/player';
 import {Alert} from "./Alert";
 
 export class EditTeam extends Component {
@@ -12,6 +13,7 @@ export class EditTeam extends Component {
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
         this.teamApi = new Team(http);
+        this.playerApi = new Player(http);
         this.accessApi = new Access(http);
         this.state = {
             loading: true,
@@ -21,6 +23,9 @@ export class EditTeam extends Component {
         this.valueChanged = this.valueChanged.bind(this);
         this.updateTeam = this.updateTeam.bind(this);
         this.deleteTeam = this.deleteTeam.bind(this);
+        this.playerValueChanged = this.playerValueChanged.bind(this);
+        this.deletePlayer = this.deletePlayer.bind(this);
+        this.savePlayer = this.savePlayer.bind(this);
     }
 
     componentDidMount() {
@@ -102,6 +107,96 @@ export class EditTeam extends Component {
         }
     }
 
+    async playerValueChanged(event) {
+        const playerNumber = Number.parseInt(event.target.getAttribute('data-player-number'));
+        const name = event.target.name;
+        const value = event.target.value;
+
+        const proposedPlayers = this.state.proposedPlayers;
+        const player = proposedPlayers.filter(p => p.number === playerNumber)[0];
+        player[name] = value;
+        player.changed = true;
+
+        this.setState({
+            proposedPlayers: proposedPlayers
+        });
+    }
+
+    async deletePlayer(event) {
+        const playerNumber = Number.parseInt(event.target.getAttribute('data-player-number'));
+
+        try {
+            const proposedPlayers = this.state.proposedPlayers;
+            const player = proposedPlayers.filter(p => p.number === playerNumber)[0];
+
+            if (player.saving) {
+                return;
+            }
+
+            player.saving = true;
+            this.setState({
+                proposedPlayers: proposedPlayers
+            });
+
+            const result = await this.playerApi.deletePlayer(this.props.teamId, playerNumber);
+
+            if (result.success) {
+                const proposedPlayers = await this.getPlayers();
+                this.setState({
+                    proposedPlayers: proposedPlayers
+                })
+            } else {
+                console.log(result);
+            }
+        } catch (e) {
+            console.log(e);
+            this.setState({
+                error: e
+            });
+        }
+    }
+
+    async savePlayer(event) {
+        try {
+            const playerNumber = Number.parseInt(event.target.getAttribute('data-player-number'));
+            const proposedPlayers = this.state.proposedPlayers;
+            const player = proposedPlayers.filter(p => p.number === playerNumber)[0];
+
+            if (player.saving) {
+                return;
+            }
+
+            player.saving = true;
+            this.setState({
+                proposedPlayers: proposedPlayers
+            });
+
+            const result = await this.playerApi.updatePlayer(this.props.teamId, player.newNumber, player.name);
+            if (result.success) {
+                if (Number.parseInt(player.newNumber) !== playerNumber) {
+                    // the number has changed, delete the old player number
+                    const deleteResult = await this.playerApi.deletePlayer(this.props.teamId, playerNumber);
+                    if (!deleteResult.success) {
+                        console.error("Could not delete old player number");
+                        console.log(deleteResult);
+                    }
+                }
+
+                const proposedPlayers = await this.getPlayers();
+                this.setState({
+                    proposedPlayers: proposedPlayers
+                });
+            } else {
+                console.log(result);
+            }
+        } catch (e) {
+            console.log(e);
+            this.setState({
+                error: e
+            });
+        }
+    }
+
     // renders
     renderUpdateResult(result) {
         if (!result) {
@@ -156,6 +251,8 @@ export class EditTeam extends Component {
                 </div>
                 <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="coach" value={this.state.proposed.coach} onChange={this.valueChanged} />
             </div>
+            {this.props.teamId ? <hr /> : null}
+            {this.props.teamId ? this.renderEditPlayers() : null}
             <hr />
             <button type="button" className="btn btn-primary" onClick={this.updateTeam}>{this.props.teamId ? 'Update team' : 'Create team'}</button>
             &nbsp;
@@ -163,17 +260,81 @@ export class EditTeam extends Component {
         </div>);
     }
 
+    renderEditPlayers() {
+        return (<div className="container">
+            <h4>Players...</h4>
+            {this.state.proposedPlayers.map(p => this.renderEditPlayer(p))}
+        </div>);
+    }
+
+    renderEditPlayer(player) {
+        return (<div className="row" key={player.number}>
+            <div className="col">
+                <div className="input-group mb-3">
+                    <div className="input-group-prepend">
+                        <span className="input-group-text" id="basic-addon3">Name</span>
+                    </div>
+                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" data-player-number={player.number} value={player.name} onChange={this.playerValueChanged} />
+                </div>
+            </div>
+            <div className="col">
+                <div className="input-group mb-3">
+                    <div className="input-group-prepend">
+                        <span className="input-group-text" id="basic-addon3">No.</span>
+                    </div>
+                    <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="newNumber" data-player-number={player.number} value={player.newNumber} onChange={this.playerValueChanged} />
+                </div>
+            </div>
+            <div className="col">
+                <button disabled={player.saving} className={`btn ${player.changed && !player.saving ? 'btn-success' : 'btn-light'}`} data-player-number={player.number} onClick={this.savePlayer}>{player.newPlayer ? 'Add' : 'Save'}</button>
+                &nbsp;
+                {player.newPlayer ? null : (<button className="btn btn-danger" data-player-number={player.number} onClick={this.deletePlayer}>&times;</button>)}
+            </div>
+        </div>);
+    }
+
+    // api
     async getTeamDetails() {
         const team = this.props.teamId
             ? await this.teamApi.getTeam(this.props.teamId)
             : null;
         const access = await this.accessApi.getMyAccess();
+        const proposedPlayers = await this.getPlayers();
 
         this.setState({
             loading: false,
             current: team,
             access: access.access,
+            proposedPlayers: proposedPlayers,
             proposed: team || { name: '', coach: '' }
         });
+    }
+
+    async getPlayers() {
+        const players = this.props.teamId
+            ? await this.playerApi.getPlayers(this.props.teamId)
+            : null;
+        const proposedPlayers = players || [];
+
+        proposedPlayers.forEach(p => {
+            p.newNumber = p.number;
+            p.changed = false;
+            p.saving = false;
+        });
+        proposedPlayers.sort(this.nameSortFunction);
+        proposedPlayers.push({ newNumber: '', number: 0, name: '', newPlayer: true });
+
+        return proposedPlayers;
+    }
+
+    //utilities
+    nameSortFunction(playerA, playerB) {
+        if (playerA.name.toLowerCase() === playerB.name.toLowerCase()) {
+            return 0;
+        }
+
+        return (playerA.name.toLowerCase() > playerB.name.toLowerCase())
+            ? 1
+            : -1;
     }
 }

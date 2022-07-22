@@ -7,6 +7,11 @@ class Player {
         return this.http.get(`/api/Players`);
     }
 
+    async getPlayers(teamId) {
+        const allPlayers = await this.http.get(`/api/Players`);
+        return allPlayers.filter(p => p.teamId === teamId);
+    }
+
     updatePlayer(teamId, number, name) {
         let playerDetail = {
             name: name,
