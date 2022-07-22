@@ -16,8 +16,21 @@ export class Teams extends Component {
     this.state = {
       loading: true,
       teams: null,
-      error: null
-    }
+      error: null,
+      mode: props.match.params.mode || 'view'
+    };
+    this.changeMode = this.changeMode.bind(this);
+  }
+
+  //event handlers
+  changeMode(event) {
+    event.preventDefault();
+    const url = event.target.getAttribute('href');
+    const segments = url.split('/')
+    const mode = segments[segments.length - 1];
+    this.setState({
+      mode: mode,
+    });
   }
 
   componentDidMount() {
@@ -26,6 +39,17 @@ export class Teams extends Component {
   }
 
   // renderers
+  renderNav() {
+    return (<ul className="nav nav-pills">
+      <li className="nav-item">
+        <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`} href={`/teams/view`} onClick={this.changeMode}>View Teams</a>
+      </li>
+      <li className="nav-item">
+        <a className={`nav-link${this.state.mode === 'new' ? ' active' : ''}`} href={`/teams/new`} onClick={this.changeMode}>New Team</a>
+      </li>
+    </ul>);
+  }
+
   render() {
     if (this.state.loading) {
       return (<div className="d-flex justify-content-center">
@@ -37,12 +61,30 @@ export class Teams extends Component {
     if (this.state.error) {
       return (<Alert errors={[ this.state.error ]} />);
     }
-    return this.renderTeams(this.state.teams);
+
+    if (this.state.mode === 'view') {
+      return this.renderTeams(this.state.teams);
+    }
+    if (this.state.mode === 'new') {
+      return this.renderNewTeam();
+    }
+  }
+
+  renderNewTeam() {
+    return (<div>
+      {this.renderNav()}
+      <hr />
+      <p>Todo: New team</p>
+    </div>);
   }
 
   renderTeams(teams) {
-    return (<div className="list-group">
-      {teams.map(team => <TeamOverview key={team.id} team={team} history={this.history} />)}
+    return (<div>
+      {this.renderNav()}
+      <hr />
+      <div className="list-group">
+        {teams.map(team => <TeamOverview key={team.id} team={team} history={this.history} />)}
+      </div>
     </div>);
   }
 

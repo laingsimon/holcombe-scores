@@ -24,7 +24,7 @@ export class TeamDetails extends Component {
       games: null,
       error: null,
       team: null,
-      mode: 'view-games'
+      mode: props.match.params.mode || 'view'
     };
     this.onNewGameLoaded = this.onNewGameLoaded.bind(this);
     this.changeMode = this.changeMode.bind(this);
@@ -59,7 +59,9 @@ export class TeamDetails extends Component {
 
   changeMode(event) {
     event.preventDefault();
-    const mode = event.target.getAttribute('href');
+    const url = event.target.getAttribute('href');
+    const segments = url.split('/')
+    const mode = segments[segments.length - 1];
     this.setState({
       mode: mode,
       loadingNewGame: mode === 'new-game',
@@ -70,13 +72,13 @@ export class TeamDetails extends Component {
   renderNav() {
     return (<ul className="nav nav-pills">
       <li className="nav-item">
-        <a className={`nav-link${this.state.mode === 'view-games' ? ' active' : ''}`} href="view-games" onClick={this.changeMode}>View Games</a>
+        <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`} href={`/team/${this.teamId}/view`} onClick={this.changeMode}>View Games</a>
       </li>
       <li className="nav-item">
-        <a className={`nav-link${this.state.mode === 'new-game' ? ' active' : ''}`} href="new-game" onClick={this.changeMode}>New Game</a>
+        <a className={`nav-link${this.state.mode === 'new-game' ? ' active' : ''}`} href={`/team/${this.teamId}/new-game`} onClick={this.changeMode}>New Game</a>
       </li>
       <li className="nav-item">
-        <a className={`nav-link${this.state.mode === 'edit-team' ? ' active' : ''}`} href="edit-team" onClick={this.changeMode}>Edit Team</a>
+        <a className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} href={`/team/${this.teamId}/edit`} onClick={this.changeMode}>Edit Team</a>
       </li>
     </ul>);
   }
@@ -98,7 +100,7 @@ export class TeamDetails extends Component {
       return (<Alert warnings={[ "You need to login again, click on 'Home'" ]} />);
     }
 
-    if (this.state.mode === 'view-games') {
+    if (this.state.mode === 'view') {
       return (<div>
         <h3>{this.state.team.name}</h3>
         {this.renderNav()}
@@ -112,7 +114,7 @@ export class TeamDetails extends Component {
         <hr />
         <EditGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} onChanged={this.reloadGames} />
       </div>);
-    } else if (this.state.mode === 'edit-team') {
+    } else if (this.state.mode === 'edit') {
       return (<div>
         <h3>{this.state.team.name}</h3>
         {this.renderNav()}

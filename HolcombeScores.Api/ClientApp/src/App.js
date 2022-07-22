@@ -13,8 +13,8 @@ export default class App extends Component {
     return (
       <Layout>
         <Route exact path='/' component={Home} />
-        <Route path='/team/:teamId' component={TeamDetails} />
-        <Route path='/teams' component={Teams} />
+        <Route path='/team/:teamId/:mode?' component={TeamDetails} />
+        <Route path='/teams/:mode?' component={Teams} />
         <Route path='/game/:gameId/:mode?' component={GameDetails} />
       </Layout>
     );
