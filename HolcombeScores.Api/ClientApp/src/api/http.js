@@ -1,6 +1,35 @@
 class Http {
+    static cache = {};
+    static timeoutSecs = 60;
+    static reportCacheStatus = true;
+    
+    static {
+        window.setInterval(() => {
+            if (!Http.reportCacheStatus) {
+                return;
+            }
+            const report = [];
+            
+            Object.keys(Http.cache).forEach(key => {
+                const cachedItem = Http.cache[key];
+                report.push({ key: key, reads: cachedItem.reads });
+            });
+
+            report.sort((a, b) => b.reads - a.reads); //descending sort
+            report.forEach(item => {
+                console.log(`${item.key}: reads: ${item.reads}`);  
+            });
+        }, Http.timeoutSecs * 1000);
+    }
+
     constructor(settings) {
         this.settings = settings;
+        this.cache = Http.cache;
+        this.timeout = 1000 * Http.timeoutSecs;
+    }
+
+    static clearCache() {
+        Http.cache = {};
     }
 
     get(relativeUrl) {
@@ -23,12 +52,32 @@ class Http {
         return this.send('PUT', relativeUrl, content);
     }
 
-    send(httpMethod, relativeUrl, content) {
+    async send(httpMethod, relativeUrl, content) {
         if (relativeUrl.indexOf('/') !== 0) {
             relativeUrl = '/' + relativeUrl;
         }
 
-        let absoluteUrl = this.settings.apiHost + relativeUrl;
+        const absoluteUrl = this.settings.apiHost + relativeUrl;
+        const match = (relativeUrl.match(/\/api\/([a-zA-Z]+)\/?/));
+        let controller = match ? match[1] : 'unknown-' + relativeUrl;
+        if (controller === 'My') {
+            controller = 'Access';
+        }
+
+        if (httpMethod === 'GET') {
+            const cache = this.cache[absoluteUrl];
+            if (cache && cache.time + this.timeout > new Date().getTime()) {
+                cache.reads++;
+                return cache.data;
+            }
+        }
+        else {
+            Object.keys(this.cache).forEach(id => {
+                if (this.cache[id].controller === controller || this.cache[id].controller === controller + 's' || this.cache[id].controller + 's' === controller) {
+                    delete this.cache[id];
+                }
+            });
+        }
 
         if (content) {
             return fetch(absoluteUrl, {
@@ -40,13 +89,24 @@ class Http {
             }).then(response => response.json());
         }
 
-        return fetch(absoluteUrl, {
+        const response = await fetch(absoluteUrl, {
             method: httpMethod,
             mode: 'cors',
             credentials: 'include'
         })
             .then(response => response.json())
             .catch(e => console.error("ERROR: " + e));
+
+        if (httpMethod === 'GET') {
+            this.cache[absoluteUrl] = {
+                time: new Date().getTime(),
+                data: response,
+                reads: 0,
+                controller: controller
+            };
+        }
+
+        return response;
     }
 }
 
