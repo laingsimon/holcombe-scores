@@ -71,7 +71,7 @@ export class PlayerList extends Component {
 
     // api interaction
     async getPlayers() {
-        const players = await this.playerApi.getAllPlayers();
+        const players = await this.playerApi.getPlayers(this.props.teamId);
         players.sort(this.nameSortFunction);
         this.setState({
             loading: false,
