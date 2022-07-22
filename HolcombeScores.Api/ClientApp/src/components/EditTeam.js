@@ -166,6 +166,11 @@ export class EditTeam extends Component {
                 return;
             }
 
+            if (player.newNumber <= 0) {
+                alert('You must enter a player number');
+                return;
+            }
+
             player.saving = true;
             this.setState({
                 proposedPlayers: proposedPlayers
