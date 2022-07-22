@@ -14,8 +14,10 @@ export class EditGame extends Component {
         this.teamApi = new Team(http);
         this.state = {
             loading: true,
+            playersLoaded: false,
+            deleted: false,
             current: null, // the current game details
-            proposed: null // the updated game details
+            proposed: this.props.gameId ? null : this.defaultGameDetails() // the updated game details
         };
         this.valueChanged = this.valueChanged.bind(this);
         this.updateGame = this.updateGame.bind(this);
@@ -64,42 +66,31 @@ export class EditGame extends Component {
         }
     }
 
-    toUtcDateTime(date) {
-        const pad = (num) => {
-            return num.toString().padStart(2, '0');
-        }
-
-        const dateStr = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
-        const timeStr = `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:00.000Z`;
-        return `${dateStr}T${timeStr}`;
-    }
-
     async updateGame() {
-        this.setState({
-            loading: true,
-            updateResult: null,
-        });
+        if (!this.state.playersLoaded) {
+            return;
+        }
 
         try {
             const proposed = this.state.proposed;
-            const date = new Date(Date.parse(proposed.date));
-            const utcDateTime = this.toUtcDateTime(date);
             const playerNumbers = Object.keys(this.state.proposed.players);
-            const result = await this.gameApi.updateGame(this.props.gameId, this.props.teamId, utcDateTime, proposed.opponent, proposed.playingAtHome, playerNumbers);
+
+            if (playerNumbers.length === 0) {
+                alert('You must select some players');
+                return;
+            }
+
+            if (!this.state.proposed.opponent) {
+                alert('You must enter the name of the opponent');
+                return;
+            }
+
             this.setState({
-                loading: false,
-                updateResult: result,
+                loading: true,
+                apiResult: null,
             });
 
-            if (result.success) {
-                this.setState({
-                    current: result.outcome
-                });
-
-                if (this.props.onChanged) {
-                    this.props.onChanged(this.props.gameId, this.props.teamId);
-                }
-            }
+            await this.applyApiChanges(this.toUtcDateTime(new Date(proposed.date)), playerNumbers);
         } catch (e) {
             this.setState({
                 loading: false,
@@ -117,65 +108,194 @@ export class EditGame extends Component {
             loading: true
         });
 
-        const result = await this.gameApi.deleteGame(this.gameId);
-        if (result.success) {
-            document.location.href = `/team/${this.state.team.id}`;
-        }
+        const result = await this.gameApi.deleteGame(this.props.gameId);
+
+        this.setState({
+            loading: false,
+            deleted: true,
+            apiResult: result
+        });
+    }
+
+    renderGameDeleted() {
+        return (<div>
+            <Alert messages={this.state.apiResult.messages} warnings={this.state.apiResult.warnings} errors={this.state.apiResult.errors} />
+            <hr />
+            <a href={`/team/${this.state.team.id}`} className="btn btn-primary">View games</a>
+        </div>);
     }
 
     // renders
-    renderUpdateResult(result) {
+    renderApiResult(result) {
         if (!result) {
             return;
         }
 
         if (result.success) {
-            return (<Alert messages={result.messages} />);
+            if (!this.props.gameId) {
+                document.location.href = `/game/${result.outcome.id}`;
+            }
+
+            const openGame = this.props.gameId
+                ? null
+                : (<a href={`/game/${result.outcome.id}`} className="btn btn-primary">Open game</a>);
+
+            return (<div>
+                <Alert messages={result.messages} />
+                <hr />
+                {openGame}
+            </div>);
         }
 
+        return (<Alert messages={result.messages} warnings={result.warnings} errors={result.errors} />);
+    }
+
+    renderError(error) {
+        const back = (() => {
+            this.setState({
+                error: null
+            });
+        });
+
         return (<div>
-            <Alert messages={result.messages} warnings={result.warnings} errors={result.errors} />
+            <Alert errors={[ error ]} />
+            <hr />
+            <button type="button" className="btn btn-primary" onClick={back}>Back</button>
         </div>);
     }
 
     render () {
-        if (this.state.loading) {
-            return (<div className="d-flex justify-content-center">
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
+        try {
+            if (this.state.loading) {
+                return (<div className="d-flex justify-content-center">
+                    <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                </div>);
+            }
+
+            if (this.state.error) {
+                return this.renderError(this.state.error);
+            }
+
+            if (this.state.deleted) {
+                return this.renderGameDeleted();
+            }
+
+            if (!this.props.gameId && this.state.apiResult) {
+                return this.renderApiResult(this.state.apiResult);
+            }
+
+            const deleteButton = this.props.gameId
+                ? (<button className="btn btn-danger" onClick={this.deleteGame}>Delete game</button>)
+                : null;
+
+            return (<div>
+                {this.renderApiResult(this.state.apiResult)}
+                <div className="input-group mb-3">
+                    <div className="input-group-prepend">
+                        <span className="input-group-text" id="basic-addon3">Opponent</span>
+                    </div>
+                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                           name="opponent" value={this.state.proposed.opponent} onChange={this.valueChanged}/>
                 </div>
+                <div className="input-group mb-3">
+                    <div className="form-check form-switch">
+                        <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                               name="playingAtHome" checked={this.state.proposed.playingAtHome}
+                               onChange={this.valueChanged}/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Playing at home</label>
+                    </div>
+                </div>
+                <div className="input-group mb-3">
+                    <div className="input-group-prepend">
+                        <span className="input-group-text" id="basic-addon3">Date</span>
+                    </div>
+                    <input type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                           name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
+                </div>
+                <PlayerList teamId={this.props.teamId} selected={this.state.proposed.players}
+                            onPlayerChanged={this.onPlayerChanged} onLoaded={this.onLoaded}/>
+                <hr/>
+                <button type="button" className="btn btn-primary" onClick={this.updateGame}>{this.props.gameId ? 'Update game' : 'Create game'}</button>
+                {deleteButton}
             </div>);
+        } catch (e) {
+            return (<Alert errors={[ e.message ]} />);
+        }
+    }
+
+    // apis
+    async getGameDetails() {
+        const team = await this.teamApi.getTeam(this.props.teamId);
+        const game = this.props.gameId ? await this.gameApi.getGame(this.props.gameId) : null;
+        let proposedGame = this.state.proposed;
+        if (game) {
+            proposedGame = Object.assign({}, game);
+            proposedGame.date = this.toLocalDateTime(new Date(game.date));
+            proposedGame.players = {};
+
+            // noinspection JSUnresolvedVariable
+            delete proposedGame.squad;
+
+            // noinspection JSUnresolvedVariable
+            game.squad.forEach(player => {
+                proposedGame.players[player.number] = true;
+            });
         }
 
-        if (this.state.error) {
-            return (<Alert errors={[ this.state.error ]} />);
-        }
+        this.setState({
+            loading: false,
+            current: game,
+            proposed: proposedGame,
+            team: team
+        });
+    }
 
-        return (<div>
-            {this.renderUpdateResult(this.state.updateResult)}
-            <div className="input-group mb-3">
-                <div className="input-group-prepend">
-                    <span className="input-group-text" id="basic-addon3">Opponent</span>
-                </div>
-                <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="opponent" value={this.state.proposed.opponent} onChange={this.valueChanged} />
-            </div>
-            <div className="input-group mb-3">
-                <div className="form-check form-switch">
-                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="playingAtHome" checked={this.state.proposed.playingAtHome} onChange={this.valueChanged} />
-                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Playing at home</label>
-                </div>
-            </div>
-            <div className="input-group mb-3">
-                <div className="input-group-prepend">
-                    <span className="input-group-text" id="basic-addon3">Date</span>
-                </div>
-                <input type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="date" value={this.state.proposed.date} onChange={this.valueChanged} />
-            </div>
-            <PlayerList teamId={this.props.teamId} selected={this.state.proposed.players} onPlayerChanged={this.onPlayerChanged} onLoaded={this.onLoaded} />
-            <hr />
-            <button type="button" className="btn btn-primary" onClick={this.updateGame}>Update details</button>
-            <button className="btn btn-danger" onClick={this.deleteGame}>Delete game</button>
-        </div>);
+    async applyApiChanges(utcDateTime, playerNumbers) {
+        try {
+            const proposed = this.state.proposed;
+            const apiFunction = this.props.gameId
+                ? this.gameApi.updateGame
+                : async (gameId, teamId, utcDateTime, opponent, playingAtHome, playerNumbers) => await this.gameApi.createGame(teamId, utcDateTime, opponent, playingAtHome, playerNumbers);
+
+            const result = await apiFunction(this.props.gameId, this.props.teamId, utcDateTime, proposed.opponent, proposed.playingAtHome, playerNumbers);
+
+            if (result.success) {
+                this.setState({
+                    apiResult: result,
+                    current: result.outcome,
+                    loading: false
+                });
+
+                if (this.props.onChanged) {
+                    this.props.onChanged(result.outcome.id, result.outcome.teamId);
+                }
+            } else {
+                this.setState({
+                    apiResult: result,
+                    loading: false
+                });
+            }
+        } catch (e) {
+            this.setState({
+                loading: false,
+                error: e.message
+            });
+        }
+    }
+
+    // utility functions
+    except(selected, remove) {
+        let copy = Object.assign({}, selected);
+        delete copy[remove];
+        return copy;
+    }
+
+    union(selected, add) {
+        let copy = Object.assign({}, selected);
+        copy[add] = true;
+        return copy;
     }
 
     toLocalDateTime(date) {
@@ -188,38 +308,21 @@ export class EditGame extends Component {
         return `${dateStr}T${timeStr}`;
     }
 
-    async getGameDetails() {
-        const team = await this.teamApi.getTeam(this.props.teamId);
-        const game = await this.gameApi.getGame(this.props.gameId);
-        const proposedGame = Object.assign({}, game);
-        proposedGame.date = this.toLocalDateTime(new Date(game.date));
-        proposedGame.players = {};
+    toUtcDateTime(date) {
+        const pad = (num) => {
+            return num.toString().padStart(2, '0');
+        }
 
-        // noinspection JSUnresolvedVariable
-        delete proposedGame.squad;
-
-        // noinspection JSUnresolvedVariable
-        game.squad.forEach(player => {
-           proposedGame.players[player.number] = true;
-        });
-
-        this.setState({
-            loading: false,
-            current: game,
-            proposed: proposedGame,
-            team: team
-        });
+        const dateStr = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+        const timeStr = `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:00.000Z`;
+        return `${dateStr}T${timeStr}`;
     }
 
-    except(selected, remove) {
-        let copy = Object.assign({}, selected);
-        delete copy[remove];
-        return copy;
-    }
-
-    union(selected, add) {
-        let copy = Object.assign({}, selected);
-        copy[add] = true;
-        return copy;
+    defaultGameDetails() {
+        return {
+            opponent: "",
+            playingAtHome: true,
+            date: new Date().toISOString().substring(0, 10) + 'T11:00'
+        };
     }
 }

@@ -15,13 +15,13 @@ class Game {
         return this.http.delete(`/api/Game/${id}`);
     }
 
-    createGame(teamId, date, opponent, playingAtHome, playerNames) {
+    createGame(teamId, date, opponent, playingAtHome, playerNumbers) {
         let gameDetail = {
             teamId: teamId,
             date: date,
             opponent: opponent,
             playingAtHome: playingAtHome,
-            players: playerNames
+            players: playerNumbers
         };
 
         return this.http.post(`/api/Game`, gameDetail);

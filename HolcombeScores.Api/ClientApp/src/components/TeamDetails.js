@@ -5,7 +5,7 @@ import {Game} from '../api/game';
 import {Team} from '../api/team';
 import {Access} from '../api/access';
 import {GameOverview} from './GameOverview';
-import {NewGame} from './NewGame';
+import {EditGame} from './EditGame';
 import {EditTeam} from './EditTeam';
 import {Alert} from './Alert';
 
@@ -93,7 +93,7 @@ export class TeamDetails extends Component {
         </div>
       </div>);
     }
-    
+
     if (!this.state.access) {
       return (<Alert warnings={[ "You need to login again, click on 'Home'" ]} />);
     }
@@ -110,7 +110,7 @@ export class TeamDetails extends Component {
         <h3>{this.state.team.name}</h3>
         {this.renderNav()}
         <hr />
-        <NewGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} onCreated={this.reloadGames} />
+        <EditGame teamId={this.teamId} onLoaded={this.onNewGameLoaded} onChanged={this.reloadGames} />
       </div>);
     } else if (this.state.mode === 'edit-team') {
       return (<div>
