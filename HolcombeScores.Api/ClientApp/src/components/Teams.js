@@ -5,6 +5,7 @@ import {Team} from '../api/team';
 import {Access} from '../api/access';
 import {TeamOverview} from "./TeamOverview";
 import {Alert} from "./Alert";
+import {EditTeam} from "./EditTeam";
 
 export class Teams extends Component {
   constructor(props) {
@@ -20,6 +21,7 @@ export class Teams extends Component {
       mode: props.match.params.mode || 'view'
     };
     this.changeMode = this.changeMode.bind(this);
+    this.onTeamCreated = this.onTeamCreated.bind(this);
   }
 
   //event handlers
@@ -31,6 +33,10 @@ export class Teams extends Component {
     this.setState({
       mode: mode,
     });
+  }
+
+  async onTeamCreated(teamId) {
+    document.location.href = `/team/${teamId}`;
   }
 
   componentDidMount() {
@@ -74,7 +80,7 @@ export class Teams extends Component {
     return (<div>
       {this.renderNav()}
       <hr />
-      <p>Todo: New team</p>
+      <EditTeam onChanged={this.onTeamCreated} />
     </div>);
   }
 

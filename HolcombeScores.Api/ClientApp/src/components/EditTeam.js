@@ -45,7 +45,10 @@ export class EditTeam extends Component {
 
         try {
             const proposed = this.state.proposed;
-            const result = await this.teamApi.updateTeam(this.props.teamId, proposed.name, proposed.coach);
+            const result = this.props.teamId
+                ? await this.teamApi.updateTeam(this.props.teamId, proposed.name, proposed.coach)
+                : await this.teamApi.createTeam(proposed.name, proposed.coach);
+
             this.setState({
                 loading: false,
                 updateResult: result,
@@ -57,7 +60,7 @@ export class EditTeam extends Component {
                 });
 
                 if (this.props.onChanged) {
-                    this.props.onChanged(this.props.teamId);
+                    this.props.onChanged(result.outcome.id);
                 }
             }
         } catch (e) {
@@ -112,16 +115,18 @@ export class EditTeam extends Component {
                 <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="coach" value={this.state.proposed.coach} onChange={this.valueChanged} />
             </div>
             <hr />
-            <button type="button" className="btn btn-primary" onClick={this.updateTeam}>Update details</button>
+            <button type="button" className="btn btn-primary" onClick={this.updateTeam}>{this.props.teamId ? 'Update team' : 'Create team'}</button>
         </div>);
     }
 
     async getTeamDetails() {
-        const team = await this.teamApi.getTeam(this.props.teamId);
+        const team = this.props.teamId
+            ? await this.teamApi.getTeam(this.props.teamId)
+            : null;
         this.setState({
             loading: false,
             current: team,
-            proposed: team
+            proposed: team || { name: '', coach: '' }
         });
     }
 }
