@@ -17,16 +17,16 @@ export class PlayGame extends Component {
         this.holcombeGoal = this.holcombeGoal.bind(this);
         this.opponentGoal = this.opponentGoal.bind(this);
     }
-    
+
     // event handler
     async opponentGoal() {
         this.setState({
-            latestScorer: 'opponent' 
+            latestScorer: 'opponent'
         });
-        
+
         await this.recordGoal(false, null);
     }
-    
+
     async holcombeGoal(event) {
         const playerNumber = event.target.getAttribute('data-player-number');
 
@@ -43,14 +43,14 @@ export class PlayGame extends Component {
         if (this.props.onChanged) {
             this.props.onChanged(this.props.gameId);
         }
-        
+
         window.setTimeout(() => {
             this.setState({
                 latestScorer: null
             });
         }, 1500);
     }
-    
+
     componentDidMount() {
         // noinspection JSIgnoredPromiseFromCall
         this.getGameData();
@@ -64,7 +64,7 @@ export class PlayGame extends Component {
                 </div>
             </div>);
         }
-        
+
         return (<div>
             {this.renderScore()}
             <div className="d-flex flex-wrap justify-content-center score-goals-container">
@@ -73,17 +73,17 @@ export class PlayGame extends Component {
             </div>
         </div>);
     }
-    
+
     renderHolcombeScoreButton(player) {
         const isLatestScorer = this.state.latestScorer === player.number;
-        return (<button key={player.number} type="button" className={`btn ${isLatestScorer ? ' btn-success' : 'btn-primary'} btn-goal-scorer`} onClick={this.holcombeGoal} data-player-number={player.number}>
+        return (<button key={player.number} type="button" className={`btn ${isLatestScorer ? ' btn-outline-success' : 'btn-primary'} btn-goal-scorer`} onClick={this.holcombeGoal} data-player-number={player.number}>
             {player.name} Scored!
         </button>);
     }
-    
+
     renderOpponentScoreButton() {
         const isLatestScorer = this.state.latestScorer === 'opponent';
-        return (<button key="opponent" type="button" className={`btn ${isLatestScorer ? ' btn-success' : 'btn-secondary'} btn-goal-scorer`} onClick={this.opponentGoal}>{this.state.game.opponent} Scored</button>);
+        return (<button key="opponent" type="button" className={`btn ${isLatestScorer ? ' btn-outline-success' : 'btn-secondary'} btn-goal-scorer`} onClick={this.opponentGoal}>{this.state.game.opponent} Scored</button>);
     }
 
     renderScore() {

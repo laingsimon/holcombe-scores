@@ -152,7 +152,7 @@ export class TeamDetails extends Component {
       const access = await this.accessApi.getMyAccess();
       this.setState({games: games, team: team, access: access.access, loadingGames: false});
     } catch (e) {
-      console.log(e);
+      console.error(e);
       this.setState({loadingGames: false, error: e.message });
     }
   }

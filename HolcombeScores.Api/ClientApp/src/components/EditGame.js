@@ -92,6 +92,7 @@ export class EditGame extends Component {
 
             await this.applyApiChanges(this.toUtcDateTime(new Date(proposed.date)), playerNumbers);
         } catch (e) {
+            console.error(e);
             this.setState({
                 loading: false,
                 error: e.message
@@ -218,9 +219,11 @@ export class EditGame extends Component {
                             onPlayerChanged={this.onPlayerChanged} onLoaded={this.onLoaded}/>
                 <hr/>
                 <button type="button" className="btn btn-primary" onClick={this.updateGame}>{this.props.gameId ? 'Update game' : 'Create game'}</button>
+                &nbsp;
                 {deleteButton}
             </div>);
         } catch (e) {
+            console.error(e);
             return (<Alert errors={[ e.message ]} />);
         }
     }
@@ -256,7 +259,7 @@ export class EditGame extends Component {
         try {
             const proposed = this.state.proposed;
             const apiFunction = this.props.gameId
-                ? this.gameApi.updateGame
+                ? this.gameApi.updateGame.bind(this.gameApi)
                 : async (gameId, teamId, utcDateTime, opponent, playingAtHome, playerNumbers) => await this.gameApi.createGame(teamId, utcDateTime, opponent, playingAtHome, playerNumbers);
 
             const result = await apiFunction(this.props.gameId, this.props.teamId, utcDateTime, proposed.opponent, proposed.playingAtHome, playerNumbers);
@@ -278,6 +281,7 @@ export class EditGame extends Component {
                 });
             }
         } catch (e) {
+            console.error(e);
             this.setState({
                 loading: false,
                 error: e.message

@@ -57,7 +57,7 @@ export class Teams extends Component {
         this.setState({loading: false, error: 'You need tor request access first' });
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
       this.setState({loading: false, error: e.message });
     }
   }

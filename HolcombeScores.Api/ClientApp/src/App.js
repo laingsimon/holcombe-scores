@@ -15,7 +15,7 @@ export default class App extends Component {
         <Route exact path='/' component={Home} />
         <Route path='/team/:teamId' component={TeamDetails} />
         <Route path='/teams' component={Teams} />
-        <Route path='/game/:gameId' component={GameDetails} />
+        <Route path='/game/:gameId/:mode?' component={GameDetails} />
       </Layout>
     );
   }

@@ -22,7 +22,7 @@ export class GameDetails extends Component {
             game: null,
             team: null,
             error: null,
-            mode: 'view-game'
+            mode: props.match.params.mode || 'view'
         };
         this.changeMode = this.changeMode.bind(this);
         this.gameChanged = this.gameChanged.bind(this);
@@ -35,18 +35,20 @@ export class GameDetails extends Component {
         if (!window.confirm('Are you sure you want to remove this goal?')) {
             return;
         }
-        
+
         await this.gameApi.removeGoal(this.gameId, goalId);
         await this.fetchGame();
     }
-    
+
     async gameChanged() {
         await this.fetchGame(); // don't set the state to loading
     }
 
     changeMode(event) {
         event.preventDefault();
-        const mode = event.target.getAttribute('href');
+        const url = event.target.getAttribute('href');
+        const segments = url.split('/')
+        const mode = segments[segments.length - 1];
         this.setState({
             mode: mode,
         });
@@ -60,16 +62,16 @@ export class GameDetails extends Component {
     // renderers
     renderNav() {
         const editNav = <li className="nav-item">
-            <a className={`nav-link${this.state.mode === 'edit-game' ? ' active' : ''}`} href="edit-game" onClick={this.changeMode}>Edit Game</a>
+            <a className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} href={`/game/${this.gameId}/edit`} onClick={this.changeMode}>Edit Game</a>
         </li>;
 
         return (<ul className="nav nav-pills">
             <li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'view-game' ? ' active' : ''}`} href="view-game" onClick={this.changeMode}>View Game</a>
+                <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`} href={`/game/${this.gameId}/view`} onClick={this.changeMode}>View Game</a>
             </li>
             {this.state.access.access.admin ? editNav : null}
             <li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'play-game' ? ' active' : ''}`} href="play-game" onClick={this.changeMode}>Play Game</a>
+                <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`} href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
             </li>
         </ul>);
     }
@@ -92,11 +94,11 @@ export class GameDetails extends Component {
             </div>
         }
 
-        if (this.state.mode === 'view-game') {
+        if (this.state.mode === 'view') {
             return this.renderViewGame();
-        } else if (this.state.mode === 'edit-game') {
+        } else if (this.state.mode === 'edit') {
             return this.renderEditGame();
-        } else if (this.state.mode === 'play-game') {
+        } else if (this.state.mode === 'play') {
             return this.renderPlayGame();
         } else {
             return (<div>
@@ -175,7 +177,7 @@ export class GameDetails extends Component {
         if (game.goals.length === 0) {
             return (<p>No goals</p>);
         }
-        
+
         game.goals.map(goal => {
             goal.jsTime = new Date(goal.time);
             return goal;

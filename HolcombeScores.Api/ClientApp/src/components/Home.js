@@ -233,6 +233,7 @@ export class Home extends Component {
 
       return (<div>Unset: {this.state.mode}</div>);
     } catch (e) {
+      console.error(e);
       return (<Alert errors={[ `Error rendering component: ${e.message}` ]} />);
     }
   }
@@ -245,7 +246,7 @@ export class Home extends Component {
 
       this.setState({ mode: 'access', access: access, teams: teams, loading: false});
     } catch (e) {
-      console.log(e);
+      console.error(e);
       this.setState({ mode: 'access', error: e.message, loading: false});
     }
   }
@@ -261,7 +262,7 @@ export class Home extends Component {
 
       await this.populateMyAccess(); // reload the component
     } catch (e) {
-      console.log(e);
+      console.error(e);
       this.setState({error: e.message, loading: false});
     }
   }
@@ -272,7 +273,7 @@ export class Home extends Component {
 
       this.setState({recoveryAccounts: recoveryAccounts, loading: false});
     } catch (e) {
-      console.log(e);
+      console.error(e);
       this.setState({error: e.message, loading: false});
     }
   }
@@ -288,7 +289,7 @@ export class Home extends Component {
 
       await this.populateMyAccess(); // reload the component
     } catch (e) {
-      console.log(e);
+      console.error(e);
       this.setState({ error: e.message, loading: false});
     }
   }
