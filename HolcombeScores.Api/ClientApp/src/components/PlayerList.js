@@ -72,6 +72,7 @@ export class PlayerList extends Component {
     // api interaction
     async getPlayers() {
         const players = await this.playerApi.getAllPlayers();
+        players.sort(this.nameSortFunction);
         this.setState({
             loading: false,
             players: players,
@@ -80,5 +81,15 @@ export class PlayerList extends Component {
         if (this.props.onLoaded) {
             this.props.onLoaded();
         }
+    }
+
+    nameSortFunction(playerA, playerB) {
+        if (playerA.name.toLowerCase() === playerB.name.toLowerCase()) {
+            return 0;
+        }
+
+        return (playerA.name.toLowerCase() > playerB.name.toLowerCase())
+            ? 1
+            : -1;
     }
 }

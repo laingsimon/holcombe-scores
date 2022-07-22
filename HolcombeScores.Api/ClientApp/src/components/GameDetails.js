@@ -136,6 +136,8 @@ export class GameDetails extends Component {
             opponent: 0,
         }
 
+        game.squad.sort(this.nameSortFunction);
+
         return (<div>
             {this.renderHeading()}
             {this.renderNav()}
@@ -228,5 +230,15 @@ export class GameDetails extends Component {
             console.log(e);
             this.setState({loading: false, error: e.message });
         }
+    }
+
+    nameSortFunction(playerA, playerB) {
+        if (playerA.name.toLowerCase() === playerB.name.toLowerCase()) {
+            return 0;
+        }
+
+        return (playerA.name.toLowerCase() > playerB.name.toLowerCase())
+            ? 1
+            : -1;
     }
 }
