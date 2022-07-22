@@ -6,8 +6,6 @@ import {PlayerList} from "./PlayerList";
 import {Alert} from "./Alert";
 
 export class NewGame extends Component {
-    dateSuffix = ":00.000Z";
-
     constructor(props) {
         super(props);
         this.state = {
@@ -15,8 +13,9 @@ export class NewGame extends Component {
             players: {},
             opponent: "",
             playingAtHome: true,
-            date: new Date().toISOString().substring(0, 10) + 'T11:00',
-            playersLoaded: false
+            date: this.defaultLocalDate(),
+            playersLoaded: false,
+            outcome: null
         }
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
@@ -27,9 +26,18 @@ export class NewGame extends Component {
         this.teamId = this.props.teamId;
     }
 
-    formatDate(date) {
-        const isoDate = date.toISOString();
-        return isoDate.substring(0, isoDate.length - (this.dateSuffix.length)); // trim the Z suffix, milliseconds and seconds off the date
+    defaultLocalDate() {
+        return new Date().toISOString().substring(0, 10) + 'T11:00';
+    }
+
+    toUtcDateTime(date) {
+        const pad = (num) => {
+            return num.toString().padStart(2, '0');
+        }
+
+        const dateStr = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+        const timeStr = `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:00.000Z`;
+        return `${dateStr}T${timeStr}`;
     }
 
     // event handlers
@@ -41,7 +49,7 @@ export class NewGame extends Component {
 
             const playerNumbers = Object.keys(this.state.players);
             const date = new Date(Date.parse(this.state.date));
-            const formattedDate = this.formatDate(date) + this.dateSuffix;
+            const utcDateTime = this.toUtcDateTime(date);
 
             if (playerNumbers.length === 0) {
                 alert('You must select some players');
@@ -56,7 +64,7 @@ export class NewGame extends Component {
             this.setState({
                 loading: true
             });
-            const result = await this.gameApi.createGame(this.teamId, formattedDate, this.state.opponent, this.state.playingAtHome, playerNumbers);
+            const result = await this.gameApi.createGame(this.teamId, utcDateTime, this.state.opponent, this.state.playingAtHome, playerNumbers);
 
             this.setState({
                 loading: false,
@@ -156,7 +164,7 @@ export class NewGame extends Component {
             </div>
             <div className="input-group mb-3">
                 <div className="form-check form-switch">
-                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="playingAtHome" checked={this.state.playingAtHome ? 'checked' : ''} onChange={this.valueChanged} />
+                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="playingAtHome" checked={this.state.playingAtHome} onChange={this.valueChanged} />
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Playing at home</label>
                 </div>
             </div>

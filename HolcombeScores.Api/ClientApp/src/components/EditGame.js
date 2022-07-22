@@ -7,8 +7,6 @@ import {Alert} from "./Alert";
 import {PlayerList} from "./PlayerList";
 
 export class EditGame extends Component {
-    dateSuffix = ":00.000Z";
-
     constructor (props) {
         super(props);
         const http = new Http(new Settings());
@@ -60,9 +58,20 @@ export class EditGame extends Component {
             playersLoaded: true
         });
 
+        // noinspection JSUnresolvedVariable
         if (this.props.onLoaded) {
             this.props.onLoaded();
         }
+    }
+
+    toUtcDateTime(date) {
+        const pad = (num) => {
+            return num.toString().padStart(2, '0');
+        }
+
+        const dateStr = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+        const timeStr = `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:00.000Z`;
+        return `${dateStr}T${timeStr}`;
     }
 
     async updateGame() {
@@ -73,9 +82,10 @@ export class EditGame extends Component {
 
         try {
             const proposed = this.state.proposed;
-            const date = proposed.date + this.dateSuffix;
+            const date = new Date(Date.parse(proposed.date));
+            const utcDateTime = this.toUtcDateTime(date);
             const playerNumbers = Object.keys(this.state.proposed.players);
-            const result = await this.gameApi.updateGame(this.props.gameId, this.props.teamId, date, proposed.opponent, proposed.playingAtHome, playerNumbers);
+            const result = await this.gameApi.updateGame(this.props.gameId, this.props.teamId, utcDateTime, proposed.opponent, proposed.playingAtHome, playerNumbers);
             this.setState({
                 loading: false,
                 updateResult: result,
@@ -151,7 +161,7 @@ export class EditGame extends Component {
             </div>
             <div className="input-group mb-3">
                 <div className="form-check form-switch">
-                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="playingAtHome" checked={this.state.proposed.playingAtHome ? 'checked' : ''} onChange={this.valueChanged} />
+                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="playingAtHome" checked={this.state.proposed.playingAtHome} onChange={this.valueChanged} />
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Playing at home</label>
                 </div>
             </div>
@@ -168,14 +178,27 @@ export class EditGame extends Component {
         </div>);
     }
 
+    toLocalDateTime(date) {
+        const pad = (num) => {
+            return num.toString().padStart(2, '0');
+        }
+
+        const dateStr = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+        const timeStr = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        return `${dateStr}T${timeStr}`;
+    }
+
     async getGameDetails() {
         const team = await this.teamApi.getTeam(this.props.teamId);
         const game = await this.gameApi.getGame(this.props.gameId);
         const proposedGame = Object.assign({}, game);
-        proposedGame.date = game.date.substring(0, 16);
+        proposedGame.date = this.toLocalDateTime(new Date(game.date));
         proposedGame.players = {};
+
+        // noinspection JSUnresolvedVariable
         delete proposedGame.squad;
 
+        // noinspection JSUnresolvedVariable
         game.squad.forEach(player => {
            proposedGame.players[player.number] = true;
         });
