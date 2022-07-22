@@ -5,9 +5,9 @@ Record the goals as they happen so everyone can see.
 
 ### How to use:
 
-1. Go to the [registration page](Tbc) and enter your details, select the appropriate team
+1. Go to the [registration page](https://holcombe-scores.azurewebsites.net/) and enter your details, select the appropriate team
 2. Your request will be processed by a member of the admin team
-3. Go to the [games page](Tbc) to see the current games
+3. Go to the [games page](https://holcombe-scores.azurewebsites.net/) to see the current games
   - From here you can create a new game and record the goals
   - Or see the current score, as the game is played
 
