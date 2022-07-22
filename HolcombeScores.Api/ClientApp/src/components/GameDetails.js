@@ -32,7 +32,10 @@ export class GameDetails extends Component {
     //event handlers
     async removeGoal(event) {
         const goalId = event.target.getAttribute('data-goal-id');
-        if (!window.confirm('Are you sure you want to remove this goal?')) {
+        const goal = this.state.game.goals.filter(g => g.goalId === goalId)[0];
+        const detail = goal.holcombeGoal ? goal.player.name : this.state.game.opponent;
+
+        if (!window.confirm(`Are you sure you want to remove ${detail}'s goal?`)) {
             return;
         }
 
