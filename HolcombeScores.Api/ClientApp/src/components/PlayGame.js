@@ -103,11 +103,21 @@ export class PlayGame extends Component {
     async getGameData() {
         const game = await this.gameApi.getGame(this.props.gameId);
         const team = await this.teamApi.getTeam(this.props.teamId);
-        game.squad.sort((a, b) => a.name - b.name);
+        game.squad.sort(this.nameSortFunction);
         this.setState({
             game: game,
             team: team,
             loading: false,
         });
+    }
+
+    nameSortFunction(playerA, playerB) {
+        if (playerA.name.toLowerCase() === playerB.name.toLowerCase()) {
+            return 0;
+        }
+
+        return (playerA.name.toLowerCase() > playerB.name.toLowerCase())
+            ? 1
+            : -1;
     }
 }
