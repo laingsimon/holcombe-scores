@@ -23,6 +23,7 @@ export class AccessAdmin extends Component {
         this.changeMode = this.changeMode.bind(this);
         this.respondRequest = this.respondRequest.bind(this);
         this.cancelRequest = this.cancelRequest.bind(this);
+        this.cancelAccess = this.cancelAccess.bind(this);
     }
 
     //event handlers
@@ -34,6 +35,32 @@ export class AccessAdmin extends Component {
         this.setState({
             mode: mode,
         });
+    }
+
+    async cancelAccess(event) {
+        const userId = event.target.getAttribute('data-user-id');
+
+        if (userId === this.state.myAccess.userId) {
+            alert('You cannot cancel your own access');
+            return;
+        }
+
+        if (!window.confirm('Are you sure you want to CANCEL this access')) {
+            return;
+        }
+
+        this.setState({
+            processing: this.union(this.state.processing, userId)
+        });
+
+        const result = await this.accessApi.deleteAccess(userId);
+        if (result.success) {
+            const allAccess = await this.getAllAccess();
+            this.setState({
+                allAccess: allAccess,
+                processing: this.except(this.state.processing, userId)
+            });
+        }
     }
 
     async cancelRequest(event) {
@@ -74,7 +101,10 @@ export class AccessAdmin extends Component {
     renderNav() {
         return (<ul className="nav nav-pills">
             <li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'requests' ? ' active' : ''}`} href={`/admin/requests`} onClick={this.changeMode}>Access requests</a>
+                <a className={`nav-link${this.state.mode === 'requests' ? ' active' : ''}`} href={`/admin/requests`} onClick={this.changeMode}>Requests</a>
+            </li>
+            <li className="nav-item">
+                <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/admin/access`} onClick={this.changeMode}>Access</a>
             </li>
         </ul>);
     }
@@ -103,8 +133,33 @@ export class AccessAdmin extends Component {
         if (this.state.mode === 'requests') {
             return this.renderRequests();
         }
+        if (this.state.mode === 'access') {
+            return this.renderAccess();
+        }
 
         return (<div>Unknown mode: {this.state.mode}</div>);
+    }
+
+    renderAccess() {
+        return (<div>
+            {this.renderNav()}
+            <hr />
+            <div className="list-group">
+                {this.state.allAccess.map(access => this.renderCurrentAccess(access))}
+            </div>
+        </div>);
+    }
+
+    renderCurrentAccess(access) {
+        const team = this.state.teams[access.teamId];
+        const processing = Object.keys(this.state.processing).includes(access.userId);
+
+        return (<div key={access.userId} className="list-group-item list-group-item-action flex-column align-items-start">
+            <span>Name: <strong>{access.name}</strong>, Team: {team.name}{access.admin ? ', Admin' : ''}</span>
+            <span className="float-end">
+                <button type="button" className={`btn ${processing || access.userId === this.state.myAccess.userId ? 'btn-light' : 'btn-danger'}`} data-user-id={access.userId} onClick={this.cancelAccess}>&times;</button>
+            </span>
+        </div>);
     }
 
     renderRequests() {
@@ -147,10 +202,16 @@ export class AccessAdmin extends Component {
         return requests;
     }
 
+    async getAllAccess() {
+        const allAccess = await this.accessApi.getAllAccess();
+        allAccess.sort((a, b) => a.name - b.name);
+
+        return allAccess;
+    }
+
     async requestData() {
         try {
             const myAccess = await this.accessApi.getMyAccess();
-            const allAccess = await this.accessApi.getAllAccess();
             const teams = await this.teamApi.getAllTeams();
 
             const teamsMap = {};
@@ -162,7 +223,7 @@ export class AccessAdmin extends Component {
                 loading: false,
                 myAccess: myAccess.access,
                 requests: await this.getAccessRequests(),
-                allAccess: allAccess,
+                allAccess: await this.getAllAccess(),
                 teams: teamsMap
             });
         } catch (e) {
@@ -188,9 +249,9 @@ export class AccessAdmin extends Component {
 
         const result = await this.accessApi.respondToAccessRequest(userId, teamIdOverride || request.teamId, reason, allow);
         if (result.success) {
-            const requests = await this.getAccessRequests();
             this.setState({
-                requests: requests,
+                requests: await this.getAccessRequests(),
+                allAccess: await this.getAllAccess(),
                 processing: this.except(this.state.processing, userId)
             });
         }
