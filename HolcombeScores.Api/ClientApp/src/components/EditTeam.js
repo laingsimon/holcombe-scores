@@ -276,9 +276,6 @@ export class EditTeam extends Component {
         return (<div className="row" key={player.number}>
             <div className="col">
                 <div className="input-group mb-3">
-                    <div className="input-group-prepend">
-                        <span className="input-group-text" id="basic-addon3">Name</span>
-                    </div>
                     <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" data-player-number={player.number} value={player.name} onChange={this.playerValueChanged} />
                 </div>
             </div>
