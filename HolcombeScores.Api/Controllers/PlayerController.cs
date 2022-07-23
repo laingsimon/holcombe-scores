@@ -20,6 +20,12 @@ namespace HolcombeScores.Api.Controllers
             return _playerService.GetAllPlayers();
         }
 
+        [HttpGet("/api/Players/{teamId}")]
+        public IAsyncEnumerable<PlayerDto> List(Guid teamId)
+        {
+            return _playerService.GetPlayers(teamId);
+        }
+
         [HttpPut("/api/Player")]
         public async Task<ActionResultDto<PlayerDto>> Upsert(PlayerDto player)
         {

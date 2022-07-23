@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
@@ -38,6 +35,26 @@ namespace HolcombeScores.Api.Services
             }
 
             await foreach (var player in _playerRepository.GetAll(access.Admin ? null : access.TeamId))
+            {
+                yield return _playerDtoAdapter.Adapt(player);
+            }
+        }
+
+        public async IAsyncEnumerable<PlayerDto> GetPlayers(Guid teamId)
+        {
+            var access = await _accessService.GetAccess();
+            if (access == null || access.Revoked != null)
+            {
+                yield break;
+            }
+
+            if (!access.Admin && access.TeamId != teamId)
+            {
+                // asking for players from another team, and not an admin
+                yield break;
+            }
+
+            await foreach (var player in _playerRepository.GetAll(teamId))
             {
                 yield return _playerDtoAdapter.Adapt(player);
             }
