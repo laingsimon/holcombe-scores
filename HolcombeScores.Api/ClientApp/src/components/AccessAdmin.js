@@ -193,7 +193,6 @@ export class AccessAdmin extends Component {
     }
 
     renderCurrentAccess(access) {
-        const team = this.state.teams[access.teamId];
         const processing = Object.keys(this.state.processing).includes(access.userId);
 
         return (<div key={access.userId} className="list-group-item list-group-item-action flex-column align-items-start">
