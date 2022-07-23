@@ -18,6 +18,8 @@ namespace HolcombeScores.Api.Services.Adapters
                 Requested = accessRequest.Requested,
                 TeamId = accessRequest.TeamId,
                 UserId = accessRequest.UserId,
+                Reason = accessRequest.Reason,
+                Rejected = accessRequest.Rejected,
             };
         }
 
@@ -34,6 +36,8 @@ namespace HolcombeScores.Api.Services.Adapters
                 Requested = accessRequest.Requested,
                 TeamId = accessRequest.TeamId,
                 UserId = accessRequest.UserId,
+                Reason = accessRequest.Reason,
+                Rejected = accessRequest.Rejected,
             };
         }
     }

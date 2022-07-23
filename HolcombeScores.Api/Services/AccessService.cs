@@ -204,7 +204,10 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.Success("Access granted", _accessDtoAdapter.Adapt(newAccess));
             }
 
-            return _serviceHelper.NotSuccess<AccessDto>("Access request ignored");
+            accessRequest.Reason = response.Reason;
+            accessRequest.Rejected = true;
+            await _accessRepository.UpdateAccessRequest(accessRequest);
+            return _serviceHelper.Success<AccessDto>("Access request ignored");
         }
 
         public async IAsyncEnumerable<AccessRequestDto> GetAccessRequests()

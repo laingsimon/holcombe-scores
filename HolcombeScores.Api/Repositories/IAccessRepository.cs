@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.AzureTables;
 
 namespace HolcombeScores.Api.Repositories
@@ -20,5 +17,6 @@ namespace HolcombeScores.Api.Repositories
         Task RemoveAccess(Guid userId);
         Task UpdateAccessToken(string currentToken, string newToken);
         Task UpdateAccessRequestToken(string currentToken, string newToken);
+        Task UpdateAccessRequest(AccessRequest accessRequest);
     }
 }
