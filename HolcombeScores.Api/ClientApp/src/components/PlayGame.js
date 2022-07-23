@@ -103,6 +103,7 @@ export class PlayGame extends Component {
     async getGameData() {
         const game = await this.gameApi.getGame(this.props.gameId);
         const team = await this.teamApi.getTeam(this.props.teamId);
+        game.squad.sort((a, b) => a.name - b.name);
         this.setState({
             game: game,
             team: team,
