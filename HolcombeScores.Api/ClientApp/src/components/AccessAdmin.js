@@ -24,6 +24,8 @@ export class AccessAdmin extends Component {
         this.respondRequest = this.respondRequest.bind(this);
         this.cancelRequest = this.cancelRequest.bind(this);
         this.cancelAccess = this.cancelAccess.bind(this);
+        this.adminChanged = this.adminChanged.bind(this);
+        this.changeTeam = this.changeTeam.bind(this);
     }
 
     //event handlers
@@ -55,9 +57,8 @@ export class AccessAdmin extends Component {
 
         const result = await this.accessApi.deleteAccess(userId);
         if (result.success) {
-            const allAccess = await this.getAllAccess();
             this.setState({
-                allAccess: allAccess,
+                allAccess: await this.getAllAccess(),
                 processing: this.except(this.state.processing, userId)
             });
         }
@@ -90,6 +91,47 @@ export class AccessAdmin extends Component {
         const allow = window.confirm('Should this user be permitted?');
         const reason = allow ? null : window.prompt('Enter reason for rejection');
         await this.respondToRequest(userId, null, reason, allow);
+    }
+
+    async adminChanged(event) {
+        const userId = event.target.getAttribute('data-user-id');
+        const shouldBeAdmin = event.target.checked;
+        const access = this.state.allAccess.filter(r => r.userId === userId)[0];
+
+        if (userId === this.state.myAccess.userId) {
+            alert('You cannot change your own admin access');
+            return;
+        }
+
+        this.setState({
+            processing: this.union(this.state.processing, userId)
+        });
+
+        const result = await this.accessApi.updateAccess(access.teamId, access.userId, access.name, shouldBeAdmin);
+        if (result.success) {
+            this.setState({
+                allAccess: await this.getAllAccess(),
+                processing: this.except(this.state.processing, userId)
+            });
+        }
+    }
+
+    async changeTeam(event) {
+        const userId = event.target.getAttribute('data-user-id');
+        const access = this.state.allAccess.filter(r => r.userId === userId)[0];
+        const teamId = event.target.value;
+
+        this.setState({
+            processing: this.union(this.state.processing, userId)
+        });
+
+        const result = await this.accessApi.updateAccess(teamId, access.userId, access.name, access.admin);
+        if (result.success) {
+            this.setState({
+                allAccess: await this.getAllAccess(),
+                processing: this.except(this.state.processing, userId)
+            });
+        }
     }
 
     componentDidMount() {
@@ -155,8 +197,17 @@ export class AccessAdmin extends Component {
         const processing = Object.keys(this.state.processing).includes(access.userId);
 
         return (<div key={access.userId} className="list-group-item list-group-item-action flex-column align-items-start">
-            <span>Name: <strong>{access.name}</strong>, Team: {team.name}{access.admin ? ', Admin' : ''}</span>
+            <span>Name: <strong>{access.name}</strong>, Team: <select data-user-id={access.userId} onChange={this.changeTeam}>
+                {Object.keys(this.state.teams).map(teamId => <option value={teamId} key={teamId} selected={access.teamId === teamId}>{this.state.teams[teamId].name}</option>)}
+            </select></span>
             <span className="float-end">
+                <span className="form-check form-switch form-check-inline">
+                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                           data-user-id={access.userId} checked={access.admin}
+                           onChange={this.adminChanged}/>
+                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Admin</label>
+                </span>
+                &nbsp;
                 <button type="button" className={`btn ${processing || access.userId === this.state.myAccess.userId ? 'btn-light' : 'btn-danger'}`} data-user-id={access.userId} onClick={this.cancelAccess}>&times;</button>
             </span>
         </div>);
