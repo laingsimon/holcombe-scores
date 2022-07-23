@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
@@ -43,6 +39,18 @@ namespace HolcombeScores.Api.Services
             {
                 yield return _teamDtoAdapter.Adapt(team);
             }
+        }
+
+        public async Task<TeamDto> GetTeam(Guid id)
+        {
+            var access = await _accessService.GetAccess();
+            if (access?.Revoked != null)
+            {
+                // if someone has revoked access don't permit them access to the list of teams
+                return null;
+            }
+
+            return _teamDtoAdapter.Adapt(await _teamRepository.Get(id));
         }
 
         public async Task<ActionResultDto<TeamDto>> CreateTeam(TeamDto teamDto)
