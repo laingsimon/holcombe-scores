@@ -111,11 +111,11 @@ export class AccessAdmin extends Component {
         return (<div>
             {this.renderNav()}
             <hr />
-            <h5>Pending</h5>
+            <h5>Pending: {this.state.requests.filter(r => !r.rejected).length}</h5>
             <div className="list-group">
                 {this.state.requests.filter(r => !r.rejected).map(request => this.renderRequest(request))}
             </div>
-            <h5>Rejected</h5>
+            <h5>Rejected: {this.state.requests.filter(r => r.rejected).length}</h5>
             <div className="list-group">
                 {this.state.requests.filter(r => r.rejected).map(request => this.renderRequest(request))}
             </div>
