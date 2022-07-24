@@ -16,9 +16,18 @@ export class PlayGame extends Component {
         };
         this.holcombeGoal = this.holcombeGoal.bind(this);
         this.opponentGoal = this.opponentGoal.bind(this);
+        this.updateGameData = this.updateGameData.bind(this);
+        this.stopRefresh = this.stopRefresh.bind(this);
     }
 
     // event handler
+    stopRefresh() {
+        window.clearInterval(this.state.refreshHandle);
+        this.setState({
+            refreshHandle: null
+        })
+    }
+    
     async opponentGoal() {
         this.setState({
             latestScorer: 'opponent'
@@ -39,7 +48,7 @@ export class PlayGame extends Component {
 
     async recordGoal(holcombeGoal, playerNumber) {
         await this.gameApi.recordGoal(this.props.gameId, new Date().toISOString(), holcombeGoal, playerNumber);
-        this.getGameData();
+        await this.updateGameData();
         if (this.props.onChanged) {
             this.props.onChanged(this.props.gameId);
         }
@@ -53,7 +62,14 @@ export class PlayGame extends Component {
 
     componentDidMount() {
         // noinspection JSIgnoredPromiseFromCall
-        this.getGameData();
+        this.getData();
+        this.setState({
+            refreshHandle: window.setInterval(this.updateGameData, 5000)
+        });
+    }
+    
+    componentWillUnmount() {
+        this.stopRefresh();
     }
 
     render() {
@@ -70,6 +86,12 @@ export class PlayGame extends Component {
             <div className="d-flex flex-wrap justify-content-center score-goals-container">
                 {this.state.game.squad.map(player => this.renderHolcombeScoreButton(player))}
                 {this.renderOpponentScoreButton()}
+            </div>
+            <hr />
+            <div className="text-center">
+                Score as at {this.state.asAt.toLocaleTimeString()}
+                &nbsp;-&nbsp;
+                {this.state.refreshHandle ? (<button className="btn btn-secondary" onClick={this.stopRefresh}>Stop Refresh</button>) : <span>Not refreshing</span>}
             </div>
         </div>);
     }
@@ -99,13 +121,25 @@ export class PlayGame extends Component {
 
         return (<h4 className="text-center"><span className={`rounded-pill play-current-score ${colour}`}>{score}</span></h4>);
     }
-
-    async getGameData() {
-        const game = await this.gameApi.getGame(this.props.gameId);
-        const team = await this.teamApi.getTeam(this.props.teamId);
-        game.squad.sort(this.nameSortFunction);
+    
+    async updateGameData() {
         this.setState({
-            game: game,
+            game: await this.getGameData(true),
+            asAt: new Date()
+        });
+    }
+
+    async getGameData(bypassCache) {
+        const game = await this.gameApi.getGame(this.props.gameId, bypassCache);
+        game.squad.sort(this.nameSortFunction);
+        return game;
+    }
+    
+    async getData() {
+        const team = await this.teamApi.getTeam(this.props.teamId);
+        this.setState({
+            game: await this.getGameData(false),
+            asAt: new Date(),
             team: team,
             loading: false,
         });

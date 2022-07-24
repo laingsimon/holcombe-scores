@@ -48,7 +48,7 @@ class Http {
             controller = 'Access';
         }
 
-        if (httpMethod === 'GET') {
+        if (httpMethod === 'GET' && !bypassCache) {
             const cache = this.cache[absoluteUrl];
             if (cache && cache.time + this.timeout > new Date().getTime()) {
                 cache.reads++;
