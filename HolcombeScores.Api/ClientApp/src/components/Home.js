@@ -174,7 +174,7 @@ export class Home extends Component {
         <input type="password" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="adminPassCode" value={this.state.recovery.adminPassCode} onChange={this.recoveryChanged} />
       </div>
 
-      <p>Select your team</p>
+      <p>Select your account</p>
       <ul className="list-group">
         {this.renderRecoveryAccounts(recoveryAccounts)}
       </ul>
