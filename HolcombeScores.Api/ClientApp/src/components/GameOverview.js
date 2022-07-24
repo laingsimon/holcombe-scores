@@ -20,7 +20,7 @@ export class GameOverview extends Component {
                 : `${opponentGoals}-${holcombeGoals}`;
 
         return (<a href={`/game/${this.game.id}`} className="list-group-item d-flex justify-content-between align-items-center">
-            {this.renderTeam()} {this.showTeam ? location : location.toLowerCase()} to {this.game.opponent} on {date.toDateString()}
+            {this.renderTeam()} {this.showTeam ? location : location.toLowerCase()} to <strong>{this.game.opponent}</strong> on {date.toDateString()}
           <span className="badge rounded-pill bg-primary">{score}</span>
         </a>);
     }
