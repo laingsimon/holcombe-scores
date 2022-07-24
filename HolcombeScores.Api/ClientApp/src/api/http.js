@@ -16,6 +16,10 @@ class Http {
         return this.send('GET', relativeUrl, null);
     }
 
+    getNoCache(relativeUrl) {
+        return this.send('GET', relativeUrl, null, true);
+    }
+
     post(relativeUrl, content) {
         return this.send('POST', relativeUrl, content);
     }
@@ -32,7 +36,7 @@ class Http {
         return this.send('PUT', relativeUrl, content);
     }
 
-    async send(httpMethod, relativeUrl, content) {
+    async send(httpMethod, relativeUrl, content, bypassCache) {
         if (relativeUrl.indexOf('/') !== 0) {
             relativeUrl = '/' + relativeUrl;
         }
