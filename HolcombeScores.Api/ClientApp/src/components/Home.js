@@ -221,9 +221,9 @@ export class Home extends Component {
         return this.renderLoading();
       } else if (this.state.error) {
         return this.renderError(this.state.error);
-      } else if (this.state.mode === 'access' && this.state.access && ((this.state.access.request && this.state.access.access) || (this.state.access.access && this.state.access.access.admin))) {
-        return this.renderAccess(this.state.access, this.state.teams);
       } else if (this.state.mode === 'access' && this.state.access) {
+        return this.renderAccess(this.state.access, this.state.teams);
+      } else if (this.state.mode === 'access') {
         return this.renderCreateAccessRequest(this.state.access, this.state.teams);
       } else if (this.state.mode === 'access') {
         return (<div>Unable to retrieve your access, please check your internet connection</div>);
