@@ -18,7 +18,9 @@ export class AccessAdmin extends Component {
             myAccess: null,
             requests: null,
             allAccess: null,
-            processing: []
+            processing: [],
+            cache: null,
+            cacheAt: null,
         };
         this.changeMode = this.changeMode.bind(this);
         this.respondRequest = this.respondRequest.bind(this);
@@ -26,6 +28,7 @@ export class AccessAdmin extends Component {
         this.cancelAccess = this.cancelAccess.bind(this);
         this.adminChanged = this.adminChanged.bind(this);
         this.changeTeam = this.changeTeam.bind(this);
+        this.getCache = this.getCache.bind(this);
     }
 
     //event handlers
@@ -137,6 +140,12 @@ export class AccessAdmin extends Component {
     componentDidMount() {
         // noinspection JSIgnoredPromiseFromCall
         this.requestData();
+        this.intervalHandle = window.setInterval(this.getCache, 1000);
+        this.getCache();
+    }
+    
+    componentWillUnmount() {
+        window.clearInterval(this.intervalHandle);
     }
 
     // renderers
@@ -147,6 +156,9 @@ export class AccessAdmin extends Component {
             </li>
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/admin/access`} onClick={this.changeMode}>Access</a>
+            </li>
+            <li className="nav-item">
+                <a className={`nav-link${this.state.mode === 'cache' ? ' active' : ''}`} href={`/admin/cache`} onClick={this.changeMode}>Cache</a>
             </li>
         </ul>);
     }
@@ -178,8 +190,26 @@ export class AccessAdmin extends Component {
         if (this.state.mode === 'access') {
             return this.renderAccess();
         }
+        if (this.state.mode === 'cache') {
+            return this.renderCache();
+        }
 
         return (<div>Unknown mode: {this.state.mode}</div>);
+    }
+
+    renderCache() {
+        return (<div>
+            {this.renderNav()}
+            <hr />
+            <h5>Cache as at: {this.state.cacheAt ? this.state.cacheAt.toLocaleTimeString() : 'not retrieved'}</h5>
+            <div className="list-group">
+                {this.state.cache ? this.state.cache.map(item => {
+                    return (<div key={item.key} className="list-group-item list-group-item-action flex-column align-items-start">
+                        {item.key}: Reads: {item.reads}
+                    </div>)
+                }) : (<div>No cache</div>)}
+            </div>
+        </div>);
     }
 
     renderAccess() {
@@ -196,8 +226,8 @@ export class AccessAdmin extends Component {
         const processing = Object.keys(this.state.processing).includes(access.userId);
 
         return (<div key={access.userId} className="list-group-item list-group-item-action flex-column align-items-start">
-            <span>Name: <strong>{access.name}</strong>, Team: <select data-user-id={access.userId} onChange={this.changeTeam}>
-                {Object.keys(this.state.teams).map(teamId => <option value={teamId} key={teamId} selected={access.teamId === teamId}>{this.state.teams[teamId].name}</option>)}
+            <span>Name: <strong>{access.name}</strong>, Team: <select value={access.teamId} data-user-id={access.userId} onChange={this.changeTeam}>
+                {Object.keys(this.state.teams).map(teamId => <option value={teamId} key={teamId}>{this.state.teams[teamId].name}</option>)}
             </select></span>
             <span className="float-end">
                 <span className="form-check form-switch form-check-inline">
@@ -245,6 +275,24 @@ export class AccessAdmin extends Component {
     }
 
     //api
+    getCache() {
+        if (this.state.mode !== 'cache' && this.state.cache !== null) {
+            return;
+        }
+
+        const cacheCopy = Object.assign({}, Http.cache);
+        const orderedCache = [];
+        Object.keys(cacheCopy).forEach(key => {
+            orderedCache.push(Object.assign({key: key}, cacheCopy[key]));
+        });
+        orderedCache.sort((a, b) => a.reads - b.reads);
+
+        this.setState({
+            cache: orderedCache,
+            cacheAt: new Date()
+        });
+    }
+    
     async getAccessRequests() {
         const requests = await this.accessApi.getAllAccessRequests();
         requests.sort((a, b) => Date.parse(b.requested) - Date.parse(a.requested));

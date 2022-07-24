@@ -1,27 +1,7 @@
 class Http {
     static cache = {};
     static timeoutSecs = 60;
-    static reportCacheStatus = true;
     
-    static {
-        window.setInterval(() => {
-            if (!Http.reportCacheStatus) {
-                return;
-            }
-            const report = [];
-            
-            Object.keys(Http.cache).forEach(key => {
-                const cachedItem = Http.cache[key];
-                report.push({ key: key, reads: cachedItem.reads });
-            });
-
-            report.sort((a, b) => b.reads - a.reads); //descending sort
-            report.forEach(item => {
-                console.log(`${item.key}: reads: ${item.reads}`);  
-            });
-        }, Http.timeoutSecs * 1000);
-    }
-
     constructor(settings) {
         this.settings = settings;
         this.cache = Http.cache;
