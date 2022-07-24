@@ -27,7 +27,7 @@ export class PlayGame extends Component {
             refreshHandle: null
         })
     }
-    
+
     async opponentGoal() {
         this.setState({
             latestScorer: 'opponent'
@@ -38,6 +38,11 @@ export class PlayGame extends Component {
 
     async holcombeGoal(event) {
         const playerNumber = event.target.getAttribute('data-player-number');
+
+        if (this.state.readOnly) {
+            alert('Game has finished, no goals can be recorded');
+            return;
+        }
 
         this.setState({
             latestScorer: Number.parseInt(playerNumber)
@@ -67,7 +72,7 @@ export class PlayGame extends Component {
             refreshHandle: window.setInterval(this.updateGameData, 5000)
         });
     }
-    
+
     componentWillUnmount() {
         this.stopRefresh();
     }
@@ -81,6 +86,10 @@ export class PlayGame extends Component {
             </div>);
         }
 
+        const notRefreshStatus = this.state.readOnly
+            ? 'Game over'
+            : 'Not refreshing';
+
         return (<div>
             {this.renderScore()}
             <div className="d-flex flex-wrap justify-content-center score-goals-container">
@@ -91,19 +100,25 @@ export class PlayGame extends Component {
             <div className="text-center">
                 Score as at {this.state.asAt.toLocaleTimeString()}
                 &nbsp;-&nbsp;
-                {this.state.refreshHandle ? (<button className="btn btn-secondary" onClick={this.stopRefresh}>Stop Refresh</button>) : <span>Not refreshing</span>}
+                {this.state.refreshHandle ? (<button className="btn btn-secondary" onClick={this.stopRefresh}>Stop Refresh</button>) : <span>{notRefreshStatus}</span>}
             </div>
         </div>);
     }
 
     renderHolcombeScoreButton(player) {
         const isLatestScorer = this.state.latestScorer === player.number;
-        return (<button key={player.number} type="button" className={`btn ${isLatestScorer ? ' btn-outline-success' : 'btn-primary'} btn-goal-scorer`} onClick={this.holcombeGoal} data-player-number={player.number}>
+        const colour = this.state.readOnly ? 'btn-light' : 'btn-primary';
+
+        return (<button key={player.number} type="button" className={`btn ${isLatestScorer ? ' btn-outline-success' : colour} btn-goal-scorer`} onClick={this.holcombeGoal} data-player-number={player.number}>
             {player.name} Scored!
         </button>);
     }
 
     renderOpponentScoreButton() {
+        if (this.state.readOnly) {
+            return null;
+        }
+
         const isLatestScorer = this.state.latestScorer === 'opponent';
         return (<button key="opponent" type="button" className={`btn ${isLatestScorer ? ' btn-outline-success' : 'btn-secondary'} btn-goal-scorer`} onClick={this.opponentGoal}>{this.state.game.opponent} Scored</button>);
     }
@@ -121,28 +136,44 @@ export class PlayGame extends Component {
 
         return (<h4 className="text-center"><span className={`rounded-pill play-current-score ${colour}`}>{score}</span></h4>);
     }
-    
+
     async updateGameData() {
-        this.setState({
-            game: await this.getGameData(true),
-            asAt: new Date()
-        });
+        this.setState(await this.getGameData(true));
     }
 
     async getGameData(bypassCache) {
         const game = await this.gameApi.getGame(this.props.gameId, bypassCache);
         game.squad.sort(this.nameSortFunction);
-        return game;
+
+        const asAt = new Date();
+        const date = new Date(game.date);
+        const timeDiff = asAt.getTime() - date.getTime();
+        const hourDiff = Math.floor(timeDiff / 1000 / 60 / 60);
+        const dayDiff = Math.floor(hourDiff / 24);
+        const readOnly = dayDiff > 2;
+
+        if (readOnly && this.state.refreshHandle) {
+            this.stopRefresh();
+        }
+
+        return {
+            game: game,
+            asAt: asAt,
+            dayDiff: dayDiff,
+            readOnly: readOnly
+        };
     }
-    
+
     async getData() {
         const team = await this.teamApi.getTeam(this.props.teamId);
-        this.setState({
-            game: await this.getGameData(false),
+        const gameData = await this.getGameData(false);
+        const stateData = Object.assign({
             asAt: new Date(),
             team: team,
             loading: false,
-        });
+        }, gameData);
+
+        this.setState(stateData);
     }
 
     nameSortFunction(playerA, playerB) {
