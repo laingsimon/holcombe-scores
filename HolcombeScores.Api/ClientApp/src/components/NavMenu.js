@@ -2,23 +2,38 @@ import React, { Component } from 'react';
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
+import {Http} from "../api/http";
+import {Settings} from "../api/settings";
+import {Access} from "../api/access";
 
 export class NavMenu extends Component {
   constructor (props) {
     super(props);
+    const http = new Http(new Settings());
+    this.accessApi = new Access(http);
 
     this.toggleNavbar = this.toggleNavbar.bind(this);
     this.state = {
-      collapsed: true
+      collapsed: true,
+      access: null
     };
   }
 
+  //event handlers
   toggleNavbar () {
     this.setState({
       collapsed: !this.state.collapsed
     });
   }
+  
+  async componentDidMount() {
+    const access = await this.accessApi.getMyAccess();
+    this.setState({
+      access: access.access
+    });
+  }
 
+  // renderers
   render () {
     return (
       <header>
@@ -31,9 +46,15 @@ export class NavMenu extends Component {
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
                 </NavItem>
-                <NavItem>
+                {this.state.access ? (<NavItem>
+                  <NavLink tag={Link} className="text-dark" to={`/team/${this.state.access.teamId}`}>Team</NavLink>
+                </NavItem>) : null}
+                {this.state.access && this.state.access.admin ? (<NavItem>
                   <NavLink tag={Link} className="text-dark" to="/teams">Teams</NavLink>
-                </NavItem>
+                </NavItem>) : null}
+                {this.state.access && this.state.access.admin ? (<NavItem>
+                  <NavLink tag={Link} className="text-dark" to="/admin">Admin</NavLink>
+                </NavItem>) : null}
               </ul>
             </Collapse>
           </Container>
