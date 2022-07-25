@@ -47,7 +47,7 @@ export class Teams extends Component {
 
   // renderers
   renderNav() {
-    return (<ul className="nav nav-pills">
+    return (<ul className="nav nav-tabs">
       <li className="nav-item">
         <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`} href={`/teams/view`} onClick={this.changeMode}>View Teams</a>
       </li>

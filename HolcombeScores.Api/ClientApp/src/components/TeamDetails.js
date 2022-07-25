@@ -71,7 +71,7 @@ export class TeamDetails extends Component {
 
   // renderers
   renderNav() {
-    return (<ul className="nav nav-pills">
+    return (<ul className="nav nav-tabs">
       <li className="nav-item">
         <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`} href={`/team/${this.teamId}/view`} onClick={this.changeMode}>View Games</a>
       </li>

@@ -69,7 +69,7 @@ export class GameDetails extends Component {
             <a className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} href={`/game/${this.gameId}/edit`} onClick={this.changeMode}>Edit Game</a>
         </li>;
 
-        return (<ul className="nav nav-pills">
+        return (<ul className="nav nav-tabs">
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`} href={`/game/${this.gameId}/view`} onClick={this.changeMode}>View Game</a>
             </li>

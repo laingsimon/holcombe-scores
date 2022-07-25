@@ -98,7 +98,7 @@ export class Home extends Component {
 
   // renderers
   renderNav() {
-    return (<ul className="nav nav-pills">
+    return (<ul className="nav nav-tabs">
       <li className="nav-item">
         <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/home/access`} onClick={this.changeMode}>Request access</a>
       </li>

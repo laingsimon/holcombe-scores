@@ -151,7 +151,7 @@ export class AccessAdmin extends Component {
 
     // renderers
     renderNav() {
-        return (<ul className="nav nav-pills">
+        return (<ul className="nav nav-tabs">
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'requests' ? ' active' : ''}`} href={`/admin/requests`} onClick={this.changeMode}>Requests</a>
             </li>
