@@ -52,7 +52,6 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
-    if: ${{ env.branch_name == 'main' || github.event.inputs.deploy == 'true' }}
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -63,9 +62,15 @@ jobs:
         with:
           name: .net-app
 
+      - name: Resolve environment variables
+        shell: bash
+        run: |
+          echo "branch_name=$(echo "$GITHUB_REF_NAME" | sed -r 's/\//_/g')" >> $GITHUB_ENV
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
+        if: ${{ env.branch_name == 'main' || github.event.inputs.deploy == 'true' }}
         with:
           app-name: 'holcombe-scores'
           slot-name: 'Production'
