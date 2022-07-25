@@ -7,8 +7,12 @@ class Game {
         return this.http.get(`/api/Games`);
     }
 
+    getGames(teamId) {
+        return this.http.get(`/api/Games/${teamId}`);
+    }
+
     getGame(id, bypassCache) {
-        return bypassCache 
+        return bypassCache
             ? this.http.getNoCache(`/api/Game/${id}`)
             : this.http.get(`/api/Game/${id}`);
     }

@@ -86,7 +86,10 @@ export class TeamDetails extends Component {
 
   render() {
     if (this.state.error) {
-      return (<Alert errors={[ this.state.error ]} />);
+      return (<div>
+        <Alert errors={[ this.state.error ]} />
+        <a className="btn btn-primary" href="/">Home</a>
+      </div>);
     }
 
     if (!this.state.team) {
@@ -149,11 +152,15 @@ export class TeamDetails extends Component {
   // api access
   async fetchGames() {
     try {
-      const allGames = await this.gameApi.getAllGames();
-      const games = allGames.filter(g => !this.teamId || g.teamId === this.teamId);
+      const access = await this.accessApi.getMyAccess();
+      const isAdmin = access.access.admin;
+      if (!isAdmin && this.teamId !== access.access.teamId) {
+        this.setState({error: 'No access to team', loadingGames: false});
+        return;
+      }
+      const games = await this.gameApi.getGames(this.teamId);
       games.sort(Functions.gameSortFunction);
       const team = await this.teamApi.getTeam(this.teamId);
-      const access = await this.accessApi.getMyAccess();
       this.setState({games: games, team: team, access: access.access, loadingGames: false});
     } catch (e) {
       console.error(e);

@@ -89,7 +89,10 @@ export class GameDetails extends Component {
             </div>);
         }
         if (this.state.error) {
-            return (<Alert errors={[ this.state.error ]} />);
+            return (<div>
+                <Alert errors={[ this.state.error ]} />
+                <a className="btn btn-primary" href="/">Home</a>
+            </div>);
         }
         if (!this.state.access.access) {
             return <div>
@@ -223,9 +226,13 @@ export class GameDetails extends Component {
     async fetchGame() {
         try {
             const game = await this.gameApi.getGame(this.gameId);
+            if (!game) {
+                this.setState({loading: false, error: 'Game not found, or no access to game' });
+                return;
+            }
+
             const access = await this.accessApi.getMyAccess();
-            const teams = await this.teamApi.getAllTeams();
-            const team = teams.filter(t => t.id === game.teamId)[0];
+            const team = await this.teamApi.getTeam(game.teamId);
             this.setState({game: game, access:access,team: team, loading: false});
         } catch (e) {
             console.log(e);
