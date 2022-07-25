@@ -25,6 +25,7 @@ export class Home extends Component {
     this.changeMode = this.changeMode.bind(this);
     this.updateAccess = this.updateAccess.bind(this);
     this.accessChanged = this.accessChanged.bind(this);
+    this.removeAccess = this.removeAccess.bind(this);
     let http = new Http(new Settings());
     this.accessApi = new Access(http);
     this.teamApi = new Team(http);
@@ -38,6 +39,22 @@ export class Home extends Component {
   }
 
   //event handlers
+  async removeAccess() {
+    if (!window.confirm('Are you sure you want to remove your access')) {
+      return;
+    }
+
+    this.setState({ loading: true });
+
+    const result = await this.accessApi.deleteAccess(this.state.access.access.userId);
+
+    if (result.success) {
+      await this.populateMyAccess();
+    } else {
+      alert('Could not delete your details');
+    }
+  }
+
   async updateAccess() {
     if (!this.state.proposedAccess.name) {
       alert('You need to enter a name');
@@ -314,6 +331,8 @@ export class Home extends Component {
       </div>
       <hr />
       <button type="button" className="btn btn-primary" onClick={this.updateAccess}>Update details</button>
+      &nbsp;
+      <button type="button" className="btn btn-danger" onClick={this.removeAccess}>Remove details</button>
     </div>)
   }
 
