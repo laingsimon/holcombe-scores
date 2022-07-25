@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Azure;
+using Azure.Data.Tables;
 using HolcombeScores.Api.Models.AzureTables;
 
 namespace HolcombeScores.Api.Repositories
@@ -106,6 +104,11 @@ namespace HolcombeScores.Api.Repositories
             accessRequest.Timestamp = DateTimeOffset.UtcNow;
 
             await _accessRequestTableClient.UpdateEntityAsync(accessRequest, ETag.All);
+        }
+
+        public async Task UpdateAccessRequest(AccessRequest accessRequest)
+        {
+            await _accessRequestTableClient.UpdateEntityAsync(accessRequest, ETag.All, TableUpdateMode.Replace);
         }
     }
 }

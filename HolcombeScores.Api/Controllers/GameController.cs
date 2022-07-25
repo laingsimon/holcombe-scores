@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +17,13 @@ namespace HolcombeScores.Api.Controllers
         [HttpGet("/api/Games")]
         public IAsyncEnumerable<GameDto> List()
         {
-            return _gameService.GetAllGames();
+            return _gameService.GetAllGames(null);
+        }
+
+        [HttpGet("/api/Games/{teamId}")]
+        public IAsyncEnumerable<GameDto> List(Guid teamId)
+        {
+            return _gameService.GetAllGames(teamId);
         }
 
         [HttpGet("/api/Game/{id}")]
@@ -47,14 +50,14 @@ namespace HolcombeScores.Api.Controllers
             return await _gameService.DeleteGame(id);
         }
 
-        [HttpDelete("/api/Game/{gameId}/{playerNumber}")]
-        public async Task<ActionResultDto<GameDto>> DeleteGame(Guid gameId, int playerNumber)
+        [HttpDelete("/api/Game/Player/{gameId}/{playerNumber}")]
+        public async Task<ActionResultDto<GameDto>> DeleteGamePlayer(Guid gameId, int playerNumber)
         {
             return await _gameService.DeleteGamePlayer(gameId, playerNumber);
         }
 
-        [HttpDelete("/api/Game/{gameId}/{goalId}")]
-        public async Task<ActionResultDto<GameDto>> DeleteGame(Guid gameId, Guid goalId)
+        [HttpDelete("/api/Game/Goal/{gameId}/{goalId}")]
+        public async Task<ActionResultDto<GameDto>> DeleteGameGoal(Guid gameId, Guid goalId)
         {
             return await _gameService.DeleteGoal(gameId, goalId);
         }

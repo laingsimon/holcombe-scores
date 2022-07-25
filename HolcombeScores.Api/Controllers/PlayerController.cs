@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +18,12 @@ namespace HolcombeScores.Api.Controllers
         public IAsyncEnumerable<PlayerDto> List()
         {
             return _playerService.GetAllPlayers();
+        }
+
+        [HttpGet("/api/Players/{teamId}")]
+        public IAsyncEnumerable<PlayerDto> List(Guid teamId)
+        {
+            return _playerService.GetPlayers(teamId);
         }
 
         [HttpPut("/api/Player")]

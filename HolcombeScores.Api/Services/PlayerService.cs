@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
@@ -43,6 +40,26 @@ namespace HolcombeScores.Api.Services
             }
         }
 
+        public async IAsyncEnumerable<PlayerDto> GetPlayers(Guid teamId)
+        {
+            var access = await _accessService.GetAccess();
+            if (access == null || access.Revoked != null)
+            {
+                yield break;
+            }
+
+            if (!access.Admin && access.TeamId != teamId)
+            {
+                // asking for players from another team, and not an admin
+                yield break;
+            }
+
+            await foreach (var player in _playerRepository.GetAll(teamId))
+            {
+                yield return _playerDtoAdapter.Adapt(player);
+            }
+        }
+
         public async Task<ActionResultDto<PlayerDto>> CreateOrUpdatePlayer(PlayerDto playerDto)
         {
             var player = _playerDtoAdapter.Adapt(playerDto);
@@ -50,6 +67,11 @@ namespace HolcombeScores.Api.Services
             if (!await _accessService.CanAccessTeam(playerDto.TeamId))
             {
                 return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
+            }
+
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<PlayerDto>("Only managers and admins can create or update players");
             }
 
             var existingPlayer = await _playerRepository.GetByNumber(player.TeamId, player.Number);
@@ -71,6 +93,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
             }
 
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<PlayerDto>("Only managers and admins can remove players");
+            }
+
             var existingPlayer = await _playerRepository.GetByNumber(teamId, number);
 
             if (existingPlayer == null)
@@ -88,6 +115,11 @@ namespace HolcombeScores.Api.Services
             if (!await _accessService.CanAccessTeam(transferDto.CurrentTeamId))
             {
                 return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
+            }
+
+            if (!await _accessService.IsAdmin())
+            {
+                return _serviceHelper.NotPermitted<PlayerDto>("Only admins can transfer players");
             }
 
             var newTeam = await _teamRepository.Get(transferDto.NewTeamId);

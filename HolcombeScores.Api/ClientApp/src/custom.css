@@ -1,0 +1,44 @@
+/* Provide sufficient contrast against white background */
+a {
+  color: #0366d6;
+}
+
+code {
+  color: #E01A76;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.btn-goal-scorer {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  margin: 10px;
+  text-align: center;
+}
+
+.play-current-score {
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.25rem;
+}
+
+.btn-goal-scored, .btn-goal-scored:hover, .btn-goal-scored:active, .btn-goal-scored:focus {
+  background-color: #ff88ff;
+  box-shadow: 0 0 0 0.25rem #ff0000;
+}
+
+.delete-goal {
+  background: transparent;
+  border: none;
+  color: #ff8888;
+}

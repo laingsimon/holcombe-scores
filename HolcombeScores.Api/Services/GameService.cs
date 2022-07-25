@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
@@ -36,7 +32,7 @@ namespace HolcombeScores.Api.Services
             _serviceHelper = serviceHelper;
         }
 
-        public async IAsyncEnumerable<GameDto> GetAllGames()
+        public async IAsyncEnumerable<GameDto> GetAllGames(Guid? teamId)
         {
             var access = await _accessService.GetAccess();
             if (access == null || access.Revoked != null)
@@ -44,7 +40,12 @@ namespace HolcombeScores.Api.Services
                 yield break;
             }
 
-            await foreach (var game in _gameRepository.GetAll(access.Admin ? null : access.TeamId))
+            if (teamId == null && !access.Admin)
+            {
+                teamId = access.TeamId;
+            }
+
+            await foreach (var game in _gameRepository.GetAll(teamId))
             {
                 var gamePlayers = await _gameRepository.GetPlayers(game.Id);
                 var goals = await _gameRepository.GetGoals(game.Id);
@@ -83,13 +84,18 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
             }
 
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can create games");
+            }
+
             try
             {
                 // TODO: Add Validation
 
                 var game = _gameDetailsDtoAdapter.AdaptToGame(gameDetailsDto);
                 game.Id = Guid.NewGuid();
-                var missingPlayers = new List<string>();
+                var missingPlayers = new List<int>();
                 var squad = _gameDetailsDtoAdapter.AdaptSquad(gameDetailsDto, game.Id, missingPlayers);
                 await _gameRepository.Add(game);
 
@@ -98,7 +104,14 @@ namespace HolcombeScores.Api.Services
                     await _gameRepository.AddGamePlayer(gamePlayer);
                 }
 
-                var result = _serviceHelper.Success("Game created", await GetGame(game.Id));
+                if (missingPlayers.Count == gameDetailsDto.Players.Length)
+                {
+                    await _gameRepository.DeleteGame(game.Id);
+                }
+
+                var result = missingPlayers.Count == gameDetailsDto.Players.Length
+                    ? _serviceHelper.NotSuccess<GameDto>("Game not created, no players found")
+                    : _serviceHelper.Success("Game created", await GetGame(game.Id));
 
                 foreach (var player in missingPlayers)
                 {
@@ -118,6 +131,11 @@ namespace HolcombeScores.Api.Services
             if (await _teamRepository.Get(gameDetailsDto.TeamId) == null)
             {
                 return _serviceHelper.NotFound<GameDto>("Team not found");
+            }
+
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can update games");
             }
 
             try
@@ -173,7 +191,7 @@ namespace HolcombeScores.Api.Services
                     await _gameRepository.Update(game);
                 }
 
-                var missingPlayers = new List<string>();
+                var missingPlayers = new List<int>();
                 if (gameDetailsDto.Players != null && gameDetailsDto.Players.Any())
                 {
                     var squad = (await _gameDetailsDtoAdapter.AdaptSquad(gameDetailsDto, game.Id, missingPlayers).ToEnumerable()).ToArray();
@@ -255,6 +273,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<GameDto>("Game not found");
             }
 
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can delete games");
+            }
+
             await _gameRepository.DeleteGame(id);
 
             return _serviceHelper.Success("Game deleted", game);
@@ -268,6 +291,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<GameDto>("Game not found");
             }
 
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can update games");
+            }
+
             await _gameRepository.DeleteGamePlayer(gameId, playerNumber);
 
             return _serviceHelper.Success("Game player deleted", await GetGame(gameId));
@@ -279,6 +307,11 @@ namespace HolcombeScores.Api.Services
             if (game == null)
             {
                 return _serviceHelper.NotFound<GameDto>("Game not found");
+            }
+
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can remove goals");
             }
 
             await _gameRepository.DeleteGoal(gameId, goalId);

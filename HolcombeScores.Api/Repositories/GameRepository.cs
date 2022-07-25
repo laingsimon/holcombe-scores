@@ -64,8 +64,9 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task AddGoal(Goal goal)
         {
+            goal.GoalId = Guid.NewGuid();
             goal.PartitionKey = goal.GameId.ToString();
-            goal.RowKey = Guid.NewGuid().ToString();
+            goal.RowKey = goal.GoalId.ToString();
             goal.ETag = ETag.All;
 
             await _goalTableClient.AddEntityAsync(goal);

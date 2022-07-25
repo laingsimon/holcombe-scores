@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 
 namespace HolcombeScores.Api.Services
@@ -11,5 +8,6 @@ namespace HolcombeScores.Api.Services
         Task<ActionResultDto<TeamDto>> CreateTeam(TeamDto teamDto);
         Task<ActionResultDto<TeamDto>> UpdateTeam(TeamDto teamDto);
         Task<ActionResultDto<TeamDto>> DeleteTeam(Guid id);
+        Task<TeamDto> GetTeam(Guid id);
     }
 }

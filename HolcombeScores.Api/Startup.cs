@@ -1,9 +1,6 @@
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services;
 using HolcombeScores.Api.Services.Adapters;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace HolcombeScores.Api
 {
@@ -13,7 +10,7 @@ namespace HolcombeScores.Api
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllersWithViews();
             services.AddHttpContextAccessor();
             services.AddSwaggerGen();
 
@@ -39,7 +36,6 @@ namespace HolcombeScores.Api
             services.AddSingleton<IRecoverAccessDtoAdapter, RecoverAccessDtoAdapter>();
             services.AddSingleton<IMyAccessDtoAdapter, MyAccessDtoAdapter>();
             services.AddSingleton<ITeamDtoAdapter, TeamDtoAdapter>();
-            services.AddSingleton<IClientService, ClientService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

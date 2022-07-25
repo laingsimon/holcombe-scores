@@ -34,6 +34,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
                 GameId = goal.GameId,
+                GoalId = goal.GoalId,
             };
         }
 
@@ -51,6 +52,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
                 GameId = goal.GameId,
+                GoalId = goal.GoalId,
             };
         }
     }

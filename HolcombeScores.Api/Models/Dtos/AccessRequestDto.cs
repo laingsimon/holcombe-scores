@@ -1,5 +1,3 @@
-using System;
-
 namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
@@ -11,5 +9,7 @@ namespace HolcombeScores.Api.Models.Dtos
         public string Name { get; set; }
         public Guid TeamId { get; set; }
         public DateTime Requested { get; set; }
+        public bool Rejected { get; set; }
+        public string Reason { get; set; }
     }
 }

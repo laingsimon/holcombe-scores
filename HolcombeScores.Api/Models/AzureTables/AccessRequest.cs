@@ -1,4 +1,3 @@
-using System;
 using Azure;
 using Azure.Data.Tables;
 
@@ -24,5 +23,7 @@ namespace HolcombeScores.Api.Models.AzureTables
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public string Reason { get; set; }
+        public bool Rejected { get; set; }
     }
 }

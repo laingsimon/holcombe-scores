@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 
 namespace HolcombeScores.Api.Services
@@ -11,5 +8,6 @@ namespace HolcombeScores.Api.Services
         IAsyncEnumerable<PlayerDto> GetAllPlayers();
         Task<ActionResultDto<PlayerDto>> DeletePlayer(Guid teamId, int number);
         Task<ActionResultDto<PlayerDto>> TransferPlayer(TransferPlayerDto transferDto);
+        IAsyncEnumerable<PlayerDto> GetPlayers(Guid teamId);
     }
 }
