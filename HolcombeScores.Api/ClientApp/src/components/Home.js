@@ -4,16 +4,24 @@ import {Http} from '../api/http';
 import {Team} from '../api/team';
 import {Access} from '../api/access';
 import {Alert} from "./Alert";
+import {Functions} from "../functions";
 
 export class Home extends Component {
   constructor(props) {
     super(props);
-    this.state = { access: null, loading: true, request: { name: '' }, mode: 'access', recovery: { adminPassCode: '' } };
+    this.state = {
+      access: null,
+      loading: true,
+      request: { name: '' },
+      mode: props.match.params.mode || 'access',
+      recovery: { adminPassCode: '' }
+    };
     this.requestAccess = this.requestAccess.bind(this);
     this.recoverAccess = this.recoverAccess.bind(this);
     this.requestChanged = this.requestChanged.bind(this);
     this.recoveryChanged = this.recoveryChanged.bind(this);
     this.removeError = this.removeError.bind(this);
+    this.changeMode = this.changeMode.bind(this);
     let http = new Http(new Settings());
     this.accessApi = new Access(http);
     this.teamApi = new Team(http);
@@ -27,12 +35,17 @@ export class Home extends Component {
   }
 
   //event handlers
-  requestAccess() {
-    if (this.state.mode !== 'access') {
-      this.setState({ mode: 'access' });
-      return;
-    }
+  changeMode(event) {
+    event.preventDefault();
+    const url = event.target.getAttribute('href');
+    const segments = url.split('/')
+    const mode = segments[segments.length - 1];
+    this.setState({
+      mode: mode,
+    });
+  }
 
+  requestAccess() {
     if (!this.state.request.name) {
       alert('You must enter a name');
       return;
@@ -48,13 +61,6 @@ export class Home extends Component {
   }
 
   recoverAccess() {
-    if (this.state.mode !== 'recover') {
-      this.setState({ mode: 'recover', loading: true });
-      // noinspection JSIgnoredPromiseFromCall
-      this.populateRecoveryOptions();
-      return;
-    }
-
     if (!this.state.recovery.adminPassCode) {
       alert('You must enter the admin pass code');
       return;
@@ -91,6 +97,17 @@ export class Home extends Component {
   }
 
   // renderers
+  renderNav() {
+    return (<ul className="nav nav-pills">
+      <li className="nav-item">
+        <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/home/access`} onClick={this.changeMode}>Request access</a>
+      </li>
+      <li className="nav-item">
+        <a className={`nav-link${this.state.mode === 'recover' ? ' active' : ''}`} href={`/home/recover`} onClick={this.changeMode}>Recover access</a>
+      </li>
+    </ul>);
+  }
+
   renderTeams(teams) {
     let setSelectedTeam = function(event) {
       let item = event.target;
@@ -127,9 +144,9 @@ export class Home extends Component {
 
   renderAccess(access, teams) {
     // access granted
-    let team = teams.filter(t => t.id === access.access.teamId)[0];
+    let team = teams.filter(t => t.id === access.teamId)[0];
     return (<div>
-      Hello <strong>{access.access.name}</strong>, you have access to <a href={`/team/${team.id}`} onClick={this.showGames}>{this.renderTeam(team)}</a>
+      Hello <strong>{access.name}</strong>, you have access to <a href={`/team/${team.id}`}>{this.renderTeam(team)}</a>
       <hr />
       <a href={`/team/${team.id}`} className="btn btn-primary">View Games</a>
     </div>);
@@ -138,14 +155,24 @@ export class Home extends Component {
   renderRequestAccess(access, teams) {
     if (access.request && !access.access) {
       // no access, but requested
-      return (<p>Your access request hasn't been approved, yet...</p>);
+      return (<div>
+        {this.renderNav()}
+        <hr />
+        <p>Your access request hasn't been approved, yet...</p>
+      </div>);
     }
 
     if (!teams.length) {
-      return (<p>You don't currently have access. <strong>There are no teams to request access for</strong>.</p>);
+      return (<div>
+        {this.renderNav()}
+        <hr />
+        <p>You don't currently have access. <strong>There are no teams to request access for</strong>.</p>
+      </div>);
     }
 
     return (<div>
+      {this.renderNav()}
+      <hr />
       <p>You don't currently have access, enter your details below to request access</p>
       <div className="input-group mb-3">
         <div className="input-group-prepend">
@@ -160,12 +187,13 @@ export class Home extends Component {
       </ul>
       <hr />
       <button type="button" className="btn btn-primary" onClick={this.requestAccess}>Request access</button>
-      <button type="button" className="btn btn-light" onClick={this.recoverAccess}>Recover access</button>
     </div>);
   }
 
   renderRecoveryOptions(recoveryAccounts) {
     return (<div>
+      {this.renderNav()}
+      <hr />
       <p>Pick an account to recover</p>
       <div className="input-group mb-3">
         <div className="input-group-prepend">
@@ -179,7 +207,6 @@ export class Home extends Component {
         {this.renderRecoveryAccounts(recoveryAccounts)}
       </ul>
       <hr />
-      <button type="button" className="btn btn-light" onClick={this.requestAccess}>Request access</button>
       <button type="button" className="btn btn-primary" onClick={this.recoverAccess}>Recover access</button>
     </div>);
   }
@@ -201,34 +228,20 @@ export class Home extends Component {
     </div>);
   }
 
-  renderCreateAccessRequest(access, teams) {
-    return (<div>
-      <h1>Request access</h1>
-      {this.renderRequestAccess(access, teams)}
-    </div>);
-  }
-
-  renderRecoverAccess(recoveryAccounts) {
-    return (<div>
-      <h1>Recover access</h1>
-      {this.renderRecoveryOptions(recoveryAccounts)}
-    </div>);
-  }
-
   render () {
     try {
       if (this.state.loading) {
         return this.renderLoading();
       } else if (this.state.error) {
         return this.renderError(this.state.error);
-      } else if (this.state.mode === 'access' && this.state.access) {
-        return this.renderAccess(this.state.access, this.state.teams);
+      } else if (this.state.mode === 'access' && this.state.access && this.state.access.access) {
+        return this.renderAccess(this.state.access.access, this.state.teams);
       } else if (this.state.mode === 'access') {
-        return this.renderCreateAccessRequest(this.state.access, this.state.teams);
+        return this.renderRequestAccess(this.state.access, this.state.teams);
       } else if (this.state.mode === 'access') {
         return (<div>Unable to retrieve your access, please check your internet connection</div>);
       } else if (this.state.mode === 'recover') {
-        return this.renderRecoverAccess(this.state.recoveryAccounts);
+        return this.renderRecoveryOptions(this.state.recoveryAccounts);
       }
 
       return (<div>Unset: {this.state.mode}</div>);
@@ -243,8 +256,11 @@ export class Home extends Component {
     try {
       const access = await this.accessApi.getMyAccess();
       const teams = await this.teamApi.getAllTeams();
+      teams.sort(Functions.teamSortFunction);
+      const recoveryAccounts = await this.accessApi.getAccessForRecovery();
+      recoveryAccounts.sort(Functions.recoverySortFunction);
 
-      this.setState({ mode: 'access', access: access, teams: teams, loading: false});
+      this.setState({ mode: 'access', access: access, teams: teams, loading: false, recoveryAccounts: recoveryAccounts});
     } catch (e) {
       console.error(e);
       this.setState({ mode: 'access', error: e.message, loading: false});
@@ -261,17 +277,6 @@ export class Home extends Component {
       }
 
       await this.populateMyAccess(); // reload the component
-    } catch (e) {
-      console.error(e);
-      this.setState({error: e.message, loading: false});
-    }
-  }
-
-  async populateRecoveryOptions() {
-    try {
-      const recoveryAccounts = await this.accessApi.getAccessForRecovery();
-
-      this.setState({recoveryAccounts: recoveryAccounts, loading: false});
     } catch (e) {
       console.error(e);
       this.setState({error: e.message, loading: false});

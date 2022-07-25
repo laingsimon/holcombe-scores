@@ -41,11 +41,32 @@ class Functions {
             : -1;
     }
 
-    static gameSortFunction(a, b) {
-        const aDate = new Date(a.date);
-        const bDate = new Date(b.date);
+    static gameSortFunction(gameA, gameB) {
+        // sort games descending by date
+        const aDate = new Date(gameA.date);
+        const bDate = new Date(gameB.date);
 
         return bDate.getTime() - aDate.getTime();
+    }
+
+    static teamSortFunction(teamA, teamB) {
+        if (teamA.name.toLowerCase() === teamB.name.toLowerCase()) {
+            return 0;
+        }
+
+        return (teamA.name.toLowerCase() > teamB.name.toLowerCase())
+            ? 1
+            : -1;
+    }
+
+    static recoverySortFunction(recoveryA, recoveryB) {
+        if (recoveryA.name.toLowerCase() === recoveryB.name.toLowerCase()) {
+            return 0;
+        }
+
+        return (recoveryA.name.toLowerCase() > recoveryB.name.toLowerCase())
+            ? 1
+            : -1;
     }
 }
 

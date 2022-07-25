@@ -6,6 +6,7 @@ import {Access} from '../api/access';
 import {TeamOverview} from "./TeamOverview";
 import {Alert} from "./Alert";
 import {EditTeam} from "./EditTeam";
+import {Functions} from "../functions";
 
 export class Teams extends Component {
   constructor(props) {
@@ -100,6 +101,8 @@ export class Teams extends Component {
       const access = await this.accessApi.getMyAccess();
       if (access.access) {
         const teams = await this.teamApi.getAllTeams();
+        teams.sort(Functions.teamSortFunction);
+
         this.setState({teams: teams, loading: false});
       } else {
         this.setState({loading: false, error: 'You need tor request access first' });
