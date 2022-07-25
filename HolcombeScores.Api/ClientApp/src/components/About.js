@@ -1,10 +1,6 @@
 import React, { Component } from 'react';
 
 export class About extends Component {
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (<div>
             <p>
@@ -12,7 +8,7 @@ export class About extends Component {
                 This allows for players and supporters to be part of the action when they may not be able to attend the game itself.
                 <i> No more need for whatsapp messages between supporters!</i>
             </p>
-            <p>This service has no affiliation with <a href="https://www.holcombeyfc.com/" target="_blank">Holcombe Youth Football Club</a>.</p>
+            <p>This service has no affiliation with <a rel="noopener" href="https://www.holcombeyfc.com/" target="_blank">Holcombe Youth Football Club</a>.</p>
             <h4>How it works</h4>
             <ol>
                 <li>Go to the <a href="/">registration page</a>, enter your name and select your team</li>
@@ -21,13 +17,13 @@ export class About extends Component {
             </ol>
             <h4>Disclaimers</h4>
             <p><strong>Parental approval should be sought before entering any data into this service.</strong></p>
-            <p>The service provided free by <a href="https://github.com/laingsimon/" target="_blank">Simon Laing</a> for management by the coaches and managers of <a href="https://www.holcombeyfc.com/" target="_blank">Holcombe Youth Football Club</a>.</p>
+            <p>The service provided free by <a rel="noopener" href="https://github.com/laingsimon/" target="_blank">Simon Laing</a> for management by the coaches and managers of <a rel="noopener" href="https://www.holcombeyfc.com/" target="_blank">Holcombe Youth Football Club</a>.</p>
             <p>This is a free service and will be maintained for so long as it can remain so. Any misuse/abuse of the service or where material costs are involved will result in the service being taken offline.</p>
-            <p>I, <a href="https://github.com/laingsimon/" target="_blank">Simon Laing</a>, take no responsibility for the accuracy of the data entered in to this service. I will however endeavour to ensure it is always held in a secure fashion.</p>
+            <p>I, <a rel="noopener" href="https://github.com/laingsimon/" target="_blank">Simon Laing</a>, take no responsibility for the accuracy of the data entered in to this service. I will however endeavour to ensure it is always held in a secure fashion.</p>
             <h5>Links</h5>
             <ul>
-                <li><a href="https://www.holcombeyfc.com/" target="_blank">Holcombe Youth Football Club</a></li>
-                <li><a href="https://github.com/laingsimon/" target="_blank">Simon Laing</a></li>
+                <li><a rel="noopener" href="https://www.holcombeyfc.com/" target="_blank">Holcombe Youth Football Club</a></li>
+                <li><a rel="noopener" href="https://github.com/laingsimon/" target="_blank">Simon Laing</a></li>
             </ul>
         </div>);
     }
