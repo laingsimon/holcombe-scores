@@ -5,6 +5,7 @@ import {Game} from '../api/game';
 import {Team} from '../api/team';
 import {Alert} from "./Alert";
 import {PlayerList} from "./PlayerList";
+import {Functions} from '../functions'
 
 export class EditGame extends Component {
     constructor (props) {
@@ -48,7 +49,9 @@ export class EditGame extends Component {
 
     onPlayerChanged(teamId, playerNumber, selected) {
         const proposedClone = Object.assign({}, this.state.proposed);
-        proposedClone.players = selected ? this.union(this.state.proposed.players, playerNumber) : this.except(this.state.proposed.players, playerNumber);
+        proposedClone.players = selected
+            ? Functions.union(this.state.proposed.players, playerNumber)
+            : Functions.except(this.state.proposed.players, playerNumber);
 
         this.setState({
             proposed: proposedClone
@@ -90,7 +93,7 @@ export class EditGame extends Component {
                 apiResult: null,
             });
 
-            await this.applyApiChanges(this.toUtcDateTime(new Date(proposed.date)), playerNumbers);
+            await this.applyApiChanges(Functions.toUtcDateTime(new Date(proposed.date)), playerNumbers);
         } catch (e) {
             console.error(e);
             this.setState({
@@ -235,7 +238,7 @@ export class EditGame extends Component {
         let proposedGame = this.state.proposed;
         if (game) {
             proposedGame = Object.assign({}, game);
-            proposedGame.date = this.toLocalDateTime(new Date(game.date));
+            proposedGame.date = Functions.toLocalDateTime(new Date(game.date));
             proposedGame.players = {};
 
             // noinspection JSUnresolvedVariable
@@ -290,38 +293,6 @@ export class EditGame extends Component {
     }
 
     // utility functions
-    except(selected, remove) {
-        let copy = Object.assign({}, selected);
-        delete copy[remove];
-        return copy;
-    }
-
-    union(selected, add) {
-        let copy = Object.assign({}, selected);
-        copy[add] = true;
-        return copy;
-    }
-
-    toLocalDateTime(date) {
-        const pad = (num) => {
-            return num.toString().padStart(2, '0');
-        }
-
-        const dateStr = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-        const timeStr = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-        return `${dateStr}T${timeStr}`;
-    }
-
-    toUtcDateTime(date) {
-        const pad = (num) => {
-            return num.toString().padStart(2, '0');
-        }
-
-        const dateStr = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
-        const timeStr = `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:00.000Z`;
-        return `${dateStr}T${timeStr}`;
-    }
-
     defaultGameDetails() {
         return {
             opponent: "",

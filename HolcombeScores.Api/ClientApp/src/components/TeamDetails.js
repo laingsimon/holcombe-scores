@@ -8,6 +8,7 @@ import {GameOverview} from './GameOverview';
 import {EditGame} from './EditGame';
 import {EditTeam} from './EditTeam';
 import {Alert} from './Alert';
+import {Functions} from '../functions'
 
 export class TeamDetails extends Component {
   constructor(props) {
@@ -150,7 +151,7 @@ export class TeamDetails extends Component {
     try {
       const allGames = await this.gameApi.getAllGames();
       const games = allGames.filter(g => !this.teamId || g.teamId === this.teamId);
-      games.sort(this.gameSortFunction);
+      games.sort(Functions.gameSortFunction);
       const team = await this.teamApi.getTeam(this.teamId);
       const access = await this.accessApi.getMyAccess();
       this.setState({games: games, team: team, access: access.access, loadingGames: false});
@@ -158,12 +159,5 @@ export class TeamDetails extends Component {
       console.error(e);
       this.setState({loadingGames: false, error: e.message });
     }
-  }
-
-  gameSortFunction(a, b) {
-     const aDate = new Date(a.date);
-     const bDate = new Date(b.date);
-
-     return bDate.getTime() - aDate.getTime();
   }
 }

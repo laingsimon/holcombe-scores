@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Http} from "../api/http";
 import {Settings} from "../api/settings";
 import {Player} from "../api/player";
+import {Functions} from '../functions'
 
 export class PlayerList extends Component {
     constructor(props) {
@@ -26,25 +27,13 @@ export class PlayerList extends Component {
         const playerNumber = event.currentTarget.getAttribute("data-player-number");
         const currentlySelected = Object.keys(this.state.selected).includes(playerNumber.toString());
         let newSelected = currentlySelected
-            ? this.except(this.state.selected, playerNumber)
-            : this.union(this.state.selected, playerNumber);
+            ? Functions.except(this.state.selected, playerNumber)
+            : Functions.union(this.state.selected, playerNumber);
 
         this.setState({
             selected: newSelected
         });
         this.props.onPlayerChanged(this.props.teamId, playerNumber, !currentlySelected);
-    }
-
-    except(selected, remove) {
-        let copy = Object.assign({}, selected);
-        delete copy[remove];
-        return copy;
-    }
-
-    union(selected, add) {
-        let copy = Object.assign({}, selected);
-        copy[add] = true;
-        return copy;
     }
 
     // renderers
@@ -72,7 +61,7 @@ export class PlayerList extends Component {
     // api interaction
     async getPlayers() {
         const players = await this.playerApi.getPlayers(this.props.teamId);
-        players.sort(this.nameSortFunction);
+        players.sort(Functions.playerSortFunction);
         this.setState({
             loading: false,
             players: players,
@@ -81,15 +70,5 @@ export class PlayerList extends Component {
         if (this.props.onLoaded) {
             this.props.onLoaded();
         }
-    }
-
-    nameSortFunction(playerA, playerB) {
-        if (playerA.name.toLowerCase() === playerB.name.toLowerCase()) {
-            return 0;
-        }
-
-        return (playerA.name.toLowerCase() > playerB.name.toLowerCase())
-            ? 1
-            : -1;
     }
 }

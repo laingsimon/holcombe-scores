@@ -6,6 +6,7 @@ import {Team} from '../api/team';
 import {Access} from '../api/access';
 import {Player} from '../api/player';
 import {Alert} from "./Alert";
+import {Functions} from '../functions'
 
 export class EditTeam extends Component {
     constructor (props) {
@@ -323,20 +324,9 @@ export class EditTeam extends Component {
             p.changed = false;
             p.saving = false;
         });
-        proposedPlayers.sort(this.nameSortFunction);
+        proposedPlayers.sort(Functions.playerSortFunction);
         proposedPlayers.push({ newNumber: '', number: 0, name: '', newPlayer: true });
 
         return proposedPlayers;
-    }
-
-    //utilities
-    nameSortFunction(playerA, playerB) {
-        if (playerA.name.toLowerCase() === playerB.name.toLowerCase()) {
-            return 0;
-        }
-
-        return (playerA.name.toLowerCase() > playerB.name.toLowerCase())
-            ? 1
-            : -1;
     }
 }

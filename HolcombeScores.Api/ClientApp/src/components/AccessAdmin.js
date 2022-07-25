@@ -4,6 +4,7 @@ import {Settings} from "../api/settings";
 import {Access} from "../api/access";
 import {Team} from "../api/team";
 import {Alert} from "./Alert";
+import {Functions} from '../functions'
 
 export class AccessAdmin extends Component {
     constructor (props) {
@@ -55,14 +56,14 @@ export class AccessAdmin extends Component {
         }
 
         this.setState({
-            processing: this.union(this.state.processing, userId)
+            processing: Functions.union(this.state.processing, userId)
         });
 
         const result = await this.accessApi.deleteAccess(userId);
         if (result.success) {
             this.setState({
                 allAccess: await this.getAllAccess(),
-                processing: this.except(this.state.processing, userId)
+                processing: Functions.except(this.state.processing, userId)
             });
         }
     }
@@ -75,7 +76,7 @@ export class AccessAdmin extends Component {
         }
 
         this.setState({
-            processing: this.union(this.state.processing, userId)
+            processing: Functions.union(this.state.processing, userId)
         });
 
         const result = await this.accessApi.deleteAccessRequest(userId);
@@ -83,7 +84,7 @@ export class AccessAdmin extends Component {
             const requests = await this.getAccessRequests();
             this.setState({
                requests: requests,
-               processing: this.except(this.state.processing, userId)
+               processing: Functions.except(this.state.processing, userId)
             });
         }
     }
@@ -107,14 +108,14 @@ export class AccessAdmin extends Component {
         }
 
         this.setState({
-            processing: this.union(this.state.processing, userId)
+            processing: Functions.union(this.state.processing, userId)
         });
 
         const result = await this.accessApi.updateAccess(access.teamId, access.userId, access.name, shouldBeAdmin);
         if (result.success) {
             this.setState({
                 allAccess: await this.getAllAccess(),
-                processing: this.except(this.state.processing, userId)
+                processing: Functions.except(this.state.processing, userId)
             });
         }
     }
@@ -125,14 +126,14 @@ export class AccessAdmin extends Component {
         const teamId = event.target.value;
 
         this.setState({
-            processing: this.union(this.state.processing, userId)
+            processing: Functions.union(this.state.processing, userId)
         });
 
         const result = await this.accessApi.updateAccess(teamId, access.userId, access.name, access.admin);
         if (result.success) {
             this.setState({
                 allAccess: await this.getAllAccess(),
-                processing: this.except(this.state.processing, userId)
+                processing: Functions.except(this.state.processing, userId)
             });
         }
     }
@@ -143,7 +144,7 @@ export class AccessAdmin extends Component {
         this.intervalHandle = window.setInterval(this.getCache, 1000);
         this.getCache();
     }
-    
+
     componentWillUnmount() {
         window.clearInterval(this.intervalHandle);
     }
@@ -292,7 +293,7 @@ export class AccessAdmin extends Component {
             cacheAt: new Date()
         });
     }
-    
+
     async getAccessRequests() {
         const requests = await this.accessApi.getAllAccessRequests();
         requests.sort((a, b) => Date.parse(b.requested) - Date.parse(a.requested));
@@ -342,7 +343,7 @@ export class AccessAdmin extends Component {
         }
 
         this.setState({
-            processing: this.union(this.state.processing, userId)
+            processing: Functions.union(this.state.processing, userId)
         });
 
         const result = await this.accessApi.respondToAccessRequest(userId, teamIdOverride || request.teamId, reason, allow);
@@ -350,21 +351,8 @@ export class AccessAdmin extends Component {
             this.setState({
                 requests: await this.getAccessRequests(),
                 allAccess: await this.getAllAccess(),
-                processing: this.except(this.state.processing, userId)
+                processing: Functions.except(this.state.processing, userId)
             });
         }
-    }
-
-    // utilities
-    except(selected, remove) {
-        let copy = Object.assign({}, selected);
-        delete copy[remove];
-        return copy;
-    }
-
-    union(selected, add) {
-        let copy = Object.assign({}, selected);
-        copy[add] = true;
-        return copy;
     }
 }

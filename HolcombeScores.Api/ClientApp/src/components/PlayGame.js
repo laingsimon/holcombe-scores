@@ -3,6 +3,7 @@ import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
 import {Team} from '../api/team';
+import {Functions} from '../functions'
 
 export class PlayGame extends Component {
     constructor(props) {
@@ -143,7 +144,7 @@ export class PlayGame extends Component {
 
     async getGameData(bypassCache) {
         const game = await this.gameApi.getGame(this.props.gameId, bypassCache);
-        game.squad.sort(this.nameSortFunction);
+        game.squad.sort(Functions.playerSortFunction);
 
         const asAt = new Date();
         const date = new Date(game.date);
@@ -174,15 +175,5 @@ export class PlayGame extends Component {
         }, gameData);
 
         this.setState(stateData);
-    }
-
-    nameSortFunction(playerA, playerB) {
-        if (playerA.name.toLowerCase() === playerB.name.toLowerCase()) {
-            return 0;
-        }
-
-        return (playerA.name.toLowerCase() > playerB.name.toLowerCase())
-            ? 1
-            : -1;
     }
 }
