@@ -6,6 +6,7 @@ import { TeamDetails } from './components/TeamDetails';
 import { GameDetails } from './components/GameDetails';
 import { Teams } from './components/Teams';
 import { AccessAdmin } from './components/AccessAdmin';
+import { About } from './components/About';
 
 import './custom.css'
 
@@ -19,6 +20,7 @@ export default class App extends Component {
         <Route path='/teams/:mode?' component={Teams} />
         <Route path='/game/:gameId/:mode?' component={GameDetails} />
         <Route path='/admin/:mode?' component={AccessAdmin} />
+        <Route path='/about' component={About} />
       </Layout>
     );
   }
