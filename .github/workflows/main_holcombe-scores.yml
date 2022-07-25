@@ -8,6 +8,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy'
+        require: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -46,6 +52,7 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
+    if: ${{ env.branch_name == 'main' || github.event.inputs.deploy == 'true' }}
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
