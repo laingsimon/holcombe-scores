@@ -333,7 +333,7 @@ export class Home extends Component {
       <hr />
       <button type="button" className="btn btn-primary" onClick={this.updateAccess}>Update details</button>
       &nbsp;
-      <button type="button" className="btn btn-danger" onClick={this.removeAccess}>Remove details</button>
+      <button type="button" className="btn btn-danger" onClick={this.removeAccess}>Remove access</button>
     </div>)
   }
 
