@@ -152,6 +152,23 @@ export class Home extends Component {
     </div>);
   }
 
+  renderAccessRejected(request) {
+    return (<div>
+      {this.renderNav()}
+      <hr />
+      <p>Sorry, {request.name}, your access request was rejected.</p>
+      <p>Reason: <b>{request.reason ? request.reason : 'No reason given'}</b></p>
+    </div>);
+  }
+
+  renderAccessPending() {
+    return (<div>
+      {this.renderNav()}
+      <hr />
+      <p>Your access request hasn't been approved, yet...</p>
+    </div>);
+  }
+
   renderRequestAccess(access, teams) {
     if (access.request && !access.access) {
       // no access, but requested
@@ -228,18 +245,32 @@ export class Home extends Component {
     </div>);
   }
 
+  renderAccessMode() {
+    const access = this.state.access;
+    const myAccess = access ? access.access : null;
+    const accessRequest = access ? access.request : null;
+
+    if (myAccess && this.state.access.access) {
+      return this.renderAccess(this.state.access.access, this.state.teams);
+    }
+    if (accessRequest && accessRequest.rejected) {
+      return this.renderAccessRejected(accessRequest);
+    }
+    if (accessRequest && !myAccess) {
+      return this.renderAccessPending(this.state.access);
+    }
+
+    return this.renderRequestAccess(this.state.access, this.state.teams);
+  }
+
   render () {
     try {
       if (this.state.loading) {
         return this.renderLoading();
       } else if (this.state.error) {
         return this.renderError(this.state.error);
-      } else if (this.state.mode === 'access' && this.state.access && this.state.access.access) {
-        return this.renderAccess(this.state.access.access, this.state.teams);
       } else if (this.state.mode === 'access') {
-        return this.renderRequestAccess(this.state.access, this.state.teams);
-      } else if (this.state.mode === 'access') {
-        return (<div>Unable to retrieve your access, please check your internet connection</div>);
+        return this.renderAccessMode();
       } else if (this.state.mode === 'recover') {
         return this.renderRecoveryOptions(this.state.recoveryAccounts);
       }
