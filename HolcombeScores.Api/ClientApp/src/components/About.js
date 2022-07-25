@@ -17,13 +17,13 @@ export class About extends Component {
             </ol>
             <h4>Disclaimers</h4>
             <p><strong>Parental approval should be sought before entering any data into this service.</strong></p>
-            <p>The service provided free by <a href="https://github.com/laingsimon/">Simon Laing</a> for management by the coaches and managers of <a href="https://www.holcombeyfc.com/">Holcombe Youth Football Club</a>.</p>
+            <p>The service provided free by <a href="https://laingsimon.github.io/blog/">Simon Laing</a> for management by the coaches and managers of <a href="https://www.holcombeyfc.com/">Holcombe Youth Football Club</a>.</p>
             <p>This is a free service and will be maintained for so long as it can remain so. Any misuse/abuse of the service or where material costs are involved will result in the service being taken offline.</p>
             <p>I, <a href="https://github.com/laingsimon/">Simon Laing</a>, take no responsibility for the accuracy of the data entered in to this service. I will however endeavour to ensure it is always held in a secure fashion.</p>
             <h5>Links</h5>
             <ul>
                 <li><a href="https://www.holcombeyfc.com/">Holcombe Youth Football Club</a></li>
-                <li><a href="https://github.com/laingsimon/">Simon Laing</a></li>
+                <li><a href="https://laingsimon.github.io/blog/">Simon Laing</a></li>
             </ul>
         </div>);
     }
