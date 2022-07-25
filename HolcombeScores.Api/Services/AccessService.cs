@@ -237,7 +237,8 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId)
         {
-            if (!await IsManagerOrAdmin())
+            var myAccess = await GetAccessInternal();
+            if (!await IsManagerOrAdmin() && myAccess.UserId != userId)
             {
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
