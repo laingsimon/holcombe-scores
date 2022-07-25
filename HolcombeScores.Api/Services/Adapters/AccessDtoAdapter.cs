@@ -21,6 +21,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 TeamId = access.TeamId,
                 UserId = access.UserId,
                 RevokedReason = access.RevokedReason,
+                Manager = access.Manager,
             };
         }
 
@@ -40,6 +41,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 TeamId = access.TeamId,
                 UserId = access.UserId,
                 RevokedReason = access.RevokedReason,
+                Manager = access.Manager,
             };
         }
     }

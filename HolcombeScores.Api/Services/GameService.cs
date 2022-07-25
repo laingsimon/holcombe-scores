@@ -79,6 +79,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
             }
 
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can create games");
+            }
+
             try
             {
                 // TODO: Add Validation
@@ -98,8 +103,8 @@ namespace HolcombeScores.Api.Services
                 {
                     await _gameRepository.DeleteGame(game.Id);
                 }
-                
-                var result = missingPlayers.Count == gameDetailsDto.Players.Length 
+
+                var result = missingPlayers.Count == gameDetailsDto.Players.Length
                     ? _serviceHelper.NotSuccess<GameDto>("Game not created, no players found")
                     : _serviceHelper.Success("Game created", await GetGame(game.Id));
 
@@ -121,6 +126,11 @@ namespace HolcombeScores.Api.Services
             if (await _teamRepository.Get(gameDetailsDto.TeamId) == null)
             {
                 return _serviceHelper.NotFound<GameDto>("Team not found");
+            }
+
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can update games");
             }
 
             try
@@ -258,6 +268,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<GameDto>("Game not found");
             }
 
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can delete games");
+            }
+
             await _gameRepository.DeleteGame(id);
 
             return _serviceHelper.Success("Game deleted", game);
@@ -271,6 +286,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<GameDto>("Game not found");
             }
 
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can update games");
+            }
+
             await _gameRepository.DeleteGamePlayer(gameId, playerNumber);
 
             return _serviceHelper.Success("Game player deleted", await GetGame(gameId));
@@ -282,6 +302,11 @@ namespace HolcombeScores.Api.Services
             if (game == null)
             {
                 return _serviceHelper.NotFound<GameDto>("Game not found");
+            }
+
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can remove goals");
             }
 
             await _gameRepository.DeleteGoal(gameId, goalId);

@@ -28,6 +28,7 @@ export class AccessAdmin extends Component {
         this.cancelRequest = this.cancelRequest.bind(this);
         this.cancelAccess = this.cancelAccess.bind(this);
         this.adminChanged = this.adminChanged.bind(this);
+        this.managerChanged = this.managerChanged.bind(this);
         this.changeTeam = this.changeTeam.bind(this);
         this.getCache = this.getCache.bind(this);
     }
@@ -111,7 +112,30 @@ export class AccessAdmin extends Component {
             processing: Functions.union(this.state.processing, userId)
         });
 
-        const result = await this.accessApi.updateAccess(access.teamId, access.userId, access.name, shouldBeAdmin);
+        const result = await this.accessApi.updateAccess(access.teamId, access.userId, access.name, shouldBeAdmin, access.manager);
+        if (result.success) {
+            this.setState({
+                allAccess: await this.getAllAccess(),
+                processing: Functions.except(this.state.processing, userId)
+            });
+        }
+    }
+
+    async managerChanged(event) {
+        const userId = event.target.getAttribute('data-user-id');
+        const shouldBeManager = event.target.checked;
+        const access = this.state.allAccess.filter(r => r.userId === userId)[0];
+
+        if (userId === this.state.myAccess.userId) {
+            alert('You cannot change your own manager access');
+            return;
+        }
+
+        this.setState({
+            processing: Functions.union(this.state.processing, userId)
+        });
+
+        const result = await this.accessApi.updateAccess(access.teamId, access.userId, access.name, access.admin, shouldBeManager);
         if (result.success) {
             this.setState({
                 allAccess: await this.getAllAccess(),
@@ -158,9 +182,9 @@ export class AccessAdmin extends Component {
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/admin/access`} onClick={this.changeMode}>Access</a>
             </li>
-            <li className="nav-item">
+            {this.state.myAccess.admin ? (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'cache' ? ' active' : ''}`} href={`/admin/cache`} onClick={this.changeMode}>Cache</a>
-            </li>
+            </li>) : null}
         </ul>);
     }
 
@@ -181,8 +205,8 @@ export class AccessAdmin extends Component {
             </div>);
         }
 
-        if (!this.state.myAccess.admin) {
-            return (<Alert warnings={[ 'This service is only available for administrators.' ]} />);
+        if (!this.state.myAccess.admin && !this.state.myAccess.manager) {
+            return (<Alert warnings={[ 'This service is only available for managers and administrators.' ]} />);
         }
 
         if (this.state.mode === 'requests') {
@@ -231,11 +255,17 @@ export class AccessAdmin extends Component {
                 {Object.keys(this.state.teams).map(teamId => <option value={teamId} key={teamId}>{this.state.teams[teamId].name}</option>)}
             </select></span>
             <span className="float-end">
-                <span className="form-check form-switch form-check-inline">
+                {this.state.myAccess.admin ? (<span className="form-check form-switch form-check-inline">
                     <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                            data-user-id={access.userId} checked={access.admin}
                            onChange={this.adminChanged}/>
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Admin</label>
+                </span>) : null}
+                <span className="form-check form-switch form-check-inline">
+                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                           data-user-id={access.userId} checked={access.manager}
+                           onChange={this.managerChanged}/>
+                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Manager</label>
                 </span>
                 &nbsp;
                 <button type="button" className={`btn ${processing || access.userId === this.state.myAccess.userId ? 'btn-light' : 'btn-danger'}`} data-user-id={access.userId} onClick={this.cancelAccess}>&times;</button>

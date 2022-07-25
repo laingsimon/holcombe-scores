@@ -49,10 +49,10 @@ export class NavMenu extends Component {
                 {this.state.access ? (<NavItem>
                   <NavLink tag={Link} className="text-dark" to={`/team/${this.state.access.teamId}`}>Team</NavLink>
                 </NavItem>) : null}
-                {this.state.access && this.state.access.admin ? (<NavItem>
+                {this.state.access && (this.state.access.admin || this.state.access.manager) ? (<NavItem>
                   <NavLink tag={Link} className="text-dark" to="/teams">Teams</NavLink>
                 </NavItem>) : null}
-                {this.state.access && this.state.access.admin ? (<NavItem>
+                {this.state.access && (this.state.access.admin || this.state.access.manager) ? (<NavItem>
                   <NavLink tag={Link} className="text-dark" to="/admin">Admin</NavLink>
                 </NavItem>) : null}
                 <NavItem>

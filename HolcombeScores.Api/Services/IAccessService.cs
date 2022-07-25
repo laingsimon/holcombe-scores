@@ -21,5 +21,6 @@ namespace HolcombeScores.Api.Services
         Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId);
         Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId);
         Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated);
+        Task<bool> IsManagerOrAdmin();
     }
 }

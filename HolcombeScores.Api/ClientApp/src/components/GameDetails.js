@@ -73,7 +73,7 @@ export class GameDetails extends Component {
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`} href={`/game/${this.gameId}/view`} onClick={this.changeMode}>View Game</a>
             </li>
-            {this.state.access.access.admin ? editNav : null}
+            {this.state.access.access.admin || this.state.access.access.manager ? editNav : null}
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`} href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
             </li>

@@ -11,11 +11,12 @@ class Access {
         return this.http.delete(`/api/Access/${userId}`);
     }
 
-    updateAccess(teamId, userId, name, admin) {
+    updateAccess(teamId, userId, name, admin, manager) {
         let access = {
             teamId: teamId,
             userId: userId,
             admin: admin,
+            manager: manager,
             name: name,
         };
 

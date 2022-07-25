@@ -107,7 +107,7 @@ namespace HolcombeScores.Api.Services
 
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
         {
-            if (!await IsAdmin())
+            if (!await IsManagerOrAdmin())
             {
                 yield break;
             }
@@ -138,6 +138,17 @@ namespace HolcombeScores.Api.Services
             return access.Admin && access.Revoked == null;
         }
 
+        public async Task<bool> IsManagerOrAdmin()
+        {
+            var access = await GetAccess();
+            if (access == null)
+            {
+                return false;
+            }
+
+            return (access.Manager || access.Admin) && access.Revoked == null;
+        }
+
         public async Task<bool> CanAccessTeam(Guid teamId)
         {
             var access = await GetAccess();
@@ -166,7 +177,7 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> RespondToRequest(AccessResponseDto response)
         {
-            if (!await IsAdmin())
+            if (!await IsManagerOrAdmin())
             {
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
@@ -187,7 +198,8 @@ namespace HolcombeScores.Api.Services
             {
                 var newAccess = new Access
                 {
-                    Admin = true,
+                    Admin = false,
+                    Manager = false,
                     Granted = DateTime.UtcNow,
                     Name = accessRequest.Name,
                     Revoked = null,
@@ -212,7 +224,7 @@ namespace HolcombeScores.Api.Services
 
         public async IAsyncEnumerable<AccessRequestDto> GetAccessRequests()
         {
-            if (!await IsAdmin())
+            if (!await IsManagerOrAdmin())
             {
                 yield break;
             }
@@ -225,7 +237,7 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId)
         {
-            if (!await IsAdmin())
+            if (!await IsManagerOrAdmin())
             {
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
@@ -242,7 +254,7 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId)
         {
-            if (!await IsAdmin())
+            if (!await IsManagerOrAdmin())
             {
                 return _serviceHelper.NotAnAdmin<AccessRequestDto>();
             }
@@ -259,7 +271,7 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
         {
-            if (!await IsAdmin())
+            if (!await IsManagerOrAdmin())
             {
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
@@ -292,12 +304,13 @@ namespace HolcombeScores.Api.Services
             }
 
             var isAdmin = accessToUpdate.Admin;
+            var isManager = accessToUpdate.Manager;
 
             if (updated.UserId != accessToUpdate.UserId)
             {
-                if (!isAdmin)
+                if (!isAdmin && !isManager)
                 {
-                    return _serviceHelper.NotPermitted<AccessDto>("Only an admin can change another users' details");
+                    return _serviceHelper.NotPermitted<AccessDto>("Only a managers and admins can change another users' details");
                 }
 
                 accessToUpdate = await _accessRepository.GetAccess(updated.UserId);
@@ -313,10 +326,15 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<AccessDto>("Unable to update revoked access");
             }
 
+            if (isManager || isAdmin)
+            {
+                accessToUpdate.Manager = updated.Manager;
+                accessToUpdate.TeamId = updated.TeamId;
+            }
+
             if (isAdmin)
             {
                 accessToUpdate.Admin = updated.Admin;
-                accessToUpdate.TeamId = updated.TeamId;
             }
 
             accessToUpdate.Name = updated.Name;
@@ -431,7 +449,8 @@ namespace HolcombeScores.Api.Services
 
             var newAccess = new Access
             {
-               Admin = true,
+               Admin = false,
+               Manager = false,
                Granted = DateTime.UtcNow,
                Name = accessRequest.Name,
                Revoked = null,

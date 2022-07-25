@@ -69,6 +69,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
             }
 
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<PlayerDto>("Only managers and admins can create or update players");
+            }
+
             var existingPlayer = await _playerRepository.GetByNumber(player.TeamId, player.Number);
 
             if (existingPlayer == null)
@@ -88,6 +93,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
             }
 
+            if (!await _accessService.IsManagerOrAdmin())
+            {
+                return _serviceHelper.NotPermitted<PlayerDto>("Only managers and admins can remove players");
+            }
+
             var existingPlayer = await _playerRepository.GetByNumber(teamId, number);
 
             if (existingPlayer == null)
@@ -105,6 +115,11 @@ namespace HolcombeScores.Api.Services
             if (!await _accessService.CanAccessTeam(transferDto.CurrentTeamId))
             {
                 return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
+            }
+
+            if (!await _accessService.IsAdmin())
+            {
+                return _serviceHelper.NotPermitted<PlayerDto>("Only admins can transfer players");
             }
 
             var newTeam = await _teamRepository.Get(transferDto.NewTeamId);

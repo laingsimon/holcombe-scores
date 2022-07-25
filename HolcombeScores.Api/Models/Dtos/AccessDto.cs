@@ -1,5 +1,3 @@
-using System;
-
 namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
@@ -12,6 +10,7 @@ namespace HolcombeScores.Api.Models.Dtos
         public DateTime? Revoked { get; set; }
         public Guid UserId { get; set; }
         public bool Admin { get; set; }
+        public bool Manager { get; set; }
         public string Name { get; set; }
         public string RevokedReason { get; set; }
     }

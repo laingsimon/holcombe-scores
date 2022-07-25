@@ -1,4 +1,3 @@
-using System;
 using Azure;
 using Azure.Data.Tables;
 
@@ -11,6 +10,7 @@ namespace HolcombeScores.Api.Models.AzureTables
         public DateTime? Revoked { get; set; }
         public Guid UserId { get; set; }
         public bool Admin { get; set; }
+        public bool Manager { get; set; }
         public string Name { get; set; }
         public string RevokedReason { get; set; }
         public string Token { get; set; }
