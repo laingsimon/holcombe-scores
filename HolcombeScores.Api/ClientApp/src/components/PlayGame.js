@@ -107,11 +107,13 @@ export class PlayGame extends Component {
     }
 
     renderHolcombeScoreButton(player) {
-        const isLatestScorer = this.state.latestScorer === player.number;
+        const hasScored = this.state.game.goals.filter(g => g.holcombeGoal && g.player.number === player.number).length > 0;
+        const isLatestScorer = this.state.latestScorer === player.number || (this.state.readOnly && hasScored);
         const colour = this.state.readOnly ? 'btn-light' : 'btn-primary';
+        const suffix = this.state.readOnly ? 'played' : 'scored!';
 
         return (<button key={player.number} type="button" className={`btn ${isLatestScorer ? ' btn-outline-success' : colour} btn-goal-scorer`} onClick={this.holcombeGoal} data-player-number={player.number}>
-            {player.name} Scored!
+            {player.name} {suffix}
         </button>);
     }
 
