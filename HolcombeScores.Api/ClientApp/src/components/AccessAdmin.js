@@ -52,6 +52,12 @@ export class AccessAdmin extends Component {
             return;
         }
 
+        const access = this.state.allAccess.filter(r => r.userId === userId)[0];
+        if (access.admin && !this.state.myAccess.admin) {
+            alert('Only admins can delete other admin acceses');
+            return;
+        }
+
         if (!window.confirm('Are you sure you want to CANCEL this access')) {
             return;
         }
