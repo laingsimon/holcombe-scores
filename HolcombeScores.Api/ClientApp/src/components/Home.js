@@ -49,6 +49,7 @@ export class Home extends Component {
     const result = await this.accessApi.deleteAccess(this.state.access.access.userId);
 
     if (result.success) {
+      this.setState({ mode: 'access' });
       await this.populateMyAccess();
     } else {
       alert('Could not delete your details');
