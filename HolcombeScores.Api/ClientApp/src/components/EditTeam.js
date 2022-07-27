@@ -109,12 +109,12 @@ export class EditTeam extends Component {
     }
 
     async playerValueChanged(event) {
-        const playerNumber = Number.parseInt(event.target.getAttribute('data-player-number'));
+        const playerId = event.target.getAttribute('data-player-id');
         const name = event.target.name;
         const value = event.target.value;
 
         const proposedPlayers = this.state.proposedPlayers;
-        const player = proposedPlayers.filter(p => p.number === playerNumber)[0];
+        const player = proposedPlayers.filter(p => p.id === playerId)[0];
         player[name] = value;
         player.changed = true;
 
@@ -124,11 +124,15 @@ export class EditTeam extends Component {
     }
 
     async deletePlayer(event) {
-        const playerNumber = Number.parseInt(event.target.getAttribute('data-player-number'));
+        const playerId = event.target.getAttribute('data-player-id');
 
         try {
             const proposedPlayers = this.state.proposedPlayers;
-            const player = proposedPlayers.filter(p => p.number === playerNumber)[0];
+            const player = proposedPlayers.filter(p => p.id === playerId)[0];
+
+            if (!window.confirm(`Are you sure you want to delete ${player.name}`)){
+                return;
+            }
 
             if (player.saving) {
                 return;
@@ -139,7 +143,7 @@ export class EditTeam extends Component {
                 proposedPlayers: proposedPlayers
             });
 
-            const result = await this.playerApi.deletePlayer(this.props.teamId, playerNumber);
+            const result = await this.playerApi.deletePlayer(playerId);
 
             if (result.success) {
                 const proposedPlayers = await this.getPlayers();
@@ -147,6 +151,12 @@ export class EditTeam extends Component {
                     proposedPlayers: proposedPlayers
                 })
             } else {
+                let messages = [];
+                result.messages.forEach(m => messages.push(m));
+                result.warnings.forEach(m => messages.push('Warning: ' + m));
+                result.errors.forEach(m => messages.push('Error: ' + m));
+
+                alert(`Could not delete player: ${messages.join('\n')}`);
                 console.log(result);
             }
         } catch (e) {
@@ -159,15 +169,15 @@ export class EditTeam extends Component {
 
     async savePlayer(event) {
         try {
-            const playerNumber = Number.parseInt(event.target.getAttribute('data-player-number'));
+            const playerId = event.target.getAttribute('data-player-id');
             const proposedPlayers = this.state.proposedPlayers;
-            const player = proposedPlayers.filter(p => p.number === playerNumber)[0];
+            const player = proposedPlayers.filter(p => p.id === playerId)[0];
 
             if (player.saving) {
                 return;
             }
 
-            if (player.newNumber <= 0) {
+            if (Number.parseInt(player.number) <= 0) {
                 alert('You must enter a player number');
                 return;
             }
@@ -177,22 +187,19 @@ export class EditTeam extends Component {
                 proposedPlayers: proposedPlayers
             });
 
-            const result = await this.playerApi.updatePlayer(this.props.teamId, player.newNumber, player.name);
+            const result = await this.playerApi.updatePlayer(player.id, this.props.teamId, player.number, player.name);
             if (result.success) {
-                if (Number.parseInt(player.newNumber) !== playerNumber) {
-                    // the number has changed, delete the old player number
-                    const deleteResult = await this.playerApi.deletePlayer(this.props.teamId, playerNumber);
-                    if (!deleteResult.success) {
-                        console.error("Could not delete old player number");
-                        console.log(deleteResult);
-                    }
-                }
-
                 const proposedPlayers = await this.getPlayers();
                 this.setState({
                     proposedPlayers: proposedPlayers
                 });
             } else {
+                let messages = [];
+                result.messages.forEach(m => messages.push(m));
+                result.warnings.forEach(m => messages.push('Warning: ' + m));
+                result.errors.forEach(m => messages.push('Error: ' + m));
+
+                alert(`Could not ${player.newPlayer ? 'create' : 'update'} player: ${messages.join('\n')}`);
                 console.log(result);
             }
         } catch (e) {
@@ -274,10 +281,10 @@ export class EditTeam extends Component {
     }
 
     renderEditPlayer(player) {
-        return (<div className="row" key={player.number}>
+        return (<div className="row" key={player.id}>
             <div className="col">
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" data-player-number={player.number} value={player.name} onChange={this.playerValueChanged} />
+                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" data-player-id={player.id} value={player.name} onChange={this.playerValueChanged} />
                 </div>
             </div>
             <div className="col">
@@ -285,13 +292,13 @@ export class EditTeam extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">No.</span>
                     </div>
-                    <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="newNumber" data-player-number={player.number} value={player.newNumber} onChange={this.playerValueChanged} />
+                    <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="number" data-player-id={player.id} value={player.number} onChange={this.playerValueChanged} />
                 </div>
             </div>
             <div className="col">
-                <button disabled={player.saving} className={`btn ${player.changed && !player.saving ? 'btn-success' : 'btn-light'}`} data-player-number={player.number} onClick={this.savePlayer}>{player.newPlayer ? 'Add' : 'Save'}</button>
+                <button disabled={player.saving} className={`btn ${player.changed && !player.saving ? 'btn-success' : 'btn-light'}`} data-player-id={player.id} onClick={this.savePlayer}>{player.newPlayer ? 'Add' : 'Save'}</button>
                 &nbsp;
-                {player.newPlayer ? null : (<button className="btn btn-danger" data-player-number={player.number} onClick={this.deletePlayer}>&times;</button>)}
+                {player.newPlayer ? null : (<button className="btn btn-danger" data-player-id={player.id} onClick={this.deletePlayer}>&times;</button>)}
             </div>
         </div>);
     }
@@ -320,12 +327,11 @@ export class EditTeam extends Component {
         const proposedPlayers = players || [];
 
         proposedPlayers.forEach(p => {
-            p.newNumber = p.number;
             p.changed = false;
             p.saving = false;
         });
         proposedPlayers.sort(Functions.playerSortFunction);
-        proposedPlayers.push({ newNumber: '', number: 0, name: '', newPlayer: true });
+        proposedPlayers.push({ id: '00000000-0000-0000-0000-000000000000', number: '', name: '', newPlayer: true });
 
         return proposedPlayers;
     }

@@ -24,22 +24,22 @@ export class PlayerList extends Component {
 
     // event handlers
     playerClicked(event) {
-        const playerNumber = event.currentTarget.getAttribute("data-player-number");
-        const currentlySelected = Object.keys(this.state.selected).includes(playerNumber.toString());
+        const playerId = event.currentTarget.getAttribute("data-player-id");
+        const currentlySelected = Object.keys(this.state.selected).includes(playerId);
         let newSelected = currentlySelected
-            ? Functions.except(this.state.selected, playerNumber)
-            : Functions.union(this.state.selected, playerNumber);
+            ? Functions.except(this.state.selected, playerId)
+            : Functions.union(this.state.selected, playerId);
 
         this.setState({
             selected: newSelected
         });
-        this.props.onPlayerChanged(this.props.teamId, playerNumber, !currentlySelected);
+        this.props.onPlayerChanged(this.props.teamId, playerId, !currentlySelected);
     }
 
     // renderers
     renderPlayer(player) {
-        let selected = Object.keys(this.state.selected).includes(player.number.toString());
-        return (<li key={player.number} className={`list-group-item ${selected ? ' active' : ''}`} data-player-number={player.number} onClick={this.playerClicked}>
+        let selected = Object.keys(this.state.selected).includes(player.id.toString());
+        return (<li key={player.id} className={`list-group-item ${selected ? ' active' : ''}`} data-player-id={player.id} onClick={this.playerClicked}>
             {player.name} <span className="badge rounded-pill bg-secondary">{player.number}</span>
         </li>);
     }

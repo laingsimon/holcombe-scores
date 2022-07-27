@@ -1,5 +1,3 @@
-using System;
-
 namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
@@ -7,8 +5,7 @@ namespace HolcombeScores.Api.Models.Dtos
     /// </summary>
     public class TransferPlayerDto
     {
-        public int CurrentNumber { get; set; }
-        public Guid CurrentTeamId { get; set; }
+        public Guid PlayerId { get; set; }
         public int? NewNumber { get; set; }
         public Guid NewTeamId { get; set; }
     }

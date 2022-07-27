@@ -17,6 +17,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Name = player.Name,
                 Number = player.Number,
                 TeamId = player.TeamId,
+                Id = player.Id,
             };
         }
 
@@ -32,6 +33,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Name = player.Name,
                 Number = player.Number,
                 TeamId = player.TeamId,
+                Id = player.Id,
             };
         }
     }

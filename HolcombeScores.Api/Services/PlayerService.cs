@@ -74,49 +74,49 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<PlayerDto>("Only managers and admins can create or update players");
             }
 
-            var existingPlayer = await _playerRepository.GetByNumber(player.TeamId, player.Number);
+            var existingPlayer = await _playerRepository.Get(player.Id);
 
             if (existingPlayer == null)
             {
-                await _playerRepository.AddPlayer(player);
-                return _serviceHelper.Success("Player created", await GetPlayerDto(player.TeamId, player.Number));
+                var newPlayer = await _playerRepository.AddPlayer(player);
+                return _serviceHelper.Success("Player created", _playerDtoAdapter.Adapt(newPlayer));
             }
 
-            await _playerRepository.UpdatePlayer(player.TeamId, player.Number, player.Name);
-            return _serviceHelper.Success("Player updated", await GetPlayerDto(player.TeamId, player.Number));
-        }
-
-        public async Task<ActionResultDto<PlayerDto>> DeletePlayer(Guid teamId, int number)
-        {
-            if (!await _accessService.CanAccessTeam(teamId))
+            if (!await _accessService.CanAccessTeam(existingPlayer.TeamId))
             {
                 return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
             }
 
+            await _playerRepository.UpdatePlayer(player.Id, player.TeamId, player.Number, player.Name);
+            return _serviceHelper.Success("Player updated", await GetPlayerDto(player.Id));
+        }
+
+        public async Task<ActionResultDto<PlayerDto>> DeletePlayer(Guid playerId)
+        {
             if (!await _accessService.IsManagerOrAdmin())
             {
                 return _serviceHelper.NotPermitted<PlayerDto>("Only managers and admins can remove players");
             }
 
-            var existingPlayer = await _playerRepository.GetByNumber(teamId, number);
+            var existingPlayer = await _playerRepository.Get(playerId);
 
             if (existingPlayer == null)
             {
                 return _serviceHelper.NotFound<PlayerDto>("Player not found");
             }
 
-            await _playerRepository.DeletePlayer(existingPlayer.TeamId, existingPlayer.Number);
+            if (!await _accessService.CanAccessTeam(existingPlayer.TeamId))
+            {
+                return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
+            }
+
+            await _playerRepository.DeletePlayer(existingPlayer.Id);
 
             return _serviceHelper.Success("Player deleted", _playerDtoAdapter.Adapt(existingPlayer));
         }
 
         public async Task<ActionResultDto<PlayerDto>> TransferPlayer(TransferPlayerDto transferDto)
         {
-            if (!await _accessService.CanAccessTeam(transferDto.CurrentTeamId))
-            {
-                return _serviceHelper.NotPermitted<PlayerDto>("Not permitted to access team");
-            }
-
             if (!await _accessService.IsAdmin())
             {
                 return _serviceHelper.NotPermitted<PlayerDto>("Only admins can transfer players");
@@ -128,14 +128,14 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<PlayerDto>("New team not found");
             }
 
-            var playerToTransfer = await _playerRepository.GetByNumber(transferDto.CurrentTeamId, transferDto.CurrentNumber);
+            var playerToTransfer = await _playerRepository.Get(transferDto.PlayerId);
             if (playerToTransfer == null)
             {
                 return _serviceHelper.NotFound<PlayerDto>("Player not found");
             }
 
-            var newPlayer = await _playerRepository.GetByNumber(transferDto.CurrentTeamId, transferDto.CurrentNumber);
-            newPlayer.Number = transferDto.NewNumber ?? transferDto.CurrentNumber;
+            var newPlayer = await _playerRepository.Get(transferDto.PlayerId);
+            newPlayer.Number = transferDto.NewNumber ?? playerToTransfer.Number;
             newPlayer.TeamId = transferDto.NewTeamId;
 
             if (await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number) != null)
@@ -144,14 +144,14 @@ namespace HolcombeScores.Api.Services
             }
 
             await _playerRepository.AddPlayer(newPlayer);
-            await _playerRepository.DeletePlayer(transferDto.CurrentTeamId, transferDto.CurrentNumber);
+            await _playerRepository.DeletePlayer(playerToTransfer.Id);
 
             return _serviceHelper.Success($"Player transferred to {newTeam.Name}", _playerDtoAdapter.Adapt(newPlayer));
         }
 
-        private async Task<PlayerDto> GetPlayerDto(Guid teamId, int number)
+        private async Task<PlayerDto> GetPlayerDto(Guid id)
         {
-            var existingPlayer = await _playerRepository.GetByNumber(teamId, number);
+            var existingPlayer = await _playerRepository.Get(id);
             return _playerDtoAdapter.Adapt(existingPlayer);
         }
     }

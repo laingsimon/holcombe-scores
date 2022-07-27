@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Azure;
 using HolcombeScores.Api.Models.AzureTables;
 
@@ -17,12 +14,9 @@ namespace HolcombeScores.Api.Repositories
 
         public IAsyncEnumerable<Player> GetAll(Guid? teamId)
         {
-            if (teamId == null)
-            {
-                return _playerTableClient.QueryAsync();
-            }
-
-            return _playerTableClient.QueryAsync(p => p.TeamId == teamId);
+            return teamId == null
+                ? _playerTableClient.QueryAsync()
+                : _playerTableClient.QueryAsync(p => p.TeamId == teamId);
         }
 
         public async Task<Player> GetByNumber(Guid teamId, int number)
@@ -31,28 +25,36 @@ namespace HolcombeScores.Api.Repositories
                 p.TeamId == teamId && p.Number == number);
         }
 
-        public async Task AddPlayer(Player player)
+        public async Task<Player> Get(Guid id)
         {
-            player.Timestamp = DateTimeOffset.UtcNow;
-            player.PartitionKey = player.TeamId.ToString();
-            player.RowKey = player.Number.ToString();
-            player.ETag = ETag.All;
-
-            await _playerTableClient.AddEntityAsync(player);
+            return await _playerTableClient.SingleOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task UpdatePlayer(Guid teamId, int playerNumber, string playerName)
+        public async Task<Player> AddPlayer(Player player)
         {
-            var player = await GetByNumber(teamId, playerNumber);
+            player.Timestamp = DateTimeOffset.UtcNow;
+            player.Id = Guid.NewGuid();
+            player.ETag = ETag.All;
+            player.PartitionKey = player.TeamId.ToString();
+            player.RowKey = player.Id.ToString();
+
+            await _playerTableClient.AddEntityAsync(player);
+            return player;
+        }
+
+        public async Task UpdatePlayer(Guid playerId, Guid teamId, int playerNumber, string playerName)
+        {
+            var player = await Get(playerId);
+            player.Number = playerNumber;
             player.Name = playerName;
             player.Timestamp = DateTimeOffset.UtcNow;
 
             await _playerTableClient.UpdateEntityAsync(player, player.ETag);
         }
 
-        public async Task DeletePlayer(Guid teamId, int playerNumber)
+        public async Task DeletePlayer(Guid playerId)
         {
-            var player = await GetByNumber(teamId, playerNumber);
+            var player = await Get(playerId);
 
             if (player == null)
             {

@@ -95,7 +95,7 @@ namespace HolcombeScores.Api.Services
 
                 var game = _gameDetailsDtoAdapter.AdaptToGame(gameDetailsDto);
                 game.Id = Guid.NewGuid();
-                var missingPlayers = new List<int>();
+                var missingPlayers = new List<Guid>();
                 var squad = _gameDetailsDtoAdapter.AdaptSquad(gameDetailsDto, game.Id, missingPlayers);
                 await _gameRepository.Add(game);
 
@@ -104,12 +104,12 @@ namespace HolcombeScores.Api.Services
                     await _gameRepository.AddGamePlayer(gamePlayer);
                 }
 
-                if (missingPlayers.Count == gameDetailsDto.Players.Length)
+                if (missingPlayers.Count == gameDetailsDto.PlayerIds.Length)
                 {
                     await _gameRepository.DeleteGame(game.Id);
                 }
 
-                var result = missingPlayers.Count == gameDetailsDto.Players.Length
+                var result = missingPlayers.Count == gameDetailsDto.PlayerIds.Length
                     ? _serviceHelper.NotSuccess<GameDto>("Game not created, no players found")
                     : _serviceHelper.Success("Game created", await GetGame(game.Id));
 
@@ -191,8 +191,8 @@ namespace HolcombeScores.Api.Services
                     await _gameRepository.Update(game);
                 }
 
-                var missingPlayers = new List<int>();
-                if (gameDetailsDto.Players != null && gameDetailsDto.Players.Any())
+                var missingPlayers = new List<Guid>();
+                if (gameDetailsDto.PlayerIds != null && gameDetailsDto.PlayerIds.Any())
                 {
                     var squad = (await _gameDetailsDtoAdapter.AdaptSquad(gameDetailsDto, game.Id, missingPlayers).ToEnumerable()).ToArray();
 
@@ -206,7 +206,7 @@ namespace HolcombeScores.Api.Services
                             continue;
                         }
                         updates.Add($"`{player.Name}` removed from game");
-                        await _gameRepository.DeleteGamePlayer(game.Id, player.Number);
+                        await _gameRepository.DeleteGamePlayer(game.Id, player.PlayerId);
                     }
 
                     foreach (var gamePlayer in squad)
@@ -283,7 +283,7 @@ namespace HolcombeScores.Api.Services
             return _serviceHelper.Success("Game deleted", game);
         }
 
-        public async Task<ActionResultDto<GameDto>> DeleteGamePlayer(Guid gameId, int playerNumber)
+        public async Task<ActionResultDto<GameDto>> DeleteGamePlayer(Guid gameId, Guid playerId)
         {
             var game = await GetGame(gameId);
             if (game == null)
@@ -296,7 +296,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can update games");
             }
 
-            await _gameRepository.DeleteGamePlayer(gameId, playerNumber);
+            await _gameRepository.DeleteGamePlayer(gameId, playerId);
 
             return _serviceHelper.Success("Game player deleted", await GetGame(gameId));
         }

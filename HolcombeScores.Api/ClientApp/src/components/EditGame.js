@@ -47,11 +47,11 @@ export class EditGame extends Component {
         });
     }
 
-    onPlayerChanged(teamId, playerNumber, selected) {
+    onPlayerChanged(teamId, playerId, selected) {
         const proposedClone = Object.assign({}, this.state.proposed);
         proposedClone.players = selected
-            ? Functions.union(this.state.proposed.players, playerNumber)
-            : Functions.except(this.state.proposed.players, playerNumber);
+            ? Functions.union(this.state.proposed.players, playerId)
+            : Functions.except(this.state.proposed.players, playerId);
 
         this.setState({
             proposed: proposedClone
@@ -76,9 +76,9 @@ export class EditGame extends Component {
 
         try {
             const proposed = this.state.proposed;
-            const playerNumbers = Object.keys(this.state.proposed.players);
+            const playerIds = Object.keys(this.state.proposed.players);
 
-            if (playerNumbers.length === 0) {
+            if (playerIds.length === 0) {
                 alert('You must select some players');
                 return;
             }
@@ -93,7 +93,7 @@ export class EditGame extends Component {
                 apiResult: null,
             });
 
-            await this.applyApiChanges(Functions.toUtcDateTime(new Date(proposed.date)), playerNumbers);
+            await this.applyApiChanges(Functions.toUtcDateTime(new Date(proposed.date)), playerIds);
         } catch (e) {
             console.error(e);
             this.setState({
@@ -246,7 +246,7 @@ export class EditGame extends Component {
 
             // noinspection JSUnresolvedVariable
             game.squad.forEach(player => {
-                proposedGame.players[player.number] = true;
+                proposedGame.players[player.id] = true;
             });
         }
 
@@ -258,14 +258,14 @@ export class EditGame extends Component {
         });
     }
 
-    async applyApiChanges(utcDateTime, playerNumbers) {
+    async applyApiChanges(utcDateTime, playerIds) {
         try {
             const proposed = this.state.proposed;
             const apiFunction = this.props.gameId
                 ? this.gameApi.updateGame.bind(this.gameApi)
-                : async (gameId, teamId, utcDateTime, opponent, playingAtHome, playerNumbers) => await this.gameApi.createGame(teamId, utcDateTime, opponent, playingAtHome, playerNumbers);
+                : async (gameId, teamId, utcDateTime, opponent, playingAtHome, playerIds) => await this.gameApi.createGame(teamId, utcDateTime, opponent, playingAtHome, playerIds);
 
-            const result = await apiFunction(this.props.gameId, this.props.teamId, utcDateTime, proposed.opponent, proposed.playingAtHome, playerNumbers);
+            const result = await apiFunction(this.props.gameId, this.props.teamId, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds);
 
             if (result.success) {
                 this.setState({

@@ -6,7 +6,7 @@ namespace HolcombeScores.Api.Services
     {
         Task<ActionResultDto<PlayerDto>> CreateOrUpdatePlayer(PlayerDto player);
         IAsyncEnumerable<PlayerDto> GetAllPlayers();
-        Task<ActionResultDto<PlayerDto>> DeletePlayer(Guid teamId, int number);
+        Task<ActionResultDto<PlayerDto>> DeletePlayer(Guid playerId);
         Task<ActionResultDto<PlayerDto>> TransferPlayer(TransferPlayerDto transferDto);
         IAsyncEnumerable<PlayerDto> GetPlayers(Guid teamId);
     }

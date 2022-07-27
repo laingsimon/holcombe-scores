@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.AzureTables;
 
 namespace HolcombeScores.Api.Repositories
@@ -15,7 +12,7 @@ namespace HolcombeScores.Api.Repositories
         Task<IEnumerable<Goal>> GetGoals(Guid gameId);
         Task AddGoal(Goal goal);
         Task DeleteGame(Guid id);
-        Task DeleteGamePlayer(Guid gameId, int playerNumber);
+        Task DeleteGamePlayer(Guid gameId, Guid playerId);
         Task DeleteGoal(Guid gameId, Guid goalId);
         Task Update(Game game);
     }

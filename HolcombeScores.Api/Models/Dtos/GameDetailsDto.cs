@@ -1,5 +1,3 @@
-using System;
-
 namespace HolcombeScores.Api.Models.Dtos
 {
     /// <summary>
@@ -11,6 +9,6 @@ namespace HolcombeScores.Api.Models.Dtos
         public DateTime? Date { get; set; }
         public string Opponent { get; set; }
         public bool PlayingAtHome { get; set; }
-        public int[] Players { get; set; }
+        public Guid[] PlayerIds { get; set; }
     }
 }
