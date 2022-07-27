@@ -258,7 +258,7 @@ export class AccessAdmin extends Component {
         const processing = Object.keys(this.state.processing).includes(access.userId);
 
         return (<div key={access.userId} className="list-group-item list-group-item-action flex-column align-items-start">
-            <span>Name: <strong>{access.name}</strong>, Team: <select value={access.teamId} data-user-id={access.userId} onChange={this.changeTeam}>
+            <span><strong>{access.name}</strong>, Team: <select value={access.teamId} data-user-id={access.userId} onChange={this.changeTeam}>
                 {Object.keys(this.state.teams).map(teamId => <option value={teamId} key={teamId}>{this.state.teams[teamId].name}</option>)}
             </select></span>
             <span className="float-end">

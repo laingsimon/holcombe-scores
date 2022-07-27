@@ -44,16 +44,16 @@ export class NavMenu extends Component {
             <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
               <ul className="navbar-nav flex-grow">
                 <NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/home/access">Home</NavLink>
+                  <NavLink tag={Link} className="text-dark" to="/home/access">🏟️ Home</NavLink>
                 </NavItem>
                 {this.state.access ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to={`/team/${this.state.access.teamId}/view`}>Team</NavLink>
+                  <NavLink tag={Link} className="text-dark" to={`/team/${this.state.access.teamId}/view`}>⛹️ Team</NavLink>
                 </NavItem>) : null}
                 {this.state.access && (this.state.access.admin) ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/teams/view">Teams</NavLink>
+                  <NavLink tag={Link} className="text-dark" to="/teams/view">🎽 Teams</NavLink>
                 </NavItem>) : null}
                 {this.state.access && (this.state.access.admin || this.state.access.manager) ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/admin/requests">Admin</NavLink>
+                  <NavLink tag={Link} className="text-dark" to="/admin/requests">⚙️ Admin</NavLink>
                 </NavItem>) : null}
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/about">About</NavLink>

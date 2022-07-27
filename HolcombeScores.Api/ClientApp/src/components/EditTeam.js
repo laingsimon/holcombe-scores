@@ -290,13 +290,13 @@ export class EditTeam extends Component {
             <div className="col">
                 <div className="input-group mb-3">
                     <div className="input-group-prepend">
-                        <span className="input-group-text" id="basic-addon3">No.</span>
+                        <span className="input-group-text" id="basic-addon3">#️⃣</span>
                     </div>
                     <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="number" data-player-id={player.id} value={player.number} onChange={this.playerValueChanged} />
                 </div>
             </div>
             <div className="col">
-                <button disabled={player.saving} className={`btn ${player.changed && !player.saving ? 'btn-success' : 'btn-light'}`} data-player-id={player.id} onClick={this.savePlayer}>{player.newPlayer ? 'Add' : 'Save'}</button>
+                <button disabled={player.saving} className={`btn ${player.changed && !player.saving ? 'btn-success' : 'btn-light'}`} data-player-id={player.id} onClick={this.savePlayer}>{player.newPlayer ? '🆕' : '💾'}</button>
                 &nbsp;
                 {player.newPlayer ? null : (<button className="btn btn-danger" data-player-id={player.id} onClick={this.deletePlayer}>&times;</button>)}
             </div>

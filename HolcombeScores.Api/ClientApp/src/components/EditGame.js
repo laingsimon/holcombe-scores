@@ -213,7 +213,7 @@ export class EditGame extends Component {
                 </div>
                 <div className="input-group mb-3">
                     <div className="input-group-prepend">
-                        <span className="input-group-text" id="basic-addon3">Date</span>
+                        <span className="input-group-text" id="basic-addon3">📆 Date</span>
                     </div>
                     <input type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
