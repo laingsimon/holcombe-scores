@@ -323,8 +323,8 @@ export class EditTeam extends Component {
     async getPlayers() {
         const players = this.props.teamId
             ? await this.playerApi.getPlayers(this.props.teamId)
-            : null;
-        const proposedPlayers = players || [];
+            : [];
+        const proposedPlayers = [...players];
 
         proposedPlayers.forEach(p => {
             p.changed = false;
