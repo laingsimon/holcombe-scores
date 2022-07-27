@@ -42,3 +42,17 @@ code {
   border: none;
   color: #ff8888;
 }
+
+body > div#root:before {
+  content: "⚽";
+  position: fixed;
+  font-size: 500px;
+  left: -150px;
+  top: -190px;
+  color: #dddddd;
+  opacity: 0.05;
+}
+
+body > div#root > div {
+  position: relative;
+}
