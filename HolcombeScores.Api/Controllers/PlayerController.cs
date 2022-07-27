@@ -32,10 +32,10 @@ namespace HolcombeScores.Api.Controllers
             return await _playerService.CreateOrUpdatePlayer(player);
         }
 
-        [HttpDelete("/api/Player/{teamId}/{number}")]
-        public async Task<ActionResultDto<PlayerDto>> Delete(Guid teamId, int number)
+        [HttpDelete("/api/Player/{playerId}")]
+        public async Task<ActionResultDto<PlayerDto>> Delete(Guid playerId)
         {
-            return await _playerService.DeletePlayer(teamId, number);
+            return await _playerService.DeletePlayer(playerId);
         }
 
         [HttpPost("/api/Player/Transfer")]

@@ -43,11 +43,11 @@ namespace HolcombeScores.Api.Services.Adapters
             return game;
         }
 
-        public async IAsyncEnumerable<GamePlayer> AdaptSquad(GameDetailsDto gameDetailsDto, Guid gameId, List<int> missingPlayers)
+        public async IAsyncEnumerable<GamePlayer> AdaptSquad(GameDetailsDto gameDetailsDto, Guid gameId, List<Guid> missingPlayers)
         {
-            var knownPlayersLookup = (await _playerRepository.GetAll(gameDetailsDto.TeamId).ToEnumerable()).ToDictionary(p => p.Number);
+            var knownPlayersLookup = (await _playerRepository.GetAll(gameDetailsDto.TeamId).ToEnumerable()).ToDictionary(p => p.Id);
 
-            foreach (var player in gameDetailsDto.Players)
+            foreach (var player in gameDetailsDto.PlayerIds)
             {
                 if (!knownPlayersLookup.TryGetValue(player, out var knownPlayer))
                 {
@@ -57,6 +57,7 @@ namespace HolcombeScores.Api.Services.Adapters
 
                 yield return new GamePlayer
                 {
+                    PlayerId = knownPlayer.Id,
                     Number = knownPlayer.Number,
                     TeamId = knownPlayer.TeamId,
                     Name = knownPlayer.Name,

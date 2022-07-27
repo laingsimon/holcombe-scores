@@ -21,44 +21,44 @@ class Game {
         return this.http.delete(`/api/Game/${id}`);
     }
 
-    createGame(teamId, date, opponent, playingAtHome, playerNumbers) {
+    createGame(teamId, date, opponent, playingAtHome, playerIds) {
         let gameDetail = {
             teamId: teamId,
             date: date,
             opponent: opponent,
             playingAtHome: playingAtHome,
-            players: playerNumbers
+            playerIds: playerIds
         };
 
         return this.http.post(`/api/Game`, gameDetail);
     }
 
-    updateGame(id, teamId, date, opponent, playingAtHome, playerNames) {
+    updateGame(id, teamId, date, opponent, playingAtHome, playerIds) {
         let gameDetail = {
             id: id,
             teamId: teamId,
             date: date,
             opponent: opponent,
             playingAtHome: playingAtHome,
-            players: playerNames
+            playerIds: playerIds
         };
 
         return this.http.patch(`/api/Game`, gameDetail);
     }
 
-    removePlayer(gameId, playerNumber) {
-        return this.http.delete(`/api/Game/Player/${gameId}/${playerNumber}`);
+    removePlayer(gameId, playerId) {
+        return this.http.delete(`/api/Game/Player/${gameId}/${playerId}`);
     }
 
     removeGoal(gameId, goalId) {
         return this.http.delete(`/api/Game/Goal/${gameId}/${goalId}`);
     }
 
-    recordGoal(gameId, time, holcombeGoal, playerNumber) {
+    recordGoal(gameId, time, holcombeGoal, playerId) {
         let goalDetail = {
             time: time,
             holcombeGoal: holcombeGoal,
-            player: holcombeGoal ? { number: playerNumber } : null,
+            player: holcombeGoal ? { id: playerId } : null,
             gameId: gameId
         };
 

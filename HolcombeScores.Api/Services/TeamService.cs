@@ -98,24 +98,24 @@ namespace HolcombeScores.Api.Services
             return _serviceHelper.Success("Team updated", _teamDtoAdapter.Adapt(existingTeam));
         }
 
-        public async Task<ActionResultDto<TeamDto>> DeleteTeam(Guid id)
+        public async Task<ActionResultDto<TeamDto>> DeleteTeam(Guid teamId)
         {
             if (!await _accessService.IsAdmin())
             {
                 return _serviceHelper.NotAnAdmin<TeamDto>();
             }
 
-            var teamToDelete = (await _teamRepository.GetAll().ToEnumerable()).SingleOrDefault(t => t.Id == id);
+            var teamToDelete = (await _teamRepository.GetAll().ToEnumerable()).SingleOrDefault(t => t.Id == teamId);
 
             if (teamToDelete == null)
             {
                 return _serviceHelper.NotFound<TeamDto>("Team not found");
             }
 
-            var playersToDelete = _playerRepository.GetAll(teamToDelete.Id);
+            var playersToDelete = _playerRepository.GetAll(teamId);
             await foreach (var playerToDelete in playersToDelete)
             {
-                await _playerRepository.DeletePlayer(teamToDelete.Id, playerToDelete.Number);
+                await _playerRepository.DeletePlayer(playerToDelete.Id);
             }
 
             await _teamRepository.DeleteTeam(teamToDelete.Id);

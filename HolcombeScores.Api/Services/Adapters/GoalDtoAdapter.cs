@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.AzureTables;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
@@ -24,8 +22,8 @@ namespace HolcombeScores.Api.Services.Adapters
                 return null;
             }
 
-            var player = goal.HolcombeGoal 
-                ? await _playerRepository.GetByNumber(goal.TeamId ?? Guid.Empty, goal.PlayerNumber ?? -1)
+            var player = goal.HolcombeGoal && goal.PlayerId.HasValue
+                ? await _playerRepository.Get(goal.PlayerId.Value)
                 : null;
 
             return new GoalDto

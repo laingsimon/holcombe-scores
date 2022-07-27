@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Azure;
 using HolcombeScores.Api.Models.AzureTables;
 using HolcombeScores.Api.Services;
@@ -83,10 +79,10 @@ namespace HolcombeScores.Api.Repositories
             await _gameTableClient.DeleteEntityAsync(game.PartitionKey, game.RowKey);
         }
 
-        public async Task DeleteGamePlayer(Guid gameId, int playerNumber)
+        public async Task DeleteGamePlayer(Guid gameId, Guid playerId)
         {
             var players = await GetPlayers(gameId);
-            var player = players.SingleOrDefault(p => p.Number == playerNumber);
+            var player = players.SingleOrDefault(p => p.PlayerId == playerId);
 
             if (player == null)
             {

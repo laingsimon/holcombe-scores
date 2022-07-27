@@ -1,4 +1,3 @@
-using System;
 using Azure;
 using Azure.Data.Tables;
 
@@ -9,6 +8,7 @@ namespace HolcombeScores.Api.Models.AzureTables
         public Guid TeamId { get; set; }
         public string Name { get; set; }
         public int Number { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// TeamId

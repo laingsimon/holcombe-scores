@@ -6,7 +6,7 @@ namespace HolcombeScores.Api.Services.Adapters
     public interface IGameDetailsDtoAdapter
     {
         Game AdaptToGame(GameDetailsDto gameDetailsDto);
-        IAsyncEnumerable<GamePlayer> AdaptSquad(GameDetailsDto gameDetailsDto, Guid gameId, List<int> missingPlayers);
+        IAsyncEnumerable<GamePlayer> AdaptSquad(GameDetailsDto gameDetailsDto, Guid gameId, List<Guid> missingPlayers);
         Game AdaptToGame(ExistingGameDetailsDto gameDetailsDto);
     }
 }
