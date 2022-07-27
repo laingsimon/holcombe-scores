@@ -95,6 +95,7 @@ export class Home extends Component {
     this.setState({
       mode: mode,
     });
+    window.history.replaceState(null, event.target.textContent, url);
   }
 
   requestAccess() {
@@ -205,7 +206,7 @@ export class Home extends Component {
       <br />
       Hello <strong>{access.name}</strong>, you have access to <a href={`/team/${team.id}`}>{this.renderTeam(team)}</a>
       <hr />
-      <a href={`/team/${team.id}`} className="btn btn-primary">View Games</a>
+      <a href={`/team/${team.id}/view`} className="btn btn-primary">View Games</a>
     </div>);
   }
 

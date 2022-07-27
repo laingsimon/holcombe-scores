@@ -34,6 +34,7 @@ export class Teams extends Component {
     this.setState({
       mode: mode,
     });
+    window.history.replaceState(null, event.target.textContent, url);
   }
 
   async onTeamCreated(teamId) {

@@ -42,6 +42,7 @@ export class AccessAdmin extends Component {
         this.setState({
             mode: mode,
         });
+        window.history.replaceState(null, event.target.textContent, url);
     }
 
     async cancelAccess(event) {

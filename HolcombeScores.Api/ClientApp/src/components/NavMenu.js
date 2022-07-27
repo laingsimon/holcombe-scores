@@ -39,21 +39,21 @@ export class NavMenu extends Component {
       <header>
         <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
           <Container>
-            <NavbarBrand tag={Link} to="/">Holcombe Scores</NavbarBrand>
+            <NavbarBrand tag={Link} to="/home/access">Holcombe Scores</NavbarBrand>
             <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
             <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
               <ul className="navbar-nav flex-grow">
                 <NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
+                  <NavLink tag={Link} className="text-dark" to="/home/access">Home</NavLink>
                 </NavItem>
                 {this.state.access ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to={`/team/${this.state.access.teamId}`}>Team</NavLink>
+                  <NavLink tag={Link} className="text-dark" to={`/team/${this.state.access.teamId}/view`}>Team</NavLink>
                 </NavItem>) : null}
                 {this.state.access && (this.state.access.admin) ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/teams">Teams</NavLink>
+                  <NavLink tag={Link} className="text-dark" to="/teams/view">Teams</NavLink>
                 </NavItem>) : null}
                 {this.state.access && (this.state.access.admin || this.state.access.manager) ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/admin">Admin</NavLink>
+                  <NavLink tag={Link} className="text-dark" to="/admin/requests">Admin</NavLink>
                 </NavItem>) : null}
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/about">About</NavLink>

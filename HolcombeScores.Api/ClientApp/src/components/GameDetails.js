@@ -56,6 +56,7 @@ export class GameDetails extends Component {
         this.setState({
             mode: mode,
         });
+        window.history.replaceState(null, event.target.textContent, url);
     }
 
     componentDidMount() {

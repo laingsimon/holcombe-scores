@@ -67,6 +67,7 @@ export class TeamDetails extends Component {
       mode: mode,
       loadingNewGame: mode === 'new-game',
     });
+    window.history.replaceState(null, event.target.textContent, url);
   }
 
   // renderers
