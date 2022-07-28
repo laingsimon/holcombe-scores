@@ -44,7 +44,7 @@ export class AccessOverview extends Component {
         });
     }
 
-    async prepareCancelAccess() {
+    prepareCancelAccess() {
         if (this.state.mode === 'cancel') {
             this.setState({
                 mode: 'view'
@@ -83,6 +83,13 @@ export class AccessOverview extends Component {
             });
 
             this.accessChanged();
+        } else {
+            let messages = [];
+            result.messages.forEach(m => messages.push(m));
+            result.warnings.forEach(m => messages.push('Warning: ' + m));
+            result.errors.forEach(m => messages.push('Error: ' + m));
+
+            alert(`Could not revoke access: ${messages.join('\n')}`);
         }
     }
 
@@ -108,6 +115,13 @@ export class AccessOverview extends Component {
             });
 
             this.accessChanged();
+        } else {
+            let messages = [];
+            result.messages.forEach(m => messages.push(m));
+            result.warnings.forEach(m => messages.push('Warning: ' + m));
+            result.errors.forEach(m => messages.push('Error: ' + m));
+
+            alert(`Could not change admin status: ${messages.join('\n')}`);
         }
     }
 
@@ -133,6 +147,13 @@ export class AccessOverview extends Component {
             });
 
             this.accessChanged();
+        } else {
+            let messages = [];
+            result.messages.forEach(m => messages.push(m));
+            result.warnings.forEach(m => messages.push('Warning: ' + m));
+            result.errors.forEach(m => messages.push('Error: ' + m));
+
+            alert(`Could not change manager status: ${messages.join('\n')}`);
         }
     }
 
@@ -153,6 +174,13 @@ export class AccessOverview extends Component {
             });
 
             this.accessChanged();
+        } else {
+            let messages = [];
+            result.messages.forEach(m => messages.push(m));
+            result.warnings.forEach(m => messages.push('Warning: ' + m));
+            result.errors.forEach(m => messages.push('Error: ' + m));
+
+            alert(`Could not change team: ${messages.join('\n')}`);
         }
     }
 
@@ -187,7 +215,7 @@ export class AccessOverview extends Component {
                         className={`btn ${btnClassName}`}
                         onClick={this.prepareCancelAccess}>{this.state.mode === 'view' ? '🗑' : '🔙'}</button>
             </span>
-            {this.state.mode === 'cancel' ? this.renderCancelOptions() : null}
+            {this.state.mode === 'cancel' && !this.state.processing ? this.renderCancelOptions() : null}
         </div>);
     }
 

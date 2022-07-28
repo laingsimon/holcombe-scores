@@ -5,7 +5,7 @@ import {Access} from "../api/access";
 import {Team} from "../api/team";
 import {Alert} from "./Alert";
 import {AccessOverview} from "./AccessOverview";
-import {Functions} from '../functions'
+import {RequestOverview} from "./RequestOverview";
 
 export class AccessAdmin extends Component {
     constructor (props) {
@@ -25,16 +25,22 @@ export class AccessAdmin extends Component {
             cacheAt: null,
         };
         this.changeMode = this.changeMode.bind(this);
-        this.respondRequest = this.respondRequest.bind(this);
-        this.deleteRequest = this.deleteRequest.bind(this);
         this.getCache = this.getCache.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
+        this.requestChanged = this.requestChanged.bind(this);
     }
 
     //event handlers
     async accessChanged() {
         this.setState({
             allAccess: await this.getAllAccess(true),
+        });
+    }
+
+    async requestChanged() {
+        this.setState({
+            requests: await this.getAccessRequests(),
+            allAccess: await this.getAllAccess(),
         });
     }
 
@@ -47,35 +53,6 @@ export class AccessAdmin extends Component {
             mode: mode,
         });
         window.history.replaceState(null, event.target.textContent, url);
-    }
-
-    async deleteRequest(event) {
-        const userId = event.target.getAttribute('data-user-id');
-
-        if (!window.confirm('Are you sure you want to DELETE this request')) {
-            return;
-        }
-
-        this.setState({
-            processing: Functions.union(this.state.processing, userId)
-        });
-
-        const result = await this.accessApi.deleteAccessRequest(userId);
-        if (result.success) {
-            const requests = await this.getAccessRequests();
-            this.setState({
-               requests: requests,
-               processing: Functions.except(this.state.processing, userId)
-            });
-        }
-    }
-
-    async respondRequest(event) {
-        const userId = event.target.getAttribute('data-user-id');
-
-        const allow = window.confirm('Should this user be permitted?');
-        const reason = allow ? null : window.prompt('Enter reason for rejection');
-        await this.respondToRequest(userId, null, reason, allow);
     }
 
     componentDidMount() {
@@ -179,20 +156,7 @@ export class AccessAdmin extends Component {
     }
 
     renderRequest(request) {
-        const requestedDate = new Date(request.requested);
-        const team = this.state.teams[request.teamId];
-        const processing = Object.keys(this.state.processing).includes(request.userId);
-
-        const respondRequestButton = (<button type="button" className={`btn ${processing ? 'btn-light' : 'btn-success'}`} data-user-id={request.userId} onClick={this.respondRequest}>&#10003;</button>);
-
-        return (<div key={request.userId} className="list-group-item list-group-item-action flex-column align-items-start">
-            <span>Name: <strong>{request.name}</strong>, Team: {team.name}, Requested: {requestedDate.toLocaleString()}</span>
-            <span className="float-end">
-                <button type="button" className={`btn ${processing ? 'btn-light' : 'btn-danger'}`} data-user-id={request.userId} onClick={this.deleteRequest}>🗑</button>
-                &nbsp;
-                {request.rejected ? null : respondRequestButton}
-            </span>
-        </div>);
+        return (<RequestOverview key={request.userId} request={request} teams={this.state.teams} onRequestChanged={this.requestChanged} />);
     }
 
     //api
@@ -249,29 +213,6 @@ export class AccessAdmin extends Component {
             this.setState({
                 error: e,
                 loading: false
-            });
-        }
-    }
-
-    async respondToRequest(userId, teamIdOverride, reason, allow) {
-        const request = this.state.requests.filter(r => r.userId === userId)[0];
-        const message = allow
-            ? `Confirm approval of ${request.name} access to the requested team?`
-            : `Confirm rejection of ${request.name} because ${reason}?`;
-        if (!window.confirm(message)) {
-            return;
-        }
-
-        this.setState({
-            processing: Functions.union(this.state.processing, userId)
-        });
-
-        const result = await this.accessApi.respondToAccessRequest(userId, teamIdOverride || request.teamId, reason, allow);
-        if (result.success) {
-            this.setState({
-                requests: await this.getAccessRequests(),
-                allAccess: await this.getAllAccess(),
-                processing: Functions.except(this.state.processing, userId)
             });
         }
     }
