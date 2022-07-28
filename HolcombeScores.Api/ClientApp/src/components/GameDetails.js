@@ -8,6 +8,7 @@ import {Alert} from './Alert';
 import {EditGame} from "./EditGame";
 import {PlayGame} from "./PlayGame";
 import {Functions} from '../functions'
+import {GoalOverview} from "./GoalOverview";
 
 export class GameDetails extends Component {
     constructor(props) {
@@ -27,21 +28,13 @@ export class GameDetails extends Component {
         };
         this.changeMode = this.changeMode.bind(this);
         this.gameChanged = this.gameChanged.bind(this);
-        this.removeGoal = this.removeGoal.bind(this);
+        this.onGoalChanged = this.onGoalChanged.bind(this);
+
     }
 
     //event handlers
-    async removeGoal(event) {
-        const goalId = event.target.getAttribute('data-goal-id');
-        const goal = this.state.game.goals.filter(g => g.goalId === goalId)[0];
-        const detail = goal.holcombeGoal ? goal.player.name : this.state.game.opponent;
-
-        if (!window.confirm(`Are you sure you want to remove ${detail}'s goal?`)) {
-            return;
-        }
-
-        await this.gameApi.removeGoal(this.gameId, goalId);
-        await this.fetchGame();
+    async onGoalChanged() {
+        await this.fetchGame(); // don't set the state to loading
     }
 
     async gameChanged() {
@@ -200,23 +193,13 @@ export class GameDetails extends Component {
     }
 
     renderGoal(goal, game, runningScore) {
-        const time = new Date(Date.parse(goal.time)).toTimeString().substring(0, 5);
-
         if (goal.holcombeGoal) {
             runningScore.holcombe++;
-            return (<li key={goal.goalId}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time}`} - {goal.player.name} <button className="delete-goal" data-goal-id={goal.goalId} onClick={this.removeGoal}>🗑</button></li>);
+        } else {
+            runningScore.opponent++;
         }
 
-        runningScore.opponent++;
-        return (<li key={goal.goalId}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time}`} - {game.opponent} <button className="delete-goal" data-goal-id={goal.goalId} onClick={this.removeGoal}>🗑</button></li>);
-    }
-
-    renderRunningScore(runningScore, playingAtHome, colour) {
-        const score = playingAtHome
-            ? `${runningScore.holcombe} - ${runningScore.opponent}`
-            : `${runningScore.opponent} - ${runningScore.holcombe}`;
-
-        return (<span className={`badge rounded-pill ${colour}`}>{score}</span>);
+        return (<GoalOverview key={goal.goalId} goal={goal} game={game} runningScore={runningScore} onGoalChanged={this.onGoalChanged} />);
     }
 
     renderPlayer(player) {
