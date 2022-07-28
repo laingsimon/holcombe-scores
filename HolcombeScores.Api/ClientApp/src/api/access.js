@@ -3,8 +3,10 @@ class Access {
         this.http = http;
     }
 
-    getAllAccess() {
-        return this.http.get(`/api/Access`);
+    getAllAccess(bypassCache) {
+        return bypassCache
+            ? this.http.getNoCache(`/api/Access`)
+            : this.http.get(`/api/Access`);
     }
 
     deleteAccess(userId) {

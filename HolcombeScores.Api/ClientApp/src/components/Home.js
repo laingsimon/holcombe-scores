@@ -204,8 +204,8 @@ export class Home extends Component {
     return (<div>
       {this.renderNav()}
       <br />
-      Hello <strong>{access.name}</strong>, you have access to <a href={`/team/${team.id}`}>{this.renderTeam(team)}</a>
-      <hr />
+      Hello <strong>{access.name}</strong>, you have access to <strong>{this.renderTeam(team)}</strong>
+      <br />
       <a href={`/team/${team.id}/view`} className="btn btn-primary">View Games</a>
     </div>);
   }

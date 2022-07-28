@@ -4,6 +4,7 @@ import {Settings} from "../api/settings";
 import {Access} from "../api/access";
 import {Team} from "../api/team";
 import {Alert} from "./Alert";
+import {AccessOverview} from "./AccessOverview";
 import {Functions} from '../functions'
 
 export class AccessAdmin extends Component {
@@ -26,14 +27,17 @@ export class AccessAdmin extends Component {
         this.changeMode = this.changeMode.bind(this);
         this.respondRequest = this.respondRequest.bind(this);
         this.deleteRequest = this.deleteRequest.bind(this);
-        this.cancelAccess = this.cancelAccess.bind(this);
-        this.adminChanged = this.adminChanged.bind(this);
-        this.managerChanged = this.managerChanged.bind(this);
-        this.changeTeam = this.changeTeam.bind(this);
         this.getCache = this.getCache.bind(this);
+        this.accessChanged = this.accessChanged.bind(this);
     }
 
     //event handlers
+    async accessChanged() {
+        this.setState({
+            allAccess: await this.getAllAccess(true),
+        });
+    }
+
     changeMode(event) {
         event.preventDefault();
         const url = event.target.getAttribute('href');
@@ -43,39 +47,6 @@ export class AccessAdmin extends Component {
             mode: mode,
         });
         window.history.replaceState(null, event.target.textContent, url);
-    }
-
-    async cancelAccess(event) {
-        const userId = event.target.getAttribute('data-user-id');
-
-        if (userId === this.state.myAccess.userId) {
-            alert('You cannot cancel your own access');
-            return;
-        }
-
-        const access = this.state.allAccess.filter(r => r.userId === userId)[0];
-        if (access.admin && !this.state.myAccess.admin) {
-            alert('Only admins can delete other admin acceses');
-            return;
-        }
-
-        const reason = window.prompt(`Enter reason for revoking access for ${access.name}`);
-
-        if (!window.confirm('Are you sure you want to REVOKE this access')) {
-            return;
-        }
-
-        this.setState({
-            processing: Functions.union(this.state.processing, userId)
-        });
-
-        const result = await this.accessApi.revokeAccess(userId, access.teamId, reason);
-        if (result.success) {
-            this.setState({
-                allAccess: await this.getAllAccess(),
-                processing: Functions.except(this.state.processing, userId)
-            });
-        }
     }
 
     async deleteRequest(event) {
@@ -105,70 +76,6 @@ export class AccessAdmin extends Component {
         const allow = window.confirm('Should this user be permitted?');
         const reason = allow ? null : window.prompt('Enter reason for rejection');
         await this.respondToRequest(userId, null, reason, allow);
-    }
-
-    async adminChanged(event) {
-        const userId = event.target.getAttribute('data-user-id');
-        const shouldBeAdmin = event.target.checked;
-        const access = this.state.allAccess.filter(r => r.userId === userId)[0];
-
-        if (userId === this.state.myAccess.userId) {
-            alert('You cannot change your own admin access');
-            return;
-        }
-
-        this.setState({
-            processing: Functions.union(this.state.processing, userId)
-        });
-
-        const result = await this.accessApi.updateAccess(access.teamId, access.userId, access.name, shouldBeAdmin, access.manager);
-        if (result.success) {
-            this.setState({
-                allAccess: await this.getAllAccess(),
-                processing: Functions.except(this.state.processing, userId)
-            });
-        }
-    }
-
-    async managerChanged(event) {
-        const userId = event.target.getAttribute('data-user-id');
-        const shouldBeManager = event.target.checked;
-        const access = this.state.allAccess.filter(r => r.userId === userId)[0];
-
-        if (userId === this.state.myAccess.userId) {
-            alert('You cannot change your own manager access');
-            return;
-        }
-
-        this.setState({
-            processing: Functions.union(this.state.processing, userId)
-        });
-
-        const result = await this.accessApi.updateAccess(access.teamId, access.userId, access.name, access.admin, shouldBeManager);
-        if (result.success) {
-            this.setState({
-                allAccess: await this.getAllAccess(),
-                processing: Functions.except(this.state.processing, userId)
-            });
-        }
-    }
-
-    async changeTeam(event) {
-        const userId = event.target.getAttribute('data-user-id');
-        const access = this.state.allAccess.filter(r => r.userId === userId)[0];
-        const teamId = event.target.value;
-
-        this.setState({
-            processing: Functions.union(this.state.processing, userId)
-        });
-
-        const result = await this.accessApi.updateAccess(teamId, access.userId, access.name, access.admin);
-        if (result.success) {
-            this.setState({
-                allAccess: await this.getAllAccess(),
-                processing: Functions.except(this.state.processing, userId)
-            });
-        }
     }
 
     componentDidMount() {
@@ -251,34 +158,8 @@ export class AccessAdmin extends Component {
             {this.renderNav()}
             <hr />
             <div className="list-group">
-                {this.state.allAccess.map(access => this.renderCurrentAccess(access))}
+                {this.state.allAccess.map(access => <AccessOverview key={access.userId} onAccessChanged={this.accessChanged} access={access} teams={this.state.teams} myAccess={this.state.myAccess} />)}
             </div>
-        </div>);
-    }
-
-    renderCurrentAccess(access) {
-        const processing = Object.keys(this.state.processing).includes(access.userId);
-
-        return (<div key={access.userId} className="list-group-item list-group-item-action flex-column align-items-start">
-            <span><strong>{access.name}</strong>, Team: <select value={access.teamId} data-user-id={access.userId} onChange={this.changeTeam}>
-                {Object.keys(this.state.teams).map(teamId => <option value={teamId} key={teamId}>{this.state.teams[teamId].name}</option>)}
-            </select></span>
-            <span className="float-end">
-                {this.state.myAccess.admin ? (<span className="form-check form-switch form-check-inline">
-                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
-                           data-user-id={access.userId} checked={access.admin}
-                           onChange={this.adminChanged}/>
-                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Admin</label>
-                </span>) : null}
-                <span className="form-check form-switch form-check-inline">
-                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
-                           data-user-id={access.userId} checked={access.manager}
-                           onChange={this.managerChanged}/>
-                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Manager</label>
-                </span>
-                &nbsp;
-                <button type="button" className={`btn ${processing || access.userId === this.state.myAccess.userId ? 'btn-light' : 'btn-danger'}`} data-user-id={access.userId} onClick={this.cancelAccess}>&times;</button>
-            </span>
         </div>);
     }
 
@@ -307,7 +188,7 @@ export class AccessAdmin extends Component {
         return (<div key={request.userId} className="list-group-item list-group-item-action flex-column align-items-start">
             <span>Name: <strong>{request.name}</strong>, Team: {team.name}, Requested: {requestedDate.toLocaleString()}</span>
             <span className="float-end">
-                <button type="button" className={`btn ${processing ? 'btn-light' : 'btn-danger'}`} data-user-id={request.userId} onClick={this.deleteRequest}>&times;</button>
+                <button type="button" className={`btn ${processing ? 'btn-light' : 'btn-danger'}`} data-user-id={request.userId} onClick={this.deleteRequest}>🗑</button>
                 &nbsp;
                 {request.rejected ? null : respondRequestButton}
             </span>
@@ -340,8 +221,8 @@ export class AccessAdmin extends Component {
         return requests;
     }
 
-    async getAllAccess() {
-        const allAccess = await this.accessApi.getAllAccess();
+    async getAllAccess(bypassCache) {
+        const allAccess = await this.accessApi.getAllAccess(bypassCache);
         allAccess.sort((a, b) => a.name - b.name);
 
         return allAccess;

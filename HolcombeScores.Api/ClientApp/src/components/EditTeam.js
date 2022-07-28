@@ -298,7 +298,7 @@ export class EditTeam extends Component {
             <div className="col">
                 <button disabled={player.saving} className={`btn ${player.changed && !player.saving ? 'btn-success' : 'btn-light'}`} data-player-id={player.id} onClick={this.savePlayer}>{player.newPlayer ? '🆕' : '💾'}</button>
                 &nbsp;
-                {player.newPlayer ? null : (<button className="btn btn-danger" data-player-id={player.id} onClick={this.deletePlayer}>&times;</button>)}
+                {player.newPlayer ? null : (<button className="btn btn-danger" data-player-id={player.id} onClick={this.deletePlayer}>🗑</button>)}
             </div>
         </div>);
     }

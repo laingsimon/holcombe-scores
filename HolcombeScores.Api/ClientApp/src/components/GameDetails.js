@@ -204,11 +204,11 @@ export class GameDetails extends Component {
 
         if (goal.holcombeGoal) {
             runningScore.holcombe++;
-            return (<li key={goal.goalId}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time}`} - {goal.player.name} <button className="delete-goal" data-goal-id={goal.goalId} onClick={this.removeGoal}>&times;</button></li>);
+            return (<li key={goal.goalId}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-success")} - {`${time}`} - {goal.player.name} <button className="delete-goal" data-goal-id={goal.goalId} onClick={this.removeGoal}>🗑</button></li>);
         }
 
         runningScore.opponent++;
-        return (<li key={goal.goalId}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time}`} - {game.opponent} <button className="delete-goal" data-goal-id={goal.goalId} onClick={this.removeGoal}>&times;</button></li>);
+        return (<li key={goal.goalId}>{this.renderRunningScore(runningScore, game.playingAtHome, "bg-danger")} - {`${time}`} - {game.opponent} <button className="delete-goal" data-goal-id={goal.goalId} onClick={this.removeGoal}>🗑</button></li>);
     }
 
     renderRunningScore(runningScore, playingAtHome, colour) {
