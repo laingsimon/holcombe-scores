@@ -25,7 +25,7 @@ export class AccessAdmin extends Component {
         };
         this.changeMode = this.changeMode.bind(this);
         this.respondRequest = this.respondRequest.bind(this);
-        this.cancelRequest = this.cancelRequest.bind(this);
+        this.deleteRequest = this.deleteRequest.bind(this);
         this.cancelAccess = this.cancelAccess.bind(this);
         this.adminChanged = this.adminChanged.bind(this);
         this.managerChanged = this.managerChanged.bind(this);
@@ -59,7 +59,9 @@ export class AccessAdmin extends Component {
             return;
         }
 
-        if (!window.confirm('Are you sure you want to CANCEL this access')) {
+        const reason = window.prompt(`Enter reason for revoking access for ${access.name}`);
+
+        if (!window.confirm('Are you sure you want to REVOKE this access')) {
             return;
         }
 
@@ -67,7 +69,7 @@ export class AccessAdmin extends Component {
             processing: Functions.union(this.state.processing, userId)
         });
 
-        const result = await this.accessApi.deleteAccess(userId);
+        const result = await this.accessApi.revokeAccess(userId, access.teamId, reason);
         if (result.success) {
             this.setState({
                 allAccess: await this.getAllAccess(),
@@ -76,7 +78,7 @@ export class AccessAdmin extends Component {
         }
     }
 
-    async cancelRequest(event) {
+    async deleteRequest(event) {
         const userId = event.target.getAttribute('data-user-id');
 
         if (!window.confirm('Are you sure you want to DELETE this request')) {
@@ -305,7 +307,7 @@ export class AccessAdmin extends Component {
         return (<div key={request.userId} className="list-group-item list-group-item-action flex-column align-items-start">
             <span>Name: <strong>{request.name}</strong>, Team: {team.name}, Requested: {requestedDate.toLocaleString()}</span>
             <span className="float-end">
-                <button type="button" className={`btn ${processing ? 'btn-light' : 'btn-danger'}`} data-user-id={request.userId} onClick={this.cancelRequest}>&times;</button>
+                <button type="button" className={`btn ${processing ? 'btn-light' : 'btn-danger'}`} data-user-id={request.userId} onClick={this.deleteRequest}>&times;</button>
                 &nbsp;
                 {request.rejected ? null : respondRequestButton}
             </span>
