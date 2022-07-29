@@ -3,6 +3,7 @@ import {Http} from "../api/http";
 import {Settings} from "../api/settings";
 import {Access} from "../api/access";
 import {Team} from "../api/team";
+import {Functions} from "../functions";
 
 export class AccessOverview extends Component {
     constructor(props) {
@@ -84,12 +85,10 @@ export class AccessOverview extends Component {
 
             this.accessChanged();
         } else {
-            let messages = [];
-            result.messages.forEach(m => messages.push(m));
-            result.warnings.forEach(m => messages.push('Warning: ' + m));
-            result.errors.forEach(m => messages.push('Error: ' + m));
-
-            alert(`Could not revoke access: ${messages.join('\n')}`);
+            alert(`Could not revoke access: ${Functions.getResultMessages(result)}`);
+            this.setState({
+                processing: false
+            });
         }
     }
 
@@ -116,12 +115,10 @@ export class AccessOverview extends Component {
 
             this.accessChanged();
         } else {
-            let messages = [];
-            result.messages.forEach(m => messages.push(m));
-            result.warnings.forEach(m => messages.push('Warning: ' + m));
-            result.errors.forEach(m => messages.push('Error: ' + m));
-
-            alert(`Could not change admin status: ${messages.join('\n')}`);
+            alert(`Could not change admin status: ${Functions.getResultMessages(result)}`);
+            this.setState({
+                processing: false
+            });
         }
     }
 
@@ -148,12 +145,10 @@ export class AccessOverview extends Component {
 
             this.accessChanged();
         } else {
-            let messages = [];
-            result.messages.forEach(m => messages.push(m));
-            result.warnings.forEach(m => messages.push('Warning: ' + m));
-            result.errors.forEach(m => messages.push('Error: ' + m));
-
-            alert(`Could not change manager status: ${messages.join('\n')}`);
+            alert(`Could not change manager status: ${Functions.getResultMessages(result)}`);
+            this.setState({
+                processing: false
+            });
         }
     }
 
@@ -175,12 +170,10 @@ export class AccessOverview extends Component {
 
             this.accessChanged();
         } else {
-            let messages = [];
-            result.messages.forEach(m => messages.push(m));
-            result.warnings.forEach(m => messages.push('Warning: ' + m));
-            result.errors.forEach(m => messages.push('Error: ' + m));
-
-            alert(`Could not change team: ${messages.join('\n')}`);
+            alert(`Could not change team: ${Functions.getResultMessages(result)}`);
+            this.setState({
+                processing: false
+            });
         }
     }
 

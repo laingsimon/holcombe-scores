@@ -203,7 +203,7 @@ export class GameDetails extends Component {
     }
 
     renderPlayer(player) {
-        return (<li key={player.number}><span className="badge rounded-pill bg-primary">{player.number}</span> {player.name}</li>);
+        return (<li key={player.id}>{player.number ? (<span className="badge rounded-pill bg-primary">{player.number}</span>) : null} {player.name}</li>);
     }
 
     // api access

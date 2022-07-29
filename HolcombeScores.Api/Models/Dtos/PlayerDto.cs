@@ -6,7 +6,7 @@ namespace HolcombeScores.Api.Models.Dtos
     public class PlayerDto
     {
         public string Name { get; set; }
-        public int Number { get; set; }
+        public int? Number { get; set; }
         public Guid TeamId { get; set; }
         public Guid Id { get; set; }
     }

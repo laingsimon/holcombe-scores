@@ -7,7 +7,6 @@ namespace HolcombeScores.Api.Models.AzureTables
     {
         public DateTime Time { get; set; }
         public bool HolcombeGoal { get; set; }
-        public int? PlayerNumber { get; set; }
         public Guid? PlayerId { get; set; }
         public Guid? TeamId { get; set; }
         public Guid GameId { get; set; }

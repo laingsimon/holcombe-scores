@@ -7,6 +7,7 @@ import {Access} from '../api/access';
 import {Player} from '../api/player';
 import {Alert} from "./Alert";
 import {Functions} from '../functions'
+import {EditPlayer} from "./EditPlayer";
 
 export class EditTeam extends Component {
     constructor (props) {
@@ -18,15 +19,13 @@ export class EditTeam extends Component {
         this.accessApi = new Access(http);
         this.state = {
             loading: true,
-            current: null, // the current team details
-            proposed: null // the updated team details
+            team: null,
+            players: null
         };
         this.valueChanged = this.valueChanged.bind(this);
         this.updateTeam = this.updateTeam.bind(this);
         this.deleteTeam = this.deleteTeam.bind(this);
-        this.playerValueChanged = this.playerValueChanged.bind(this);
-        this.deletePlayer = this.deletePlayer.bind(this);
-        this.savePlayer = this.savePlayer.bind(this);
+        this.onPlayerChanged = this.onPlayerChanged.bind(this);
     }
 
     componentDidMount() {
@@ -35,14 +34,20 @@ export class EditTeam extends Component {
     }
 
     // event handlers
+    async onPlayerChanged() {
+        this.setState({
+            players: await this.getPlayers()
+        })
+    }
+
     valueChanged(event) {
         const name = event.target.name;
         const value = event.target.value;
-        const newProposed = Object.assign({}, this.state.proposed);
-        newProposed[name] = value;
+        const newTeam = Object.assign({}, this.state.team);
+        newTeam[name] = value;
 
         this.setState({
-            proposed: newProposed
+            team: newTeam
         });
     }
 
@@ -80,10 +85,9 @@ export class EditTeam extends Component {
         });
 
         try {
-            const proposed = this.state.proposed;
             const result = this.props.teamId
-                ? await this.teamApi.updateTeam(this.props.teamId, proposed.name, proposed.coach)
-                : await this.teamApi.createTeam(proposed.name, proposed.coach);
+                ? await this.teamApi.updateTeam(this.props.teamId, this.state.team.name, this.state.team.coach)
+                : await this.teamApi.createTeam(this.state.team.name, this.state.team.coach);
 
             this.setState({
                 loading: false,
@@ -92,7 +96,7 @@ export class EditTeam extends Component {
 
             if (result.success) {
                 this.setState({
-                    current: result.outcome
+                    team: result.outcome
                 });
 
                 if (this.props.onChanged) {
@@ -104,108 +108,6 @@ export class EditTeam extends Component {
             this.setState({
                 loading: false,
                 error: e.message
-            });
-        }
-    }
-
-    async playerValueChanged(event) {
-        const playerId = event.target.getAttribute('data-player-id');
-        const name = event.target.name;
-        const value = event.target.value;
-
-        const proposedPlayers = this.state.proposedPlayers;
-        const player = proposedPlayers.filter(p => p.id === playerId)[0];
-        player[name] = value;
-        player.changed = true;
-
-        this.setState({
-            proposedPlayers: proposedPlayers
-        });
-    }
-
-    async deletePlayer(event) {
-        const playerId = event.target.getAttribute('data-player-id');
-
-        try {
-            const proposedPlayers = this.state.proposedPlayers;
-            const player = proposedPlayers.filter(p => p.id === playerId)[0];
-
-            if (!window.confirm(`Are you sure you want to delete ${player.name}`)){
-                return;
-            }
-
-            if (player.saving) {
-                return;
-            }
-
-            player.saving = true;
-            this.setState({
-                proposedPlayers: proposedPlayers
-            });
-
-            const result = await this.playerApi.deletePlayer(playerId);
-
-            if (result.success) {
-                const proposedPlayers = await this.getPlayers();
-                this.setState({
-                    proposedPlayers: proposedPlayers
-                })
-            } else {
-                let messages = [];
-                result.messages.forEach(m => messages.push(m));
-                result.warnings.forEach(m => messages.push('Warning: ' + m));
-                result.errors.forEach(m => messages.push('Error: ' + m));
-
-                alert(`Could not delete player: ${messages.join('\n')}`);
-                console.log(result);
-            }
-        } catch (e) {
-            console.log(e);
-            this.setState({
-                error: e
-            });
-        }
-    }
-
-    async savePlayer(event) {
-        try {
-            const playerId = event.target.getAttribute('data-player-id');
-            const proposedPlayers = this.state.proposedPlayers;
-            const player = proposedPlayers.filter(p => p.id === playerId)[0];
-
-            if (player.saving) {
-                return;
-            }
-
-            if (Number.parseInt(player.number) <= 0) {
-                alert('You must enter a player number');
-                return;
-            }
-
-            player.saving = true;
-            this.setState({
-                proposedPlayers: proposedPlayers
-            });
-
-            const result = await this.playerApi.updatePlayer(player.id, this.props.teamId, player.number, player.name);
-            if (result.success) {
-                const proposedPlayers = await this.getPlayers();
-                this.setState({
-                    proposedPlayers: proposedPlayers
-                });
-            } else {
-                let messages = [];
-                result.messages.forEach(m => messages.push(m));
-                result.warnings.forEach(m => messages.push('Warning: ' + m));
-                result.errors.forEach(m => messages.push('Error: ' + m));
-
-                alert(`Could not ${player.newPlayer ? 'create' : 'update'} player: ${messages.join('\n')}`);
-                console.log(result);
-            }
-        } catch (e) {
-            console.log(e);
-            this.setState({
-                error: e
             });
         }
     }
@@ -256,13 +158,13 @@ export class EditTeam extends Component {
                 <div className="input-group-prepend">
                     <span className="input-group-text" id="basic-addon3">Name</span>
                 </div>
-                <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.proposed.name} onChange={this.valueChanged} />
+                <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.team.name} onChange={this.valueChanged} />
             </div>
             <div className="input-group mb-3">
                 <div className="input-group-prepend">
                     <span className="input-group-text" id="basic-addon3">Coach</span>
                 </div>
-                <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="coach" value={this.state.proposed.coach} onChange={this.valueChanged} />
+                <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="coach" value={this.state.team.coach} onChange={this.valueChanged} />
             </div>
             {this.props.teamId ? <hr /> : null}
             {this.props.teamId ? this.renderEditPlayers() : null}
@@ -276,31 +178,13 @@ export class EditTeam extends Component {
     renderEditPlayers() {
         return (<div className="container">
             <h4>Players...</h4>
-            {this.state.proposedPlayers.map(p => this.renderEditPlayer(p))}
+            {this.state.players.map(p => this.renderEditPlayer(p))}
+            <EditPlayer key={'new'} teamId={this.props.teamId} newPlayer={true} onPlayerChanged={this.onPlayerChanged} />
         </div>);
     }
 
     renderEditPlayer(player) {
-        return (<div className="row" key={player.id}>
-            <div className="col">
-                <div className="input-group mb-3">
-                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" data-player-id={player.id} value={player.name} onChange={this.playerValueChanged} />
-                </div>
-            </div>
-            <div className="col">
-                <div className="input-group mb-3">
-                    <div className="input-group-prepend">
-                        <span className="input-group-text" id="basic-addon3">#️⃣</span>
-                    </div>
-                    <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="number" data-player-id={player.id} value={player.number} onChange={this.playerValueChanged} />
-                </div>
-            </div>
-            <div className="col">
-                <button disabled={player.saving} className={`btn ${player.changed && !player.saving ? 'btn-success' : 'btn-light'}`} data-player-id={player.id} onClick={this.savePlayer}>{player.newPlayer ? '🆕' : '💾'}</button>
-                &nbsp;
-                {player.newPlayer ? null : (<button className="btn btn-danger" data-player-id={player.id} onClick={this.deletePlayer}>🗑</button>)}
-            </div>
-        </div>);
+        return (<EditPlayer key={player.id} teamId={this.props.teamId} player={player} onPlayerChanged={this.onPlayerChanged} />);
     }
 
     // api
@@ -309,14 +193,12 @@ export class EditTeam extends Component {
             ? await this.teamApi.getTeam(this.props.teamId)
             : null;
         const access = await this.accessApi.getMyAccess();
-        const proposedPlayers = await this.getPlayers();
 
         this.setState({
             loading: false,
-            current: team,
+            players: await this.getPlayers(),
             access: access.access,
-            proposedPlayers: proposedPlayers,
-            proposed: team || { name: '', coach: '' }
+            team: team || { name: '', coach: '' }
         });
     }
 
@@ -324,15 +206,9 @@ export class EditTeam extends Component {
         const players = this.props.teamId
             ? await this.playerApi.getPlayers(this.props.teamId)
             : [];
-        const proposedPlayers = [...players];
 
-        proposedPlayers.forEach(p => {
-            p.changed = false;
-            p.saving = false;
-        });
-        proposedPlayers.sort(Functions.playerSortFunction);
-        proposedPlayers.push({ id: '00000000-0000-0000-0000-000000000000', number: '', name: '', newPlayer: true });
+        players.sort(Functions.playerSortFunction);
 
-        return proposedPlayers;
+        return players;
     }
 }

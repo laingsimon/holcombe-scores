@@ -7,7 +7,7 @@ namespace HolcombeScores.Api.Models.AzureTables
     {
         public Guid TeamId { get; set; }
         public string Name { get; set; }
-        public int Number { get; set; }
+        public int? Number { get; set; }
         public Guid GameId { get; set; }
         public Guid PlayerId { get; set; }
 

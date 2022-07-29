@@ -42,7 +42,7 @@ namespace HolcombeScores.Api.Repositories
             return player;
         }
 
-        public async Task UpdatePlayer(Guid playerId, Guid teamId, int playerNumber, string playerName)
+        public async Task UpdatePlayer(Guid playerId, Guid teamId, int? playerNumber, string playerName)
         {
             var player = await Get(playerId);
             player.Number = playerNumber;
