@@ -86,7 +86,7 @@ export class EditPlayer extends Component {
             }
 
             const number = this.state.number ? Number.parseInt(this.state.number) : null;
-            if (number && (number <= 0 || number === Number.NaN)) {
+            if (number && (number <= 0 || isNaN(number))) {
                 alert('Invalid player number, must be a whole positive number');
                 return;
             }
