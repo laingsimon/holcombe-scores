@@ -45,7 +45,7 @@ namespace HolcombeScores.Api.Services.Adapters
 
             return new Goal
             {
-                PlayerNumber = goal.HolcombeGoal ? goal.Player.Number : null,
+                PlayerId = goal.HolcombeGoal ? goal.Player.Id : null,
                 TeamId = goal.HolcombeGoal ? game.TeamId : null,
                 Time = goal.Time,
                 HolcombeGoal = goal.HolcombeGoal,
