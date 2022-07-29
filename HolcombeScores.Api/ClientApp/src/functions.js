@@ -68,6 +68,32 @@ class Functions {
             ? 1
             : -1;
     }
+
+    static getResultMessages(result) {
+        let messages = [];
+        if (result.messages) {
+            result.messages.forEach(m => messages.push(m));
+        }
+        if (result.warnings) {
+            result.warnings.forEach(m => messages.push('Warning: ' + m));
+        }
+        if (result.errors) {
+            if (result.errors.length) {
+                // is an array
+                result.errors.forEach(m => messages.push('Error: ' + m));
+            } else {
+                // is an object
+                Object.keys(result.errors).forEach(key => {
+                    messages.push(`${key}: ${result.errors[key]}`);
+                });
+            }
+        }
+        if (result.title) {
+            messages.push(result.title);
+        }
+
+        return messages.join('\n');
+    }
 }
 
 export { Functions };

@@ -5,6 +5,8 @@ namespace HolcombeScores.Api.Services.Adapters
 {
     public class PlayerDtoAdapter : IPlayerDtoAdapter
     {
+        public const int NoNumber = -1;
+
         public PlayerDto Adapt(Player player)
         {
             if (player == null)
@@ -15,7 +17,7 @@ namespace HolcombeScores.Api.Services.Adapters
             return new PlayerDto
             {
                 Name = player.Name,
-                Number = player.Number,
+                Number = player.Number == NoNumber ? null : player.Number,
                 TeamId = player.TeamId,
                 Id = player.Id,
             };
@@ -31,7 +33,7 @@ namespace HolcombeScores.Api.Services.Adapters
             return new Player
             {
                 Name = player.Name,
-                Number = player.Number,
+                Number = player.Number ?? NoNumber,
                 TeamId = player.TeamId,
                 Id = player.Id,
             };

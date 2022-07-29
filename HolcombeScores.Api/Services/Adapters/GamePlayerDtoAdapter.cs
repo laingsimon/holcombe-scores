@@ -15,7 +15,7 @@ namespace HolcombeScores.Api.Services.Adapters
             return new PlayerDto
             {
                 Name = player.Name,
-                Number = player.Number,
+                Number = player.Number == PlayerDtoAdapter.NoNumber ? null : player.Number,
                 TeamId = player.TeamId,
                 Id = player.PlayerId,
             };

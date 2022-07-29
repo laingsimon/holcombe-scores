@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Http} from "../api/http";
 import {Settings} from "../api/settings";
 import {Access} from "../api/access";
+import {Functions} from "../functions";
 
 export class RequestOverview extends Component {
     constructor (props) {
@@ -63,12 +64,10 @@ export class RequestOverview extends Component {
         if (result.success) {
             this.requestChanged();
         } else {
-            let messages = [];
-            result.messages.forEach(m => messages.push(m));
-            result.warnings.forEach(m => messages.push('Warning: ' + m));
-            result.errors.forEach(m => messages.push('Error: ' + m));
-
-            alert(`Could not delete request: ${messages.join('\n')}`);
+            alert(`Could not delete request: ${Functions.getResultMessages(result)}`);
+            this.setState({
+                processing: false
+            });
         }
     }
 
@@ -139,12 +138,10 @@ export class RequestOverview extends Component {
         if (result.success) {
             this.requestChanged();
         } else {
-            let messages = [];
-            result.messages.forEach(m => messages.push(m));
-            result.warnings.forEach(m => messages.push('Warning: ' + m));
-            result.errors.forEach(m => messages.push('Error: ' + m));
-
-            alert(`Could not respond to request: ${messages.join('\n')}`);
+            alert(`Could not respond to request: ${Functions.getResultMessages(result)}`);
+            this.setState({
+                processing: false
+            });
         }
     }
 }

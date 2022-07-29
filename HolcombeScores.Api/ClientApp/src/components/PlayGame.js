@@ -38,7 +38,7 @@ export class PlayGame extends Component {
     }
 
     async holcombeGoal(event) {
-        const playerNumber = event.target.getAttribute('data-player-number');
+        const playerId = event.target.getAttribute('data-player-id');
 
         if (this.state.readOnly) {
             alert('Game has finished, no goals can be recorded');
@@ -46,14 +46,14 @@ export class PlayGame extends Component {
         }
 
         this.setState({
-            latestScorer: Number.parseInt(playerNumber)
+            latestScorer: playerId
         });
 
-        await this.recordGoal(true, playerNumber);
+        await this.recordGoal(true, playerId);
     }
 
-    async recordGoal(holcombeGoal, playerNumber) {
-        await this.gameApi.recordGoal(this.props.gameId, new Date().toISOString(), holcombeGoal, playerNumber);
+    async recordGoal(holcombeGoal, playerId) {
+        await this.gameApi.recordGoal(this.props.gameId, new Date().toISOString(), holcombeGoal, playerId);
         await this.updateGameData();
         if (this.props.onChanged) {
             this.props.onChanged(this.props.gameId);
@@ -107,12 +107,12 @@ export class PlayGame extends Component {
     }
 
     renderHolcombeScoreButton(player) {
-        const hasScored = this.state.game.goals.filter(g => g.holcombeGoal && g.player.number === player.number).length > 0;
-        const isLatestScorer = this.state.latestScorer === player.number || (this.state.readOnly && hasScored);
+        const hasScored = this.state.game.goals.filter(g => g.holcombeGoal && g.player.id === player.id).length > 0;
+        const isLatestScorer = this.state.latestScorer === player.id || (this.state.readOnly && hasScored);
         const colour = this.state.readOnly ? 'btn-light' : 'btn-primary';
         const suffix = !this.state.readOnly || hasScored ? 'scored!' : 'played';
 
-        return (<button key={player.number} type="button" className={`btn ${isLatestScorer ? ' btn-outline-success' : colour} btn-goal-scorer`} onClick={this.holcombeGoal} data-player-number={player.number}>
+        return (<button key={player.id} type="button" className={`btn ${isLatestScorer ? ' btn-outline-success' : colour} btn-goal-scorer`} onClick={this.holcombeGoal} data-player-id={player.id}>
             {player.name} {suffix}
         </button>);
     }

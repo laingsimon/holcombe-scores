@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
+import {Functions} from "../functions";
 
 export class GoalOverview extends Component {
     constructor (props) {
@@ -44,12 +45,10 @@ export class GoalOverview extends Component {
         if (result.success) {
             this.goalChanged();
         } else {
-            let messages = [];
-            result.messages.forEach(m => messages.push(m));
-            result.warnings.forEach(m => messages.push('Warning: ' + m));
-            result.errors.forEach(m => messages.push('Error: ' + m));
-
-            alert(`Could not delete goal: ${messages.join('\n')}`);
+            alert(`Could not delete goal: ${Functions.getResultMessages(result)}`);
+            this.setState({
+                deleting: false
+            });
         }
     }
 

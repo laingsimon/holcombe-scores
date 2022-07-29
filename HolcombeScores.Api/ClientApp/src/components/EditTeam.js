@@ -151,12 +151,7 @@ export class EditTeam extends Component {
                     proposedPlayers: proposedPlayers
                 })
             } else {
-                let messages = [];
-                result.messages.forEach(m => messages.push(m));
-                result.warnings.forEach(m => messages.push('Warning: ' + m));
-                result.errors.forEach(m => messages.push('Error: ' + m));
-
-                alert(`Could not delete player: ${messages.join('\n')}`);
+                alert(`Could not delete player: ${Functions.getResultMessages(result)}`);
                 console.log(result);
             }
         } catch (e) {
@@ -177,8 +172,9 @@ export class EditTeam extends Component {
                 return;
             }
 
-            if (Number.parseInt(player.number) <= 0) {
-                alert('You must enter a player number');
+            const number = player.number ? Number.parseInt(player.number) : null;
+            if (number && (number <= 0 || number === Number.NaN)) {
+                alert('Invalid player number, must be a whole positive number');
                 return;
             }
 
@@ -187,19 +183,18 @@ export class EditTeam extends Component {
                 proposedPlayers: proposedPlayers
             });
 
-            const result = await this.playerApi.updatePlayer(player.id, this.props.teamId, player.number, player.name);
+            const result = await this.playerApi.updatePlayer(player.id, this.props.teamId, number, player.name);
             if (result.success) {
                 const proposedPlayers = await this.getPlayers();
                 this.setState({
                     proposedPlayers: proposedPlayers
                 });
             } else {
-                let messages = [];
-                result.messages.forEach(m => messages.push(m));
-                result.warnings.forEach(m => messages.push('Warning: ' + m));
-                result.errors.forEach(m => messages.push('Error: ' + m));
-
-                alert(`Could not ${player.newPlayer ? 'create' : 'update'} player: ${messages.join('\n')}`);
+                alert(`Could not ${player.newPlayer ? 'create' : 'update'} player: ${Functions.getResultMessages(result)}`);
+                player.saving = false;
+                this.setState({
+                    proposedPlayers: proposedPlayers
+                });
                 console.log(result);
             }
         } catch (e) {

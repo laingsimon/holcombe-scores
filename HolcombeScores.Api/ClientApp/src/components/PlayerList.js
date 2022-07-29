@@ -40,7 +40,7 @@ export class PlayerList extends Component {
     renderPlayer(player) {
         let selected = Object.keys(this.state.selected).includes(player.id.toString());
         return (<li key={player.id} className={`list-group-item ${selected ? ' active' : ''}`} data-player-id={player.id} onClick={this.playerClicked}>
-            {player.name} <span className="badge rounded-pill bg-secondary">{player.number}</span>
+            {player.name} {player.number ? (<span className="badge rounded-pill bg-secondary">{player.number}</span>) : null}
         </li>);
     }
 

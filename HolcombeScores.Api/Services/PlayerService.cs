@@ -138,7 +138,7 @@ namespace HolcombeScores.Api.Services
             newPlayer.Number = transferDto.NewNumber ?? playerToTransfer.Number;
             newPlayer.TeamId = transferDto.NewTeamId;
 
-            if (await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number) != null)
+            if (newPlayer.Number != null && await _playerRepository.GetByNumber(transferDto.NewTeamId, newPlayer.Number.Value) != null)
             {
                 return _serviceHelper.NotSuccess<PlayerDto>($"Player already exists with this number in team {newTeam.Name}");
             }
