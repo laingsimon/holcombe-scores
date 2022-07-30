@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {Http} from "../api/http";
 import {Settings} from "../api/settings";
 import {Game} from '../api/game';
@@ -94,16 +94,19 @@ export class GameDetails extends Component {
     // renderers
     renderNav() {
         const editNav = <li className="nav-item">
-            <a className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} href={`/game/${this.gameId}/edit`} onClick={this.changeMode}>Edit Game</a>
+            <a className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} href={`/game/${this.gameId}/edit`}
+               onClick={this.changeMode}>Edit Game</a>
         </li>;
 
         return (<ul className="nav nav-tabs">
             <li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`} href={`/game/${this.gameId}/view`} onClick={this.changeMode}>View Game</a>
+                <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
+                   href={`/game/${this.gameId}/view`} onClick={this.changeMode}>View Game</a>
             </li>
-            {this.state.access.access.admin || this.state.access.access.manager ? editNav : null}
+            {this.props.access.admin || this.props.access.manager ? editNav : null}
             <li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`} href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
+                <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
+                   href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
             </li>
         </ul>);
     }
@@ -118,31 +121,33 @@ export class GameDetails extends Component {
         }
         if (this.state.error) {
             return (<div>
-                <Alert errors={[ this.state.error ]} />
+                <Alert errors={[this.state.error]}/>
                 <a className="btn btn-primary" href="/">Home</a>
             </div>);
         }
-        if (!this.state.access.access) {
+        if (!this.props.access) {
             return <div>
                 <h4>Not logged in</h4>
                 <a href="/" className="btn btn-primary">Home</a>
             </div>
         }
 
-        let component = (<Alert warnings={[ `Unknown mode ${this.state.mode}` ]} />);
+        let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
 
         if (this.state.mode === 'view') {
-            component = (<ViewGame game={this.state.game} readOnly={this.state.readOnly} onGoalRemoved={this.onGoalRemoved} />);
+            component = (
+                <ViewGame game={this.state.game} readOnly={this.state.readOnly} onGoalRemoved={this.onGoalRemoved}/>);
         } else if (this.state.mode === 'edit') {
-            component = (<EditGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged} />);
+            component = (<EditGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged}/>);
         } else if (this.state.mode === 'play') {
-            component = (<PlayGame team={this.state.team} game={this.state.game} readOnly={this.state.readOnly} onChanged={this.gameChanged} asAt={this.state.asAt} />);
+            component = (<PlayGame team={this.state.team} game={this.state.game} readOnly={this.state.readOnly}
+                                   onChanged={this.gameChanged} asAt={this.state.asAt}/>);
         }
 
         return (<div>
             {this.renderHeading()}
             {this.renderNav()}
-            <hr />
+            <hr/>
             {component}
         </div>)
     }
@@ -156,8 +161,9 @@ export class GameDetails extends Component {
         };
 
         return (<h4>
-                {this.state.team.name}: {location} to {this.state.game.opponent} on {date.toDateString()} <Score playingAtHome={this.state.game.playingAtHome} score={score} />
-            </h4>);
+            {this.state.team.name}: {location} to {this.state.game.opponent} on {date.toDateString()} <Score
+            playingAtHome={this.state.game.playingAtHome} score={score}/>
+        </h4>);
     }
 
     // api access
@@ -172,24 +178,23 @@ export class GameDetails extends Component {
     async updateGame() {
         const game = await this.gameApi.getGame(this.gameId);
         if (!game) {
-            this.setState({loading: false, error: 'Game not found, or no access to game' });
+            this.setState({loading: false, error: 'Game not found, or no access to game'});
             return;
         }
 
         game.squad.sort(Functions.playerSortFunction);
         const asAt = new Date();
-        this.setState({ game: game, asAt: asAt, readOnly: this.isReadOnly(game, asAt) });
+        this.setState({game: game, asAt: asAt, readOnly: this.isReadOnly(game, asAt)});
     }
 
     async fetchAllData() {
         try {
             const game = await this.gameApi.getGame(this.gameId);
             if (!game) {
-                this.setState({loading: false, error: 'Game not found, or no access to game' });
+                this.setState({loading: false, error: 'Game not found, or no access to game'});
                 return;
             }
 
-            const access = await this.accessApi.getMyAccess();
             const team = await this.teamApi.getTeam(game.teamId);
             const asAt = new Date();
             game.squad.sort(Functions.playerSortFunction);
@@ -198,13 +203,12 @@ export class GameDetails extends Component {
                 game: game,
                 asAt: asAt,
                 readOnly: this.isReadOnly(game, asAt),
-                access:access,
                 team: team,
                 loading: false
             });
         } catch (e) {
             console.log(e);
-            this.setState({loading: false, error: e.message });
+            this.setState({loading: false, error: e.message});
         }
     }
 }

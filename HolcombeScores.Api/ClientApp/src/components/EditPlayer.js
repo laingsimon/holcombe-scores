@@ -128,7 +128,7 @@ export class EditPlayer extends Component {
         return (<div className="row">
             <div className="col">
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.name} onChange={this.playerValueChanged} />
+                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.name || ''} onChange={this.playerValueChanged} />
                 </div>
             </div>
             <div className="col">
@@ -136,7 +136,7 @@ export class EditPlayer extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">#️⃣</span>
                     </div>
-                    <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="number" value={this.state.number} onChange={this.playerValueChanged} />
+                    <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="number" value={this.state.number || ''} onChange={this.playerValueChanged} />
                 </div>
             </div>
             <div className="col">

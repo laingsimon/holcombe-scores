@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
@@ -7,7 +7,7 @@ import {PlayerList} from "./PlayerList";
 import {Functions} from '../functions'
 
 export class EditGame extends Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
@@ -72,7 +72,6 @@ export class EditGame extends Component {
         }
 
         try {
-            const proposed = this.state.proposed;
             const playerIds = Object.keys(this.state.proposed.players);
 
             if (playerIds.length === 0) {
@@ -90,7 +89,7 @@ export class EditGame extends Component {
                 apiResult: null,
             });
 
-            await this.applyApiChanges(Functions.toUtcDateTime(new Date(proposed.date)), playerIds);
+            await this.applyApiChanges(Functions.toUtcDateTime(new Date(this.state.proposed.date)), playerIds);
         } catch (e) {
             console.error(e);
             this.setState({
@@ -120,9 +119,10 @@ export class EditGame extends Component {
 
     renderGameDeleted() {
         return (<div>
-            <Alert messages={this.state.apiResult.messages} warnings={this.state.apiResult.warnings} errors={this.state.apiResult.errors} />
-            <hr />
-            <a href={`/team/${this.state.team.id}`} className="btn btn-primary">View games</a>
+            <Alert messages={this.state.apiResult.messages} warnings={this.state.apiResult.warnings}
+                   errors={this.state.apiResult.errors}/>
+            <hr/>
+            <a href={`/team/${this.props.team.id}`} className="btn btn-primary">View games</a>
         </div>);
     }
 
@@ -134,21 +134,15 @@ export class EditGame extends Component {
 
         if (result.success) {
             if (!this.props.game.id) {
-                document.location.href = `/game/${result.outcome.id}`;
+                return (<div>
+                    <Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>
+                    <hr/>
+                    <a href={`/game/${result.outcome.id}/play`} className="btn btn-primary">Play game</a>
+                </div>);
             }
-
-            const openGame = this.props.game.id
-                ? null
-                : (<a href={`/game/${result.outcome.id}`} className="btn btn-primary">Open game</a>);
-
-            return (<div>
-                <Alert messages={result.messages} />
-                <hr />
-                {openGame}
-            </div>);
         }
 
-        return (<Alert messages={result.messages} warnings={result.warnings} errors={result.errors} />);
+        return (<Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>);
     }
 
     renderError(error) {
@@ -159,13 +153,13 @@ export class EditGame extends Component {
         });
 
         return (<div>
-            <Alert errors={[ error ]} />
-            <hr />
+            <Alert errors={[error]}/>
+            <hr/>
             <button type="button" className="btn btn-primary" onClick={back}>Back</button>
         </div>);
     }
 
-    render () {
+    render() {
         try {
             if (this.state.loading) {
                 return (<div className="d-flex justify-content-center">
@@ -184,6 +178,7 @@ export class EditGame extends Component {
             }
 
             if (!this.props.game && this.state.apiResult) {
+                // game created
                 return this.renderApiResult(this.state.apiResult);
             }
 
@@ -218,13 +213,14 @@ export class EditGame extends Component {
                 <PlayerList teamId={this.props.team.id} selected={this.state.proposed.players}
                             onPlayerChanged={this.onPlayerChanged} onLoaded={this.onLoaded}/>
                 <hr/>
-                <button type="button" className="btn btn-primary" onClick={this.updateGame}>{this.props.game ? 'Update game' : 'Create game'}</button>
+                <button type="button" className="btn btn-primary"
+                        onClick={this.updateGame}>{this.props.game ? 'Update game' : 'Create game'}</button>
                 &nbsp;
                 {deleteButton}
             </div>);
         } catch (e) {
             console.error(e);
-            return (<Alert errors={[ e.message ]} />);
+            return (<Alert errors={[e.message]}/>);
         }
     }
 
@@ -252,28 +248,30 @@ export class EditGame extends Component {
 
     async applyApiChanges(utcDateTime, playerIds) {
         try {
+            const game = this.props.game;
+            const team = this.props.team;
             const proposed = this.state.proposed;
             const apiFunction = this.props.game
-                ? async (utcDateTime, opponent, playingAtHome, playerIds) => await this.gameApi.updateGame(this.props.game.id, this.props.team.id, utcDateTime, opponent, playingAtHome, playerIds)
-                : async (utcDateTime, opponent, playingAtHome, playerIds) => await this.gameApi.createGame(this.props.team.id, utcDateTime, opponent, playingAtHome, playerIds);
+                ? async () => await this.gameApi.updateGame(game.id, team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds)
+                : async () => await this.gameApi.createGame(team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds);
 
-            const result = await apiFunction(utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds);
+            const result = await apiFunction();
 
             if (result.success) {
-                this.setState({
-                    apiResult: result,
-                    loading: false
-                });
-
                 if (this.props.onChanged) {
                     this.props.onChanged(result.outcome.id, result.outcome.teamId);
                 }
-            } else {
-                this.setState({
-                    apiResult: result,
-                    loading: false
-                });
             }
+
+            this.setState({
+                apiResult: result,
+                loading: false
+            });
+
+            this.setState({
+                apiResult: result,
+                loading: false
+            });
         } catch (e) {
             console.error(e);
             this.setState({

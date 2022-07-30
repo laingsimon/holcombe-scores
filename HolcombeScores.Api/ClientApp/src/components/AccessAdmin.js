@@ -17,7 +17,6 @@ export class AccessAdmin extends Component {
             loading: true,
             error: null,
             mode: props.match.params.mode || 'requests',
-            myAccess: null,
             requests: null,
             allAccess: null,
             processing: [],
@@ -75,7 +74,7 @@ export class AccessAdmin extends Component {
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/admin/access`} onClick={this.changeMode}>Access</a>
             </li>
-            {this.state.myAccess.admin ? (<li className="nav-item">
+            {this.props.access.admin && Http.cacheEnabled ? (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'cache' ? ' active' : ''}`} href={`/admin/cache`} onClick={this.changeMode}>Cache</a>
             </li>) : null}
         </ul>);
@@ -98,7 +97,7 @@ export class AccessAdmin extends Component {
             </div>);
         }
 
-        if (!this.state.myAccess.admin && !this.state.myAccess.manager) {
+        if (!this.props.access.admin && !this.props.access.manager) {
             return (<Alert warnings={[ 'This service is only available for managers and administrators.' ]} />);
         }
 
@@ -135,7 +134,8 @@ export class AccessAdmin extends Component {
             {this.renderNav()}
             <hr />
             <div className="list-group">
-                {this.state.allAccess.map(access => <AccessOverview key={access.userId} onAccessChanged={this.accessChanged} access={access} teams={this.state.teams} myAccess={this.state.myAccess} />)}
+                {this.state.allAccess.map(access => <AccessOverview key={access.userId} onAccessChanged={this.accessChanged} access={access} teams={this.state.teams}
+                                                                    myAccess={this.props.access} />)}
             </div>
         </div>);
     }
@@ -194,17 +194,13 @@ export class AccessAdmin extends Component {
 
     async requestData() {
         try {
-            const myAccess = await this.accessApi.getMyAccess();
-            const teams = await this.teamApi.getAllTeams();
-
             const teamsMap = {};
-            teams.forEach(team => {
+            this.props.teams.forEach(team => {
                 teamsMap[team.id] = team;
             });
 
             this.setState({
                 loading: false,
-                myAccess: myAccess.access,
                 requests: await this.getAccessRequests(),
                 allAccess: await this.getAllAccess(),
                 teams: teamsMap

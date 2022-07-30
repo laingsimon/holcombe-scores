@@ -19,7 +19,7 @@ export class EditTeam extends Component {
         this.accessApi = new Access(http);
         this.state = {
             loading: true,
-            team: null,
+            team: Object.assign({}, this.props.team),
             players: null
         };
         this.valueChanged = this.valueChanged.bind(this);
@@ -30,7 +30,7 @@ export class EditTeam extends Component {
 
     componentDidMount() {
         // noinspection JSIgnoredPromiseFromCall
-        this.getTeamDetails();
+        this.getTeamDetails(); // todo remove this?
     }
 
     // event handlers
@@ -62,7 +62,13 @@ export class EditTeam extends Component {
         });
 
         try {
-            const result = await this.teamApi.deleteTeam(this.props.teamId);
+            const result = await this.teamApi.deleteTeam(this.props.team.id);
+
+            if (result.success) {
+                if (this.props.onChanged) {
+                    this.props.onChanged(this.props.team.id);
+                }
+            }
 
             this.setState({
                 loading: false,
@@ -85,8 +91,8 @@ export class EditTeam extends Component {
         });
 
         try {
-            const result = this.props.teamId
-                ? await this.teamApi.updateTeam(this.props.teamId, this.state.team.name, this.state.team.coach)
+            const result = this.props.team
+                ? await this.teamApi.updateTeam(this.props.team.id, this.state.team.name, this.state.team.coach)
                 : await this.teamApi.createTeam(this.state.team.name, this.state.team.coach);
 
             this.setState({
@@ -95,10 +101,6 @@ export class EditTeam extends Component {
             });
 
             if (result.success) {
-                this.setState({
-                    team: result.outcome
-                });
-
                 if (this.props.onChanged) {
                     this.props.onChanged(result.outcome.id);
                 }
@@ -148,7 +150,7 @@ export class EditTeam extends Component {
             </div>);
         }
 
-        const deleteTeamButton = this.state.access.admin && this.props.teamId
+        const deleteTeamButton = this.props.access.admin && this.props.team
             ? (<button className="btn btn-danger" onClick={this.deleteTeam}>Delete team</button>)
             : null;
 
@@ -166,10 +168,10 @@ export class EditTeam extends Component {
                 </div>
                 <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="coach" value={this.state.team.coach} onChange={this.valueChanged} />
             </div>
-            {this.props.teamId ? <hr /> : null}
-            {this.props.teamId ? this.renderEditPlayers() : null}
+            {this.props.team ? <hr /> : null}
+            {this.props.team ? this.renderEditPlayers() : null}
             <hr />
-            <button type="button" className="btn btn-primary" onClick={this.updateTeam}>{this.props.teamId ? 'Update team' : 'Create team'}</button>
+            <button type="button" className="btn btn-primary" onClick={this.updateTeam}>{this.props.team ? 'Update team' : 'Create team'}</button>
             &nbsp;
             {deleteTeamButton}
         </div>);
@@ -179,32 +181,30 @@ export class EditTeam extends Component {
         return (<div className="container">
             <h4>Players...</h4>
             {this.state.players.map(p => this.renderEditPlayer(p))}
-            <EditPlayer key={'new'} teamId={this.props.teamId} newPlayer={true} onPlayerChanged={this.onPlayerChanged} />
+            <EditPlayer key={'new'} team={this.props.team} newPlayer={true} onPlayerChanged={this.onPlayerChanged} />
         </div>);
     }
 
     renderEditPlayer(player) {
-        return (<EditPlayer key={player.id} teamId={this.props.teamId} player={player} onPlayerChanged={this.onPlayerChanged} />);
+        return (<EditPlayer key={player.id} team={this.props.team} player={player} onPlayerChanged={this.onPlayerChanged} />);
     }
 
     // api
     async getTeamDetails() {
-        const team = this.props.teamId
-            ? await this.teamApi.getTeam(this.props.teamId)
+        const team = this.props.team
+            ? await this.teamApi.getTeam(this.props.team.id)
             : null;
-        const access = await this.accessApi.getMyAccess();
 
         this.setState({
             loading: false,
             players: await this.getPlayers(),
-            access: access.access,
             team: team || { name: '', coach: '' }
         });
     }
 
     async getPlayers() {
-        const players = this.props.teamId
-            ? await this.playerApi.getPlayers(this.props.teamId)
+        const players = this.props.team
+            ? await this.playerApi.getPlayers(this.props.team.id)
             : [];
 
         players.sort(Functions.playerSortFunction);
