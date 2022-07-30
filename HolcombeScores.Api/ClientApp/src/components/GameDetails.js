@@ -171,7 +171,7 @@ export class GameDetails extends Component {
             <h4>{homeTeam} vs {awayTeam}</h4>
             {this.renderNav()}
             <hr />
-            <PlayGame teamId={this.state.team.id} gameId={this.state.game.id} onChanged={this.gameChanged} />
+            <PlayGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged} />
         </div>);
     }
 

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
-import {Team} from '../api/team';
 import {RecordGoal} from './RecordGoal';
 import {Functions} from '../functions'
 import {Score} from "./Score";
@@ -12,21 +11,26 @@ export class PlayGame extends Component {
         super(props);
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
-        this.teamApi = new Team(http);
         this.state = {
-            loading: true,
+            refreshHandle: null,
         };
-        this.updateGameData = this.updateGameData.bind(this);
         this.stopRefresh = this.stopRefresh.bind(this);
         this.onGoalScored = this.onGoalScored.bind(this);
+        this.refresh = this.refresh.bind(this);
+        this.setProps();
+    }
+
+    // events
+    async onGoalScored() {
+        if (this.props.onChanged) {
+            this.props.onChanged(this.props.game.id);
+        }
     }
 
     // event handler
-    async onGoalScored() {
-        await this.updateGameData();
-        if (this.props.onChanged) {
-            this.props.onChanged(this.props.gameId);
-        }
+    refresh() {
+        // noinspection JSIgnoredPromiseFromCall
+        this.onGoalScored(); // pretend a goal was scored, causing the outer component to refresh
     }
 
     stopRefresh() {
@@ -38,9 +42,8 @@ export class PlayGame extends Component {
 
     componentDidMount() {
         // noinspection JSIgnoredPromiseFromCall
-        this.getData();
         this.setState({
-            refreshHandle: window.setInterval(this.updateGameData, 5000)
+            refreshHandle: window.setInterval(this.refresh, 5000)
         });
     }
 
@@ -49,27 +52,19 @@ export class PlayGame extends Component {
     }
 
     render() {
-        if (this.state.loading) {
-            return (<div className="d-flex justify-content-center" style={{ height: '247px' }}>
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>);
-        }
-
-        const notRefreshStatus = this.state.readOnly
+        const notRefreshStatus = this.readOnly
             ? 'Game over'
             : 'Not refreshing';
 
         return (<div>
             {this.renderScore()}
             <div className="d-flex flex-wrap justify-content-center score-goals-container">
-                {this.state.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.state.game} readOnly={this.state.readOnly} />))}
-                {this.state.readOnly ? null : (<RecordGoal key={'opponent'} game={this.state.game} readOnly={this.state.readOnly} />)}
+                {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} readOnly={this.readOnly} />))}
+                {this.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} readOnly={this.readOnly} />)}
             </div>
             <hr />
             <div className="text-center">
-                Score as at {this.state.asAt.toLocaleTimeString()}
+                Score as at {this.asAt.toLocaleTimeString()}
                 &nbsp;-&nbsp;
                 {this.state.refreshHandle ? (<button className="btn btn-secondary" onClick={this.stopRefresh}>Stop Refresh</button>) : <span>{notRefreshStatus}</span>}
             </div>
@@ -78,23 +73,18 @@ export class PlayGame extends Component {
 
     renderScore() {
         const score = {
-            holcombe: this.state.game.goals.filter(g => g.holcombeGoal).length,
-            opponent: this.state.game.goals.filter(g => !g.holcombeGoal).length
+            holcombe: this.props.game.goals.filter(g => g.holcombeGoal).length,
+            opponent: this.props.game.goals.filter(g => !g.holcombeGoal).length
         };
 
-        return (<h4 className="text-center"><Score playingAtHome={this.state.game.playingAtHome} score={score} /></h4>);
+        return (<h4 className="text-center"><Score playingAtHome={this.props.game.playingAtHome} score={score} /></h4>);
     }
 
-    async updateGameData() {
-        this.setState(await this.getGameData(true));
-    }
-
-    async getGameData(bypassCache) {
-        const game = await this.gameApi.getGame(this.props.gameId, bypassCache);
-        game.squad.sort(Functions.playerSortFunction);
+    setProps() {
+        this.props.game.squad.sort(Functions.playerSortFunction);
 
         const asAt = new Date();
-        const date = new Date(game.date);
+        const date = new Date(this.props.game.date);
         const timeDiff = asAt.getTime() - date.getTime();
         const hourDiff = Math.floor(timeDiff / 1000 / 60 / 60);
         const dayDiff = Math.floor(hourDiff / 24);
@@ -104,23 +94,8 @@ export class PlayGame extends Component {
             this.stopRefresh();
         }
 
-        return {
-            game: game,
-            asAt: asAt,
-            dayDiff: dayDiff,
-            readOnly: readOnly
-        };
-    }
-
-    async getData() {
-        const team = await this.teamApi.getTeam(this.props.teamId);
-        const gameData = await this.getGameData(false);
-        const stateData = Object.assign({
-            asAt: new Date(),
-            team: team,
-            loading: false,
-        }, gameData);
-
-        this.setState(stateData);
+        this.asAt = asAt;
+        this.dayDiff = dayDiff;
+        this.readOnly = readOnly;
     }
 }
