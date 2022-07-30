@@ -199,7 +199,7 @@ export class GameDetails extends Component {
             runningScore.opponent++;
         }
 
-        return (<GoalOverview key={goal.goalId} goal={goal} game={game} runningScore={runningScore} onGoalChanged={this.onGoalChanged} />);
+        return (<GoalOverview key={goal.goalId} goal={goal} game={game} runningScore={Object.assign({}, runningScore)} onGoalChanged={this.onGoalChanged} />);
     }
 
     renderPlayer(player) {
