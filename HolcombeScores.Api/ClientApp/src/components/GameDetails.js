@@ -35,11 +35,11 @@ export class GameDetails extends Component {
 
     //event handlers
     async onGoalChanged() {
-        await this.fetchGame(); // don't set the state to loading
+        await this.updateGame(); // don't set the state to loading
     }
 
     async gameChanged() {
-        await this.fetchGame(); // don't set the state to loading
+        await this.updateGame(); // don't set the state to loading
     }
 
     changeMode(event) {
@@ -55,7 +55,7 @@ export class GameDetails extends Component {
 
     componentDidMount() {
         // noinspection JSIgnoredPromiseFromCall
-        this.fetchGame();
+        this.fetchAllData();
     }
 
     // renderers
@@ -206,7 +206,17 @@ export class GameDetails extends Component {
     }
 
     // api access
-    async fetchGame() {
+    async updateGame() {
+        const game = await this.gameApi.getGame(this.gameId);
+        if (!game) {
+            this.setState({loading: false, error: 'Game not found, or no access to game' });
+            return;
+        }
+
+        this.setState({ game: game });
+    }
+
+    async fetchAllData() {
         try {
             const game = await this.gameApi.getGame(this.gameId);
             if (!game) {
