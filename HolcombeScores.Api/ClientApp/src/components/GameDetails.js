@@ -31,10 +31,19 @@ export class GameDetails extends Component {
         this.changeMode = this.changeMode.bind(this);
         this.gameChanged = this.gameChanged.bind(this);
         this.onGoalChanged = this.onGoalChanged.bind(this);
-
+        this.onGoalRemoved = this.onGoalRemoved.bind(this);
     }
 
     //event handlers
+    async onGoalRemoved(goalId, gameId) {
+        const newGame = Object.assign({}, this.state.game);
+        newGame.goals = this.state.game.goals.filter(g => g.goalId !== goalId);
+
+        this.setState({
+            game: newGame
+        });
+    }
+
     async onGoalChanged() {
         await this.updateGame(); // don't set the state to loading
     }
@@ -123,7 +132,7 @@ export class GameDetails extends Component {
         let component = (<Alert warnings={[ `Unknown mode ${this.state.mode}` ]} />);
 
         if (this.state.mode === 'view') {
-            component = (<ViewGame game={this.state.game} readOnly={this.state.readOnly} />);
+            component = (<ViewGame game={this.state.game} readOnly={this.state.readOnly} onGoalRemoved={this.onGoalRemoved} />);
         } else if (this.state.mode === 'edit') {
             component = (<EditGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged} />);
         } else if (this.state.mode === 'play') {

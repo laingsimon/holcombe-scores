@@ -24,7 +24,7 @@ export class GoalOverview extends Component {
     // events
     goalChanged() {
         if (this.props.onGoalChanged) {
-            this.props.onGoalChanged(this.goal.id, this.game.id);
+            this.props.onGoalChanged(this.goal.goalId, this.game.id);
         }
     }
 

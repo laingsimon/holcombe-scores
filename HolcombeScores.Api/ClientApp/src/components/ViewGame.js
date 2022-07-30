@@ -6,8 +6,22 @@ import {GoalOverview} from "./GoalOverview";
 export class ViewGame extends Component {
     constructor(props) {
         super(props);
+        this.onGoalChanged = this.onGoalChanged.bind(this);
     }
 
+    // events
+    goalRemoved(goalId, gameId) {
+        if (this.props.onGoalRemoved) {
+            this.props.onGoalRemoved(goalId, gameId);
+        }
+    }
+
+    // event handlers
+    onGoalChanged(goalId, gameId) {
+        this.goalRemoved(goalId, gameId);
+    }
+
+    // renderers
     render() {
         const game = this.props.game;
         const date = new Date(Date.parse(game.date));
@@ -56,7 +70,7 @@ export class ViewGame extends Component {
             runningScore.opponent++;
         }
 
-        return (<GoalOverview key={goal.goalId} goal={goal} game={game} readOnly={this.props.readOnly} score={Object.assign({}, runningScore)} onGoalChanged={this.onGoalChanged} />);
+        return (<GoalOverview key={`${goal.goalId}_${runningScore.holcombe + runningScore.opponent}`} goal={goal} game={game} readOnly={this.props.readOnly} score={Object.assign({}, runningScore)} onGoalChanged={this.onGoalChanged} />);
     }
 
     renderPlayer(player) {
