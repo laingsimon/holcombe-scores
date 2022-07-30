@@ -52,15 +52,15 @@ export class PlayGame extends Component {
     }
 
     render() {
-        const notRefreshStatus = this.readOnly
+        const notRefreshStatus = this.props.readOnly
             ? 'Game over'
             : 'Not refreshing';
 
         return (<div>
             {this.renderScore()}
             <div className="d-flex flex-wrap justify-content-center score-goals-container">
-                {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} readOnly={this.readOnly} />))}
-                {this.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} readOnly={this.readOnly} />)}
+                {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} readOnly={this.props.readOnly} />))}
+                {this.props.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} readOnly={this.props.readOnly} />)}
             </div>
             <hr />
             <div className="text-center">
@@ -81,18 +81,8 @@ export class PlayGame extends Component {
     }
 
     setProps() {
-        this.props.game.squad.sort(Functions.playerSortFunction);
-
-        const date = new Date(this.props.game.date);
-        const timeDiff = this.props.asAt.getTime() - date.getTime();
-        const hourDiff = Math.floor(timeDiff / 1000 / 60 / 60);
-        const dayDiff = Math.floor(hourDiff / 24);
-        const readOnly = dayDiff > 2;
-
-        if (readOnly && this.state.refreshHandle) {
+        if (this.props.readOnly && this.state.refreshHandle) {
             this.stopRefresh();
         }
-
-        this.readOnly = readOnly;
     }
 }

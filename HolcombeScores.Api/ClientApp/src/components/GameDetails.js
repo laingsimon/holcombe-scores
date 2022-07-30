@@ -171,7 +171,7 @@ export class GameDetails extends Component {
             <h4>{homeTeam} vs {awayTeam}</h4>
             {this.renderNav()}
             <hr />
-            <PlayGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged} asAt={this.state.asAt} />
+            <PlayGame team={this.state.team} game={this.state.game} readOnly={this.state.readOnly} onChanged={this.gameChanged} asAt={this.state.asAt} />
         </div>);
     }
 
@@ -198,7 +198,7 @@ export class GameDetails extends Component {
             runningScore.opponent++;
         }
 
-        return (<GoalOverview key={goal.goalId} goal={goal} game={game} runningScore={Object.assign({}, runningScore)} onGoalChanged={this.onGoalChanged} />);
+        return (<GoalOverview key={goal.goalId} goal={goal} game={game} readOnly={this.state.readOnly} runningScore={Object.assign({}, runningScore)} onGoalChanged={this.onGoalChanged} />);
     }
 
     renderPlayer(player) {
@@ -206,6 +206,14 @@ export class GameDetails extends Component {
     }
 
     // api access
+    isReadOnly(game, asAt) {
+        const date = new Date(game.date);
+        const timeDiff = asAt.getTime() - date.getTime();
+        const hourDiff = Math.floor(timeDiff / 1000 / 60 / 60);
+        const dayDiff = Math.floor(hourDiff / 24);
+        return dayDiff > 2;
+    }
+
     async updateGame() {
         const game = await this.gameApi.getGame(this.gameId);
         if (!game) {
@@ -213,7 +221,9 @@ export class GameDetails extends Component {
             return;
         }
 
-        this.setState({ game: game, asAt: new Date() });
+        game.squad.sort(Functions.playerSortFunction);
+        const asAt = new Date();
+        this.setState({ game: game, asAt: asAt, readOnly: this.isReadOnly(game, asAt) });
     }
 
     async fetchAllData() {
@@ -226,12 +236,16 @@ export class GameDetails extends Component {
 
             const access = await this.accessApi.getMyAccess();
             const team = await this.teamApi.getTeam(game.teamId);
+            const asAt = new Date();
+            game.squad.sort(Functions.playerSortFunction);
+
             this.setState({
                 game: game,
+                asAt: asAt,
+                readOnly: this.isReadOnly(game, asAt),
                 access:access,
                 team: team,
-                loading: false,
-                asAt: new Date()
+                loading: false
             });
         } catch (e) {
             console.log(e);
