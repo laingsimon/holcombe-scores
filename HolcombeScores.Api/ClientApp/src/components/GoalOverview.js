@@ -5,6 +5,7 @@ import {Game} from '../api/game';
 import {Functions} from "../functions";
 import {Score} from "./Score";
 
+// noinspection JSUnresolvedVariable
 export class GoalOverview extends Component {
     constructor (props) {
         super(props);

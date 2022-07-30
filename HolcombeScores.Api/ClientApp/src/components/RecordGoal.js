@@ -4,6 +4,7 @@ import {Http} from '../api/http';
 import {Game} from '../api/game';
 import {Functions} from '../functions';
 
+// noinspection JSUnresolvedVariable
 export class RecordGoal extends Component {
     constructor(props) {
         super(props);

@@ -11,6 +11,7 @@ import {Functions} from '../functions'
 import {Score} from "./Score";
 import {ViewGame} from "./ViewGame";
 
+// noinspection JSUnresolvedVariable
 export class GameDetails extends Component {
     constructor(props) {
         super(props);
@@ -119,20 +120,22 @@ export class GameDetails extends Component {
             </div>
         }
 
+        let component = (<Alert warnings={[ `Unknown mode ${this.state.mode}` ]} />);
+
         if (this.state.mode === 'view') {
-            return this.renderViewGame();
+            component = (<ViewGame game={this.state.game} readOnly={this.state.readOnly} />);
         } else if (this.state.mode === 'edit') {
-            return this.renderEditGame();
+            component = (<EditGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged} />);
         } else if (this.state.mode === 'play') {
-            return this.renderPlayGame();
-        } else {
-            return (<div>
-                {this.renderHeading()}
-                {this.renderNav()}
-                <hr />
-                <Alert warnings={[ `Unknown mode ${this.state.mode}` ]} />
-            </div>);
+            component = (<PlayGame team={this.state.team} game={this.state.game} readOnly={this.state.readOnly} onChanged={this.gameChanged} asAt={this.state.asAt} />);
         }
+
+        return (<div>
+            {this.renderHeading()}
+            {this.renderNav()}
+            <hr />
+            {component}
+        </div>)
     }
 
     renderHeading() {
@@ -146,37 +149,6 @@ export class GameDetails extends Component {
         return (<h4>
                 {this.state.team.name}: {location} to {this.state.game.opponent} on {date.toDateString()} <Score playingAtHome={this.state.game.playingAtHome} score={score} />
             </h4>);
-    }
-
-    renderViewGame() {
-        return (<div>
-            {this.renderHeading()}
-            {this.renderNav()}
-            <hr />
-            <ViewGame game={this.state.game} readOnly={this.state.readOnly} />
-        </div>);
-    }
-
-    renderEditGame() {
-        return (<div>
-            {this.renderHeading()}
-            {this.renderNav()}
-            <hr />
-            <EditGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged} />
-        </div>);
-    }
-
-    renderPlayGame() {
-        const game = this.state.game;
-        const homeTeam = game.playingAtHome ? this.state.team.name : game.opponent;
-        const awayTeam = game.playingAtHome ? game.opponent : this.state.team.name;
-
-        return (<div>
-            <h4>{homeTeam} vs {awayTeam}</h4>
-            {this.renderNav()}
-            <hr />
-            <PlayGame team={this.state.team} game={this.state.game} readOnly={this.state.readOnly} onChanged={this.gameChanged} asAt={this.state.asAt} />
-        </div>);
     }
 
     // api access

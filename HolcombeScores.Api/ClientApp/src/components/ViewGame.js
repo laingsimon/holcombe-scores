@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Functions} from '../functions'
 import {GoalOverview} from "./GoalOverview";
 
+// noinspection JSUnresolvedVariable
 export class ViewGame extends Component {
     constructor(props) {
         super(props);

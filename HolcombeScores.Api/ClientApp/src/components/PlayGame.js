@@ -3,9 +3,9 @@ import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
 import {RecordGoal} from './RecordGoal';
-import {Functions} from '../functions'
 import {Score} from "./Score";
 
+// noinspection JSUnresolvedVariable
 export class PlayGame extends Component {
     constructor(props) {
         super(props);
