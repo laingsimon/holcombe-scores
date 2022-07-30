@@ -158,7 +158,7 @@ export class GameDetails extends Component {
             {this.renderHeading()}
             {this.renderNav()}
             <hr />
-            <EditGame teamId={this.state.team.id} gameId={this.state.game.id} onChanged={this.gameChanged} />
+            <EditGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged} />
         </div>);
     }
 

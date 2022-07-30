@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
-import {Team} from '../api/team';
 import {Alert} from "./Alert";
 import {PlayerList} from "./PlayerList";
 import {Functions} from '../functions'
@@ -12,13 +11,11 @@ export class EditGame extends Component {
         super(props);
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
-        this.teamApi = new Team(http);
         this.state = {
             loading: true,
             playersLoaded: false,
             deleted: false,
-            current: null, // the current game details
-            proposed: this.props.gameId ? null : this.defaultGameDetails() // the updated game details
+            proposed: this.props.game ? null : this.defaultGameDetails() // the updated game details
         };
         this.valueChanged = this.valueChanged.bind(this);
         this.updateGame = this.updateGame.bind(this);
@@ -112,7 +109,7 @@ export class EditGame extends Component {
             loading: true
         });
 
-        const result = await this.gameApi.deleteGame(this.props.gameId);
+        const result = await this.gameApi.deleteGame(this.props.game.id);
 
         this.setState({
             loading: false,
@@ -136,11 +133,11 @@ export class EditGame extends Component {
         }
 
         if (result.success) {
-            if (!this.props.gameId) {
+            if (!this.props.game.id) {
                 document.location.href = `/game/${result.outcome.id}`;
             }
 
-            const openGame = this.props.gameId
+            const openGame = this.props.game.id
                 ? null
                 : (<a href={`/game/${result.outcome.id}`} className="btn btn-primary">Open game</a>);
 
@@ -186,11 +183,11 @@ export class EditGame extends Component {
                 return this.renderGameDeleted();
             }
 
-            if (!this.props.gameId && this.state.apiResult) {
+            if (!this.props.game && this.state.apiResult) {
                 return this.renderApiResult(this.state.apiResult);
             }
 
-            const deleteButton = this.props.gameId
+            const deleteButton = this.props.game
                 ? (<button className="btn btn-danger" onClick={this.deleteGame}>Delete game</button>)
                 : null;
 
@@ -218,10 +215,10 @@ export class EditGame extends Component {
                     <input type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
                 </div>
-                <PlayerList teamId={this.props.teamId} selected={this.state.proposed.players}
+                <PlayerList teamId={this.props.team.id} selected={this.state.proposed.players}
                             onPlayerChanged={this.onPlayerChanged} onLoaded={this.onLoaded}/>
                 <hr/>
-                <button type="button" className="btn btn-primary" onClick={this.updateGame}>{this.props.gameId ? 'Update game' : 'Create game'}</button>
+                <button type="button" className="btn btn-primary" onClick={this.updateGame}>{this.props.game ? 'Update game' : 'Create game'}</button>
                 &nbsp;
                 {deleteButton}
             </div>);
@@ -233,44 +230,38 @@ export class EditGame extends Component {
 
     // apis
     async getGameDetails() {
-        const team = await this.teamApi.getTeam(this.props.teamId);
-        const game = this.props.gameId ? await this.gameApi.getGame(this.props.gameId) : null;
-        let proposedGame = this.state.proposed;
-        if (game) {
-            proposedGame = Object.assign({}, game);
-            proposedGame.date = Functions.toLocalDateTime(new Date(game.date));
+        let proposedGame = Object.assign({}, this.props.game || {});
+        if (this.props.game) {
+            proposedGame.date = Functions.toLocalDateTime(new Date(this.props.game.date));
             proposedGame.players = {};
 
             // noinspection JSUnresolvedVariable
             delete proposedGame.squad;
 
             // noinspection JSUnresolvedVariable
-            game.squad.forEach(player => {
+            this.props.game.squad.forEach(player => {
                 proposedGame.players[player.id] = true;
             });
         }
 
         this.setState({
             loading: false,
-            current: game,
             proposed: proposedGame,
-            team: team
         });
     }
 
     async applyApiChanges(utcDateTime, playerIds) {
         try {
             const proposed = this.state.proposed;
-            const apiFunction = this.props.gameId
-                ? this.gameApi.updateGame.bind(this.gameApi)
-                : async (gameId, teamId, utcDateTime, opponent, playingAtHome, playerIds) => await this.gameApi.createGame(teamId, utcDateTime, opponent, playingAtHome, playerIds);
+            const apiFunction = this.props.game
+                ? async (utcDateTime, opponent, playingAtHome, playerIds) => await this.gameApi.updateGame(this.props.game.id, this.props.team.id, utcDateTime, opponent, playingAtHome, playerIds)
+                : async (utcDateTime, opponent, playingAtHome, playerIds) => await this.gameApi.createGame(this.props.team.id, utcDateTime, opponent, playingAtHome, playerIds);
 
-            const result = await apiFunction(this.props.gameId, this.props.teamId, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds);
+            const result = await apiFunction(utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds);
 
             if (result.success) {
                 this.setState({
                     apiResult: result,
-                    current: result.outcome,
                     loading: false
                 });
 
