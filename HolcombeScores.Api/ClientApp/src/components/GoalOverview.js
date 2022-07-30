@@ -16,7 +16,7 @@ export class GoalOverview extends Component {
 
         this.goal = props.goal;
         this.game = props.game;
-        this.runningScore = props.runningScore;
+        this.runningScore = props.score;
         this.removeGoal = this.removeGoal.bind(this);
     }
 

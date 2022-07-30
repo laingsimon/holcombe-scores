@@ -38,7 +38,30 @@ export class GameDetails extends Component {
         await this.updateGame(); // don't set the state to loading
     }
 
-    async gameChanged() {
+    async gameChanged(gameId, holcombeGoal, playerId) {
+        if (!gameId) {
+            // refresh
+            await this.updateGame(); // don't set the state to loading
+            return;
+        }
+
+        const game = Object.assign({}, this.state.game);
+        game.goals.push({
+            time: null,
+            holcombeGoal: holcombeGoal,
+            gameId: gameId,
+            player: holcombeGoal
+                ? {
+                    id: playerId,
+                    teamId: game.teamId
+                }
+                : null
+        });
+
+        this.setState({
+            game: game
+        });
+
         await this.updateGame(); // don't set the state to loading
     }
 
@@ -198,7 +221,7 @@ export class GameDetails extends Component {
             runningScore.opponent++;
         }
 
-        return (<GoalOverview key={goal.goalId} goal={goal} game={game} readOnly={this.state.readOnly} runningScore={Object.assign({}, runningScore)} onGoalChanged={this.onGoalChanged} />);
+        return (<GoalOverview key={goal.goalId} goal={goal} game={game} readOnly={this.state.readOnly} score={Object.assign({}, runningScore)} onGoalChanged={this.onGoalChanged} />);
     }
 
     renderPlayer(player) {

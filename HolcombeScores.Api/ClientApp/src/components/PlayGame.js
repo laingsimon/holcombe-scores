@@ -21,9 +21,9 @@ export class PlayGame extends Component {
     }
 
     // events
-    async onGoalScored() {
+    async onGoalScored(holcombeGoal, playerId) {
         if (this.props.onChanged) {
-            this.props.onChanged(this.props.game.id);
+            this.props.onChanged(this.props.game.id, holcombeGoal, playerId);
         }
     }
 
@@ -59,8 +59,8 @@ export class PlayGame extends Component {
         return (<div>
             {this.renderScore()}
             <div className="d-flex flex-wrap justify-content-center score-goals-container">
-                {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} readOnly={this.props.readOnly} />))}
-                {this.props.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} readOnly={this.props.readOnly} />)}
+                {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} readOnly={this.props.readOnly} onGoalScored={this.onGoalScored} />))}
+                {this.props.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} readOnly={this.props.readOnly} onGoalScored={this.onGoalScored} />)}
             </div>
             <hr />
             <div className="text-center">

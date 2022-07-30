@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
+import {Functions} from '../functions';
 
 export class RecordGoal extends Component {
     constructor(props) {
@@ -40,9 +41,10 @@ export class RecordGoal extends Component {
             });
         }, 1500);
 
+        this.goalScored();
         const result = await this.gameApi.recordGoal(this.props.game.id, new Date().toISOString(), !!this.props.player, this.props.player ? this.props.player.id : null);
-        if (result.success) {
-            this.goalScored();
+        if (!result.success) {
+            alert(`Could not record goal: ${Functions.getResultMessages(result)}`);
         }
     }
 
