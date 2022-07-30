@@ -9,6 +9,7 @@ import {EditGame} from "./EditGame";
 import {PlayGame} from "./PlayGame";
 import {Functions} from '../functions'
 import {GoalOverview} from "./GoalOverview";
+import {Score} from "./Score";
 
 export class GameDetails extends Component {
     constructor(props) {
@@ -112,17 +113,15 @@ export class GameDetails extends Component {
     }
 
     renderHeading() {
-        const game = this.state.game;
-        const location = game.playingAtHome ? 'Home' : 'Away';
-        const date = new Date(Date.parse(game.date));
-        const holcombeGoals = game.goals.filter(g => g.holcombeGoal).length;
-        const opponentGoals = game.goals.filter(g => !g.holcombeGoal).length;
-        const score = game.playingAtHome
-            ? `${holcombeGoals}-${opponentGoals}`
-            : `${opponentGoals}-${holcombeGoals}`;
+        const location = this.state.game.playingAtHome ? 'Home' : 'Away';
+        const date = new Date(Date.parse(this.state.game.date));
+        const score = {
+            holcombe: this.state.game.goals.filter(g => g.holcombeGoal).length,
+            opponent: this.state.game.goals.filter(g => !g.holcombeGoal).length
+        };
 
         return (<h4>
-                {this.state.team.name}: {location} to {game.opponent} on {date.toDateString()} <span className="badge rounded-pill bg-primary">{score}</span>
+                {this.state.team.name}: {location} to {this.state.game.opponent} on {date.toDateString()} <Score playingAtHome={this.state.game.playingAtHome} score={score} />
             </h4>);
     }
 

@@ -5,6 +5,7 @@ import {Game} from '../api/game';
 import {Team} from '../api/team';
 import {RecordGoal} from './RecordGoal';
 import {Functions} from '../functions'
+import {Score} from "./Score";
 
 export class PlayGame extends Component {
     constructor(props) {
@@ -76,17 +77,12 @@ export class PlayGame extends Component {
     }
 
     renderScore() {
-        const game = this.state.game;
-        const holcombeGoals = game.goals.filter(g => g.holcombeGoal).length;
-        const opponentGoals = game.goals.filter(g => !g.holcombeGoal).length;
-        const score = game.playingAtHome
-            ? `${holcombeGoals} - ${opponentGoals}`
-            : `${opponentGoals} - ${holcombeGoals}`;
-        const winning = holcombeGoals > opponentGoals;
-        const drawing = holcombeGoals === opponentGoals;
-        const colour = winning ? 'bg-success' : (drawing ? 'bg-primary' : 'bg-danger');
+        const score = {
+            holcombe: this.state.game.goals.filter(g => g.holcombeGoal).length,
+            opponent: this.state.game.goals.filter(g => !g.holcombeGoal).length
+        };
 
-        return (<h4 className="text-center"><span className={`rounded-pill play-current-score ${colour}`}>{score}</span></h4>);
+        return (<h4 className="text-center"><Score playingAtHome={this.state.game.playingAtHome} score={score} /></h4>);
     }
 
     async updateGameData() {

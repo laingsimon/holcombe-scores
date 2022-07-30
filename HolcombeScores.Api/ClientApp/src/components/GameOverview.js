@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {Score} from "./Score";
 
 export class GameOverview extends Component {
     constructor(props) {
@@ -13,15 +14,16 @@ export class GameOverview extends Component {
     render() {
         const location = this.game.playingAtHome ? 'Home' : 'Away';
         const date = new Date(Date.parse(this.game.date));
-        const holcombeGoals = this.game.goals.filter(g => g.holcombeGoal).length;
-        const opponentGoals = this.game.goals.filter(g => !g.holcombeGoal).length;
-        const score = this.game.playingAtHome
-            ? `${holcombeGoals}-${opponentGoals}`
-                : `${opponentGoals}-${holcombeGoals}`;
+        const holcombe = this.game.goals.filter(g => g.holcombeGoal).length;
+        const opponent = this.game.goals.filter(g => !g.holcombeGoal).length;
+        const score = {
+            holcombe: holcombe,
+            opponent: opponent
+        };
 
         return (<a href={`/game/${this.game.id}`} className="list-group-item d-flex justify-content-between align-items-center">
             {this.renderTeam()} {this.showTeam ? location : location.toLowerCase()} to {this.game.opponent} on {date.toDateString()}
-          <span className="badge rounded-pill bg-primary">{score}</span>
+            <Score playingAtHome={this.game.playingAtHome} score={score} />
         </a>);
     }
 

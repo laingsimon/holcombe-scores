@@ -3,6 +3,7 @@ import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
 import {Functions} from "../functions";
+import {Score} from "./Score";
 
 export class GoalOverview extends Component {
     constructor (props) {
@@ -55,9 +56,6 @@ export class GoalOverview extends Component {
     // renderers
     render() {
         const time = new Date(Date.parse(this.goal.time)).toTimeString().substring(0, 5);
-        const colour = this.state.deleting
-            ? 'bg-secondary'
-            : this.goal.holcombeGoal ? 'bg-success' : 'bg-danger';
         const name = this.goal.holcombeGoal ? this.goal.player.name : this.game.opponent;
         const deleteContent = this.state.deleting
             ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>)
@@ -65,17 +63,10 @@ export class GoalOverview extends Component {
         const timeAndName = `${time} - ${name}`;
 
         return (
-            <li key={this.goal.goalId}>{this.renderRunningScore(this.runningScore, this.game.playingAtHome, colour)} {this.state.deleting ? (<s>{timeAndName}</s>) : timeAndName}
+            <li>
+                <Score playingAtHome={this.game.playingAtHome} score={this.runningScore} /> {this.state.deleting ? (<s>{timeAndName}</s>) : timeAndName}
                 <button className="delete-goal" onClick={this.removeGoal}>{deleteContent}</button>
             </li>);
 
-    }
-
-    renderRunningScore(runningScore, playingAtHome, colour) {
-        const score = this.game.playingAtHome
-            ? `${runningScore.holcombe} - ${runningScore.opponent}`
-            : `${runningScore.opponent} - ${runningScore.holcombe}`;
-
-        return (<span className={`badge rounded-pill ${colour}`}>{score}</span>);
     }
 }
