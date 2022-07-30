@@ -171,7 +171,7 @@ export class GameDetails extends Component {
             <h4>{homeTeam} vs {awayTeam}</h4>
             {this.renderNav()}
             <hr />
-            <PlayGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged} />
+            <PlayGame team={this.state.team} game={this.state.game} onChanged={this.gameChanged} asAt={this.state.asAt} />
         </div>);
     }
 
@@ -213,7 +213,7 @@ export class GameDetails extends Component {
             return;
         }
 
-        this.setState({ game: game });
+        this.setState({ game: game, asAt: new Date() });
     }
 
     async fetchAllData() {
@@ -226,7 +226,13 @@ export class GameDetails extends Component {
 
             const access = await this.accessApi.getMyAccess();
             const team = await this.teamApi.getTeam(game.teamId);
-            this.setState({game: game, access:access,team: team, loading: false});
+            this.setState({
+                game: game,
+                access:access,
+                team: team,
+                loading: false,
+                asAt: new Date()
+            });
         } catch (e) {
             console.log(e);
             this.setState({loading: false, error: e.message });

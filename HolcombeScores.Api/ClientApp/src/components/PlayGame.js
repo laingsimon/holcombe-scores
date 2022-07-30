@@ -64,7 +64,7 @@ export class PlayGame extends Component {
             </div>
             <hr />
             <div className="text-center">
-                Score as at {this.asAt.toLocaleTimeString()}
+                Score as at {this.props.asAt.toLocaleTimeString()}
                 &nbsp;-&nbsp;
                 {this.state.refreshHandle ? (<button className="btn btn-secondary" onClick={this.stopRefresh}>Stop Refresh</button>) : <span>{notRefreshStatus}</span>}
             </div>
@@ -83,9 +83,8 @@ export class PlayGame extends Component {
     setProps() {
         this.props.game.squad.sort(Functions.playerSortFunction);
 
-        const asAt = new Date();
         const date = new Date(this.props.game.date);
-        const timeDiff = asAt.getTime() - date.getTime();
+        const timeDiff = this.props.asAt.getTime() - date.getTime();
         const hourDiff = Math.floor(timeDiff / 1000 / 60 / 60);
         const dayDiff = Math.floor(hourDiff / 24);
         const readOnly = dayDiff > 2;
@@ -94,8 +93,6 @@ export class PlayGame extends Component {
             this.stopRefresh();
         }
 
-        this.asAt = asAt;
-        this.dayDiff = dayDiff;
         this.readOnly = readOnly;
     }
 }
