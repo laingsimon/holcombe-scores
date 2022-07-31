@@ -64,7 +64,7 @@ export class PlayGame extends Component {
             </div>
             <hr />
             <div className="text-center">
-                Score as at {this.props.asAt.toLocaleTimeString()}
+                Score as at {this.props.game.asAt.toLocaleTimeString()}
                 &nbsp;-&nbsp;
                 {this.state.refreshHandle ? (<button className="btn btn-secondary" onClick={this.stopRefresh}>Stop Refresh</button>) : <span>{notRefreshStatus}</span>}
             </div>

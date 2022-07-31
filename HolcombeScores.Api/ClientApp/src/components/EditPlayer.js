@@ -101,7 +101,7 @@ export class EditPlayer extends Component {
                 saving: true
             });
 
-            const id = props.player ? props.player.id : '00000000-0000-0000-0000-000000000000';
+            const id = this.props.player ? this.props.player.id : '00000000-0000-0000-0000-000000000000';
             const result = await this.playerApi.updatePlayer(id, this.props.team.id, number, this.state.proposed.name);
             if (result.success) {
                 this.setState({

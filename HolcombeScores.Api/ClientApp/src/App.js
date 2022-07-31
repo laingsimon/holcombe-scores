@@ -14,6 +14,7 @@ import {Settings} from "./api/settings";
 import {Access} from "./api/access";
 import {Team} from "./api/team";
 import {Functions} from "./functions";
+import {Game} from "./api/game";
 
 export default class App extends Component {
     constructor(props) {
@@ -21,6 +22,7 @@ export default class App extends Component {
         const http = new Http(new Settings());
         this.accessApi = new Access(http);
         this.teamApi = new Team(http);
+        this.gameApi = new Game(http);
         this.state = {
             loading: true,
             subProps: null,
@@ -28,6 +30,8 @@ export default class App extends Component {
         this.reloadAccess = this.reloadAccess.bind(this);
         this.reloadTeams = this.reloadTeams.bind(this);
         this.reloadAll = this.reloadAll.bind(this);
+        this.reloadGame = this.reloadGame.bind(this);
+        this.reloadTeam = this.reloadTeam.bind(this);
         this.combineProps = this.combineProps.bind(this);
     }
 
@@ -35,13 +39,40 @@ export default class App extends Component {
         await this.reloadAll();
     }
 
+    async reloadGame(id) {
+        const subProps = Object.assign({}, this.state.subProps);
+        subProps.game = await this.gameApi.getGame(id);
+        subProps.game.asAt = new Date();
+        subProps.game.squad.sort(Functions.playerSortFunction);
+
+        if (!subProps.team || subProps.team.id !== subProps.game.teamId) {
+            subProps.team = subProps.teams.filter(t => t.id === subProps.game.teamId)[0];
+        }
+
+        this.setState({
+            subProps: subProps
+        });
+    }
+
+    async reloadTeam(id) {
+        const teams = await this.reloadTeams();
+        const subProps = Object.assign({}, this.state.subProps);
+        subProps.team = teams.filter(t => t.id === id)[0];
+        subProps.team.players.sort(Functions.playerSortFunction);
+        this.setState({
+            subProps: subProps
+        });
+    }
+
     async reloadTeams() {
         const subProps = Object.assign({}, this.state.subProps);
         subProps.teams = await this.teamApi.getAllTeams();
+        subProps.teams.forEach(t => t.asAt = new Date());
         subProps.teams.sort(Functions.teamSortFunction);
         this.setState({
             subProps: subProps
         });
+        return subProps.teams;
     }
 
     async reloadAccess() {
@@ -66,6 +97,7 @@ export default class App extends Component {
                 teams: teams,
                 reloadAccess: this.reloadAccess,
                 reloadTeams: this.reloadTeams,
+                reloadGame: this.reloadGame
             },
             loading: false
         });
