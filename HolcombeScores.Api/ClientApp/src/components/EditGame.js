@@ -6,6 +6,17 @@ import {Alert} from "./Alert";
 import {PlayerList} from "./PlayerList";
 import {Functions} from '../functions'
 
+/*
+* Props:
+* - [game]
+* - team
+*
+* Events:
+* - onLoaded()
+* - onChanged(gameId, teamId)
+* - onDeleted(gameId, teamId)
+* - onCreated(gameId, teamId)
+*/
 export class EditGame extends Component {
     constructor(props) {
         super(props);
@@ -25,7 +36,6 @@ export class EditGame extends Component {
     }
 
     componentDidMount() {
-        // noinspection JSIgnoredPromiseFromCall
         this.getGameDetails();
     }
 
@@ -109,6 +119,12 @@ export class EditGame extends Component {
         });
 
         const result = await this.gameApi.deleteGame(this.props.game.id);
+
+        if (result.success) {
+            if (this.props.onDeleted) {
+                this.props.onDeleted(this.props.game.id, this.props.team.id);
+            }
+        }
 
         this.setState({
             loading: false,
@@ -225,7 +241,7 @@ export class EditGame extends Component {
     }
 
     // apis
-    async getGameDetails() {
+    getGameDetails() {
         let proposedGame = Object.assign({}, this.props.game || {});
         if (this.props.game) {
             proposedGame.date = Functions.toLocalDateTime(new Date(this.props.game.date));
@@ -258,8 +274,14 @@ export class EditGame extends Component {
             const result = await apiFunction();
 
             if (result.success) {
-                if (this.props.onChanged) {
-                    this.props.onChanged(result.outcome.id, result.outcome.teamId);
+                if (this.props.game) {
+                    if (this.props.onChanged) {
+                        this.props.onChanged(result.outcome.id, result.outcome.teamId);
+                    }
+                } else {
+                    if (this.props.onCreated) {
+                        this.props.onCreated(result.outcome.id, result.outcome.teamId);
+                    }
                 }
             }
 

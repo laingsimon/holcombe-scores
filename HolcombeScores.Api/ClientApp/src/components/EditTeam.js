@@ -9,6 +9,16 @@ import {Alert} from "./Alert";
 import {Functions} from '../functions'
 import {EditPlayer} from "./EditPlayer";
 
+/*
+* Props:
+* - [team]
+* - access
+*
+* Events:
+* - onChanged(teamId)
+* - onDeleted(teamId)
+* - onCreated(teamId)
+*/
 export class EditTeam extends Component {
     constructor (props) {
         super(props);
@@ -19,7 +29,7 @@ export class EditTeam extends Component {
         this.accessApi = new Access(http);
         this.state = {
             loading: true,
-            team: Object.assign({}, this.props.team),
+            team: Object.assign({}, this.props.team), // TODO: Rename to 'proposed'
             players: null
         };
         this.valueChanged = this.valueChanged.bind(this);
@@ -65,8 +75,8 @@ export class EditTeam extends Component {
             const result = await this.teamApi.deleteTeam(this.props.team.id);
 
             if (result.success) {
-                if (this.props.onChanged) {
-                    this.props.onChanged(this.props.team.id);
+                if (this.props.onDeleted) {
+                    this.props.onDeleted(this.props.team.id);
                 }
             }
 
@@ -101,8 +111,14 @@ export class EditTeam extends Component {
             });
 
             if (result.success) {
-                if (this.props.onChanged) {
-                    this.props.onChanged(result.outcome.id);
+                if (this.props.team) {
+                    if (this.props.onChanged) {
+                        this.props.onChanged(result.outcome.id);
+                    }
+                } else {
+                    if (this.props.onCreated) {
+                        this.props.onCreated(result.outcome.id);
+                    }
                 }
             }
         } catch (e) {

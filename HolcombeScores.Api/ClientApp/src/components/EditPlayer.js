@@ -7,6 +7,16 @@ import {Access} from '../api/access';
 import {Player} from '../api/player';
 import {Functions} from '../functions'
 
+/*
+* Props:
+* - team
+* - [player]
+*
+* Events:
+* - onPlayerChanged(playerId, teamId)
+* - onPlayerCreated(playerId, teamId)
+* - onPlayerDeleted(playerId, teamId)
+*/
 export class EditPlayer extends Component {
     constructor(props) {
         super(props);
@@ -15,23 +25,14 @@ export class EditPlayer extends Component {
         this.teamApi = new Team(http);
         this.playerApi = new Player(http);
         this.accessApi = new Access(http);
-        this.state = Object.assign({
+        this.state = {
             saving: false,
-            changed: false
-        }, props.player || { name: '', number: '' });
+            changed: false,
+            proposed: props.player ? Object.assign({}, props.player) : { name: '', number: '' }
+        };
         this.playerValueChanged = this.playerValueChanged.bind(this);
         this.deletePlayer = this.deletePlayer.bind(this);
         this.savePlayer = this.savePlayer.bind(this);
-
-        this.id = props.player ? props.player.id : '00000000-0000-0000-0000-000000000000';
-        this.teamId = props.teamId;
-    }
-
-    //events
-    playerChanged() {
-        if (this.props.onPlayerChanged) {
-            this.props.onPlayerChanged(this.id);
-        }
     }
 
     // event handlers
@@ -39,11 +40,13 @@ export class EditPlayer extends Component {
         const name = event.target.name;
         const value = event.target.value;
 
-        const newState = Object.assign({}, this.state);
-        newState.changed = true;
-        newState[name] = value;
+        const newProposed = Object.assign({}, this.state.proposed);
+        newProposed.changed = true;
+        newProposed[name] = value;
 
-        this.setState(newState);
+        this.setState({
+            proposed: newProposed
+        });
     }
 
     async deletePlayer() {
@@ -52,7 +55,7 @@ export class EditPlayer extends Component {
                 return;
             }
 
-            if (!window.confirm(`Are you sure you want to delete ${this.state.name}`)){
+            if (!window.confirm(`Are you sure you want to delete ${this.props.player.name}`)){
                 return;
             }
 
@@ -60,13 +63,16 @@ export class EditPlayer extends Component {
                 saving: true
             });
 
-            const result = await this.playerApi.deletePlayer(this.id);
+            const result = await this.playerApi.deletePlayer(this.props.player.id);
 
             if (result.success) {
                 this.setState({
                     saving: false
                 });
-                this.playerChanged();
+
+                if (this.props.onPlayerDeleted) {
+                    this.props.onPlayerDeleted(this.props.player.id, this.props.team.id);
+                }
             } else {
                 alert(`Could not delete player: ${Functions.getResultMessages(result)}`);
                 console.log(result);
@@ -85,7 +91,7 @@ export class EditPlayer extends Component {
                 return;
             }
 
-            const number = this.state.number ? Number.parseInt(this.state.number) : null;
+            const number = this.state.number ? Number.parseInt(this.state.proposed.number) : null;
             if (number && (number <= 0 || isNaN(number))) {
                 alert('Invalid player number, must be a whole positive number');
                 return;
@@ -95,17 +101,26 @@ export class EditPlayer extends Component {
                 saving: true
             });
 
-            const result = await this.playerApi.updatePlayer(this.id, this.teamId, number, this.state.name);
+            const id = props.player ? props.player.id : '00000000-0000-0000-0000-000000000000';
+            const result = await this.playerApi.updatePlayer(id, this.props.team.id, number, this.state.proposed.name);
             if (result.success) {
                 this.setState({
                     saving: false,
                     changed: false,
-                    name: this.props.newPlayer ? '' : this.state.name,
-                    number: this.props.newPlayer ? '' : this.state.number,
+                    proposed: this.props.player ? this.state.proposed : { name: '', number: '' },
                 });
-                this.playerChanged();
+
+                if (this.props.player) {
+                    if (this.props.onPlayerCreated) {
+                        this.props.onPlayerCreated(result.outcome.id, this.props.team.id);
+                    }
+                } else {
+                    if (this.props.onPlayerChanged) {
+                        this.props.onPlayerChanged(this.props.player.id, this.props.team.id);
+                    }
+                }
             } else {
-                alert(`Could not ${this.props.newPlayer ? 'create' : 'update'} player: ${Functions.getResultMessages(result)}`);
+                alert(`Could not ${this.props.player ? 'update' : 'create'} player: ${Functions.getResultMessages(result)}`);
                 this.setState({
                     saving: false,
                 });
@@ -122,13 +137,13 @@ export class EditPlayer extends Component {
 
     // renderers
     render() {
-        const saveButton = (<button className={`btn ${this.state.changed && this.state.name ? 'btn-success' : 'btn-light'}`} onClick={this.savePlayer}>{this.props.newPlayer ? '➕' : '💾'}</button>);
+        const saveButton = (<button className={`btn ${this.state.changed && this.state.proposed.name ? 'btn-success' : 'btn-light'}`} onClick={this.savePlayer}>{this.props.player ? '💾' : '➕'}</button>);
         const savingButton = (<button className="btn btn-light"><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;</button>);
 
         return (<div className="row">
             <div className="col">
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.name || ''} onChange={this.playerValueChanged} />
+                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.proposed.name || ''} onChange={this.playerValueChanged} />
                 </div>
             </div>
             <div className="col">
@@ -136,13 +151,13 @@ export class EditPlayer extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">#️⃣</span>
                     </div>
-                    <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="number" value={this.state.number || ''} onChange={this.playerValueChanged} />
+                    <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="number" value={this.state.proposed.number || ''} onChange={this.playerValueChanged} />
                 </div>
             </div>
             <div className="col">
                 {this.state.saving ? savingButton : saveButton}
                 &nbsp;
-                {this.props.newPlayer ? null : (<button className={`btn ${this.state.saving ? 'btn-light' : 'btn-danger'}`} onClick={this.deletePlayer}>🗑</button>)}
+                {this.props.player ? (<button className={`btn ${this.state.saving ? 'btn-light' : 'btn-danger'}`} onClick={this.deletePlayer}>🗑</button>) : null}
             </div>
         </div>);
     }
