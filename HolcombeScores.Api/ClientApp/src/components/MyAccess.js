@@ -26,13 +26,15 @@ export class MyAccess extends Component {
 
     renderAccessRejected() {
         return (<div>
-            <p>Sorry, {this.props.request.name}, your access request was rejected.</p>
+            <h1>🚫 Hi {this.props.request.name}</h1>
+            <p>Sorry, your access request was rejected.</p>
             <p>Reason: <b>{this.props.request.reason ? this.props.request.reason : 'No reason given'}</b></p>
         </div>);
     }
 
     renderAccessPending() {
         return (<div>
+            <h1>⏳ Hi {this.props.request.name}</h1>
             <p>Your access request hasn't been approved, yet...</p>
         </div>);
     }

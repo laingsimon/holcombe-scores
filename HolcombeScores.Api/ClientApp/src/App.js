@@ -146,7 +146,8 @@ export default class App extends Component {
                 reloadAccess: this.reloadAccess,
                 reloadTeams: this.reloadTeams,
                 reloadTeam: this.reloadTeam,
-                reloadGame: this.reloadGame
+                reloadGame: this.reloadGame,
+                reloadAll: this.reloadAll
             },
             loading: false
         });

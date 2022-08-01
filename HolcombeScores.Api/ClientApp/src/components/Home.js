@@ -8,7 +8,7 @@ import {RecoverAccess} from "./RecoverAccess";
 /*
 * Props:
 * - reloadAll()
-* - updateAccess()
+* - reloadAccess()
 * - access
 * - request
 *
@@ -27,6 +27,7 @@ export class Home extends Component {
         this.accessDeleted = this.accessDeleted.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
         this.requestCreated = this.requestCreated.bind(this);
+        this.accessRecovered = this.accessRecovered.bind(this);
         this.history = props.history;
     }
 
@@ -41,9 +42,16 @@ export class Home extends Component {
         await this.props.reloadAll();
     }
 
-    async accessChanged(accessUpdate) {
-        // noinspection JSUnresolvedFunction
-        await this.props.updateAccess(accessUpdate.teamId, accessUpdate.userId, accessUpdate.name, accessUpdate.admin, accessUpdate.manager);
+    async accessChanged() {
+        await this.props.reloadAccess();
+    }
+
+    async accessRecovered() {
+        await this.props.reloadAccess();
+        window.history.replaceState(null, 'Access', '/home/access');
+        this.setState({
+            mode: 'access'
+        });
     }
 
     changeMode(event) {
@@ -93,14 +101,14 @@ export class Home extends Component {
 
             if (this.state.error) {
                 component = this.renderError(this.state.error);
-            } else if (this.state.mode === 'access') {
+            } else if (this.state.mode === 'access' || (this.state.mode === 'recover' && this.props.access)) {
                 if (this.props.access || this.props.request) {
                     component = (<MyAccess {...this.props} />);
                 } else {
                     component = (<RequestAccess {...this.props} onRequestCreated={this.requestCreated}/>);
                 }
             } else if (this.state.mode === 'recover') {
-                component = (<RecoverAccess {...this.props} />);
+                component = (<RecoverAccess {...this.props} onRecoverySuccess={this.accessRecovered} />);
             } else if (this.state.mode === 'update') {
                 component = (<EditAccess {...this.props} onAccessDeleted={this.accessDeleted} onAccessChanged={this.accessChanged} />);
             }

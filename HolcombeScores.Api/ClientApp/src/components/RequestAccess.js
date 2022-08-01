@@ -21,11 +21,16 @@ export class RequestAccess extends Component {
         };
         this.requestAccess = this.requestAccess.bind(this);
         this.requestChanged = this.requestChanged.bind(this);
+        this.removeError = this.removeError.bind(this);
         let http = new Http(new Settings());
         this.accessApi = new Access(http);
     }
 
-    // hooks
+    // event handlers
+    removeError() {
+        this.setState({error: null});
+    }
+
     async requestAccess() {
         if (!this.state.request.name) {
             alert('You must enter a name');
@@ -63,6 +68,14 @@ export class RequestAccess extends Component {
     }
 
     // renderers
+    renderError(error) {
+        return (<div>
+            <Alert errors={[error]}/>
+            <hr/>
+            <button type="button" className="btn btn-primary" onClick={this.removeError}>Back</button>
+        </div>);
+    }
+
     renderTeams(teams) {
         let setSelectedTeam = function (event) {
             let item = event.target;
