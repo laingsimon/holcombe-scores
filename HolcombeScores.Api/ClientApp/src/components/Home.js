@@ -44,9 +44,8 @@ export class Home extends Component {
     }
 
     // hooks
-    componentDidMount() {
-        // noinspection JSIgnoredPromiseFromCall
-        this.populateAccessForRecovery();
+    async componentDidMount() {
+        await this.populateAccessForRecovery();
     }
 
     //event handlers
@@ -62,7 +61,7 @@ export class Home extends Component {
         if (result.success) {
             this.setState({mode: 'access'});
             if (this.props.updateAccess) {
-                this.props.updateAccess();
+                await this.props.updateAccess();
             }
         } else {
             alert('Could not delete your details');
@@ -84,7 +83,7 @@ export class Home extends Component {
 
         if (result.success) {
             if (this.props.updateAccess) {
-                this.props.updateAccess();
+                await this.props.updateAccess();
             }
         } else {
             alert('Could not update your access');
@@ -113,7 +112,7 @@ export class Home extends Component {
         window.history.replaceState(null, event.target.textContent, url);
     }
 
-    requestAccess() {
+    async requestAccess() {
         if (!this.state.request.name) {
             alert('You must enter a name');
             return;
@@ -124,11 +123,10 @@ export class Home extends Component {
             return;
         }
 
-        // noinspection JSIgnoredPromiseFromCall
-        this.sendAccessRequest(this.state.request);
+        await this.sendAccessRequest(this.state.request);
     }
 
-    recoverAccess() {
+    async recoverAccess() {
         if (!this.state.recovery.adminPassCode) {
             alert('You must enter the admin pass code');
             return;
@@ -140,8 +138,7 @@ export class Home extends Component {
         }
 
         this.setState({loading: true});
-        // noinspection JSIgnoredPromiseFromCall
-        this.sendAccessRecovery(this.state.recovery);
+        await this.sendAccessRecovery(this.state.recovery);
     }
 
     requestChanged(event) {

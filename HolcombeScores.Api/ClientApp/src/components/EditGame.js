@@ -10,9 +10,10 @@ import {Functions} from '../functions'
 * Props:
 * - [game]
 * - team
+* - teamPlayers
+* - readOnly
 *
 * Events:
-* - onLoaded()
 * - onChanged(gameId, teamId)
 * - onDeleted(gameId, teamId)
 * - onCreated(gameId, teamId)
@@ -24,7 +25,6 @@ export class EditGame extends Component {
         this.gameApi = new Game(http);
         this.state = {
             loading: true,
-            playersLoaded: false,
             deleted: false,
             proposed: this.props.game ? null : this.defaultGameDetails() // the updated game details
         };
@@ -32,7 +32,6 @@ export class EditGame extends Component {
         this.updateGame = this.updateGame.bind(this);
         this.deleteGame = this.deleteGame.bind(this);
         this.onPlayerSelected = this.onPlayerSelected.bind(this);
-        this.onLoaded = this.onLoaded.bind(this);
     }
 
     componentDidMount() {
@@ -65,22 +64,7 @@ export class EditGame extends Component {
         });
     }
 
-    onLoaded() {
-        this.setState({
-            playersLoaded: true
-        });
-
-        // noinspection JSUnresolvedVariable
-        if (this.props.onLoaded) {
-            this.props.onLoaded();
-        }
-    }
-
     async updateGame() {
-        if (!this.state.playersLoaded) {
-            return;
-        }
-
         try {
             const playerIds = Object.keys(this.state.proposed.players);
 
@@ -122,7 +106,7 @@ export class EditGame extends Component {
 
         if (result.success) {
             if (this.props.onDeleted) {
-                this.props.onDeleted(this.props.game.id, this.props.team.id);
+                await this.props.onDeleted(this.props.game.id, this.props.team.id);
             }
         }
 
@@ -208,14 +192,13 @@ export class EditGame extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">Opponent</span>
                     </div>
-                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                    <input readOnly={this.props.readOnly || false} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="opponent" value={this.state.proposed.opponent} onChange={this.valueChanged}/>
                 </div>
                 <div className="input-group mb-3">
                     <div className="form-check form-switch">
-                        <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
-                               name="playingAtHome" checked={this.state.proposed.playingAtHome}
-                               onChange={this.valueChanged}/>
+                        <input disabled={this.props.readOnly || false} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                               name="playingAtHome" checked={this.state.proposed.playingAtHome}  onChange={this.valueChanged}/>
                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Playing at home</label>
                     </div>
                 </div>
@@ -223,14 +206,14 @@ export class EditGame extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">📆 Date</span>
                     </div>
-                    <input type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                    <input readOnly={this.props.readOnly || false} type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
                 </div>
-                <PlayerList teamId={this.props.team.id} selected={this.state.proposed.players}
-                            onPlayerSelected={this.onPlayerSelected} onLoaded={this.onLoaded}/>
+                <PlayerList players={this.props.team.players} selected={this.state.proposed.players}
+                            onPlayerSelected={this.onPlayerSelected} readOnly={this.props.readOnly || false} />
                 <hr/>
-                <button type="button" className="btn btn-primary"
-                        onClick={this.updateGame}>{this.props.game ? 'Update game' : 'Create game'}</button>
+                {this.props.readOnly ? null : (<button type="button" className="btn btn-primary"
+                        onClick={this.updateGame}>{this.props.game ? 'Update game' : 'Create game'}</button>)}
                 &nbsp;
                 {deleteButton}
             </div>);
@@ -247,10 +230,8 @@ export class EditGame extends Component {
             proposedGame.date = Functions.toLocalDateTime(new Date(this.props.game.date));
             proposedGame.players = {};
 
-            // noinspection JSUnresolvedVariable
             delete proposedGame.squad;
 
-            // noinspection JSUnresolvedVariable
             this.props.game.squad.forEach(player => {
                 proposedGame.players[player.id] = true;
             });
@@ -276,11 +257,11 @@ export class EditGame extends Component {
             if (result.success) {
                 if (this.props.game) {
                     if (this.props.onChanged) {
-                        this.props.onChanged(result.outcome.id, result.outcome.teamId);
+                        await this.props.onChanged(result.outcome.id, result.outcome.teamId);
                     }
                 } else {
                     if (this.props.onCreated) {
-                        this.props.onCreated(result.outcome.id, result.outcome.teamId);
+                        await this.props.onCreated(result.outcome.id, result.outcome.teamId);
                     }
                 }
             }

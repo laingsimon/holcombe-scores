@@ -36,13 +36,21 @@ export class GameDetails extends Component {
             mode: props.match.params.mode || 'view'
         };
         this.changeMode = this.changeMode.bind(this);
+        this.goalScored = this.goalScored.bind(this);
+        this.goalRemoved = this.goalRemoved.bind(this);
         this.gameChanged = this.gameChanged.bind(this);
-        // this.onGoalChanged = this.onGoalChanged.bind(this);
-        // this.onGoalRemoved = this.onGoalRemoved.bind(this);
     }
 
     //event handlers
-    async gameChanged(gameId, holcombeGoal, playerId) {
+    async goalRemoved(goalId, gameId) {
+        await this.props.reloadGame(gameId); // don't set the state to loading
+    }
+
+    async gameChanged(gameId, teamId) {
+        await this.props.reloadGame(gameId); // don't set the state to loading
+    }
+
+    async goalScored(gameId, holcombeGoal, playerId) {
         if (!gameId) {
             // refresh
             await this.props.reloadGame(gameId); // don't set the state to loading
@@ -137,14 +145,12 @@ export class GameDetails extends Component {
 
         let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
 
-        if (this.state.mode === 'view') {
-            component = (
-                <ViewGame game={this.props.game} readOnly={this.isReadOnly()} onGoalRemoved={this.onGoalRemoved}/>);
+        if (this.state.mode === 'view' || (this.isReadOnly() && this.state.mode === 'edit')) {
+            component = (<ViewGame {...this.props} readOnly={this.isReadOnly()} onGoalRemoved={this.goalRemoved} />);
         } else if (this.state.mode === 'edit') {
-            component = (<EditGame team={this.props.team} game={this.props.game} onChanged={this.gameChanged}/>);
+            component = (<EditGame {...this.props} onChanged={this.gameChanged} readOnly={this.isReadOnly()} />);
         } else if (this.state.mode === 'play') {
-            component = (<PlayGame team={this.props.team} game={this.props.game} readOnly={this.isReadOnly()}
-                                   onChanged={this.gameChanged} />);
+            component = (<PlayGame {...this.props} readOnly={this.isReadOnly()} onGoalScored={this.goalScored} />);
         }
 
         return (<div>

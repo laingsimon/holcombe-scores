@@ -29,16 +29,15 @@ export class RecordGoal extends Component {
     }
 
     // events
-    goalScored() {
+    async goalScored() {
         if (this.props.onGoalScored) {
-            this.props.onGoalScored(!!this.props.player, this.props.player ? this.props.player.id : null);
+            await this.props.onGoalScored(!!this.props.player, this.props.player ? this.props.player.id : null);
         }
     }
 
     // event handlers
     async recordGoal() {
         if (this.readOnly) {
-            alert('Game has finished, no goals can be recorded');
             return;
         }
 
@@ -52,13 +51,12 @@ export class RecordGoal extends Component {
             });
         }, 1500);
 
-        this.goalScored();
+        await this.goalScored();
         const result = await this.gameApi.recordGoal(this.props.game.id, new Date().toISOString(), !!this.props.player, this.props.player ? this.props.player.id : null);
         if (!result.success) {
             alert(`Could not record goal: ${Functions.getResultMessages(result)}`);
         }
     }
-
 
     // renderers
     render() {
@@ -68,7 +66,7 @@ export class RecordGoal extends Component {
     }
 
     renderHolcombeScoreButton() {
-        const hasScored = this.props.game.goals.filter(g => (g.holcombeGoal && g.player) && g.player.id === this.props.player.id).length > 0;
+        const hasScored = this.props.game.goals.filter(g => g.holcombeGoal && g.player.id === this.props.player.id).length > 0;
         const isLatestScorer = this.state.latestScorer || (this.readOnly && hasScored);
         const colour = this.readOnly ? 'btn-light' : 'btn-primary';
         const suffix = !this.readOnly || hasScored ? 'scored!' : 'played';

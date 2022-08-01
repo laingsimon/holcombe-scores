@@ -11,6 +11,7 @@ import {Functions} from "../functions";
 *
 * Events:
 * - onRequestChanged(userId)
+* - onRequestDeleted(userId)
 * */
 export class RequestOverview extends Component {
     constructor (props) {
@@ -30,13 +31,6 @@ export class RequestOverview extends Component {
         this.rejectRequest = this.rejectRequest.bind(this);
         this.approveRequest = this.approveRequest.bind(this);
         this.reasonChanged = this.reasonChanged.bind(this);
-    }
-
-    //events
-    requestChanged() {
-        if (this.props.onRequestChanged) {
-            this.props.onRequestChanged(this.request.userId);
-        }
     }
 
     //event handlers
@@ -70,7 +64,9 @@ export class RequestOverview extends Component {
 
         const result = await this.accessApi.deleteAccessRequest(this.request.userId);
         if (result.success) {
-            this.requestChanged();
+            if (this.props.onRequestDeleted) {
+                await this.props.onRequestDeleted(this.request.userId);
+            }
         } else {
             alert(`Could not delete request: ${Functions.getResultMessages(result)}`);
             this.setState({
@@ -144,7 +140,9 @@ export class RequestOverview extends Component {
 
         const result = await this.accessApi.respondToAccessRequest(this.request.userId, this.request.teamId, reason, allow);
         if (result.success) {
-            this.requestChanged();
+            if (this.props.onRequestChanged) {
+                await this.props.onRequestChanged(this.request.userId);
+            }
         } else {
             alert(`Could not respond to request: ${Functions.getResultMessages(result)}`);
             this.setState({

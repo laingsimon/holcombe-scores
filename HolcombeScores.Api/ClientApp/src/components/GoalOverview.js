@@ -11,6 +11,7 @@ import {Score} from "./Score";
 * - goal
 * - game
 * - score
+* - [readOnly]
 *
 * Events:
 * - onGoalDeleted(goalId, gameId)
@@ -24,17 +25,14 @@ export class GoalOverview extends Component {
             deleting: false
         }
 
-        this.goal = props.goal;
-        this.game = props.game;
-        this.runningScore = props.score;
         this.removeGoal = this.removeGoal.bind(this);
     }
 
     //event handlers
     async removeGoal() {
-        const detail = this.goal.holcombeGoal
-            ? this.goal.player.name
-            : this.game.opponent;
+        const detail = this.props.goal.holcombeGoal
+            ? this.props.goal.player.name
+            : this.props.game.opponent;
 
         if (!window.confirm(`Are you sure you want to remove ${detail}'s goal?`)) {
             return;
@@ -44,11 +42,11 @@ export class GoalOverview extends Component {
             deleting: true
         });
 
-        const result = await this.gameApi.removeGoal(this.game.id, this.goal.goalId);
+        const result = await this.gameApi.removeGoal(this.props.game.id, this.props.goal.goalId);
 
         if (result.success) {
             if (this.props.onGoalDeleted) {
-                this.props.onGoalDeleted(this.goal.goalId, this.game.id);
+                await this.props.onGoalDeleted(this.props.goal.goalId, this.props.game.id);
             }
         } else {
             alert(`Could not delete goal: ${Functions.getResultMessages(result)}`);
@@ -60,8 +58,8 @@ export class GoalOverview extends Component {
 
     // renderers
     render() {
-        const time = new Date(Date.parse(this.goal.time)).toTimeString().substring(0, 5);
-        const name = this.goal.holcombeGoal ? this.goal.player.name : this.game.opponent;
+        const time = new Date(Date.parse(this.props.goal.time)).toTimeString().substring(0, 5);
+        const name = this.props.goal.holcombeGoal ? this.props.goal.player.name : this.props.game.opponent;
         const deleteContent = this.state.deleting
             ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>)
             : '🗑';
@@ -69,8 +67,8 @@ export class GoalOverview extends Component {
 
         return (
             <li>
-                <Score playingAtHome={this.game.playingAtHome} score={this.runningScore} /> {this.state.deleting ? (<s>{timeAndName}</s>) : timeAndName}
-                <button className="delete-goal" onClick={this.removeGoal}>{deleteContent}</button>
+                <Score playingAtHome={this.props.game.playingAtHome} score={this.props.score} /> {this.state.deleting ? (<s>{timeAndName}</s>) : timeAndName}
+                {this.props.readOnly ? null : (<button className="delete-goal" onClick={this.removeGoal}>{deleteContent}</button>)}
             </li>);
 
     }

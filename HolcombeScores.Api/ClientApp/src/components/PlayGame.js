@@ -11,7 +11,7 @@ import {Score} from "./Score";
 * - [readOnly]
 *
 * Events:
-* - onChanged(gameId, holcombeGoal, playerId)           // TODO: Rename to goalScored
+* - onGoalScored(gameId, holcombeGoal, playerId)
 * */
 // noinspection JSUnresolvedVariable
 export class PlayGame extends Component {
@@ -25,20 +25,18 @@ export class PlayGame extends Component {
         this.stopRefresh = this.stopRefresh.bind(this);
         this.onGoalScored = this.onGoalScored.bind(this);
         this.refresh = this.refresh.bind(this);
-        this.setProps();
     }
 
     // events
     async onGoalScored(holcombeGoal, playerId) {
         if (this.props.onChanged) {
-            this.props.onChanged(this.props.game.id, holcombeGoal, playerId);
+            await this.props.onGoalScored(this.props.game.id, holcombeGoal, playerId);
         }
     }
 
     // event handler
-    refresh() {
-        // noinspection JSIgnoredPromiseFromCall
-        this.onGoalScored(); // pretend a goal was scored, causing the outer component to refresh
+    async refresh() {
+        await this.onGoalScored(); // pretend a goal was scored, causing the outer component to refresh
     }
 
     stopRefresh() {
@@ -49,10 +47,11 @@ export class PlayGame extends Component {
     }
 
     componentDidMount() {
-        // noinspection JSIgnoredPromiseFromCall
-        this.setState({
-            refreshHandle: window.setInterval(this.refresh, 5000)
-        });
+        if (!this.props.readOnly) {
+            this.setState({
+                refreshHandle: window.setInterval(this.refresh, 5000)
+            });
+        }
     }
 
     componentWillUnmount() {
@@ -86,11 +85,5 @@ export class PlayGame extends Component {
         };
 
         return (<h4 className="text-center"><Score playingAtHome={this.props.game.playingAtHome} score={score} /></h4>);
-    }
-
-    setProps() {
-        if (this.props.readOnly && this.state.refreshHandle) {
-            this.stopRefresh();
-        }
     }
 }

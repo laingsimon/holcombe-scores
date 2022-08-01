@@ -5,11 +5,13 @@ import {Access} from '../api/access';
 import {TeamOverview} from "./TeamOverview";
 import {Alert} from "./Alert";
 import {EditTeam} from "./EditTeam";
+import {EditGame} from "./EditGame";
 
 /*
 * Props:
 * - teams
 * - access
+* - reloadTeams()
 *
 * Events:
 * -none-
@@ -23,7 +25,8 @@ export class Teams extends Component {
         this.state = {
             loading: true,
             error: null,
-            mode: props.match.params.mode || 'view'
+            mode: props.match.params.mode || 'view',
+            teamCreated: null
         };
         this.changeMode = this.changeMode.bind(this);
         this.onTeamCreated = this.onTeamCreated.bind(this);
@@ -42,12 +45,23 @@ export class Teams extends Component {
     }
 
     async onTeamCreated(teamId) {
-        document.location.href = `/team/${teamId}`;
+        await this.props.reloadTeams();
+        this.setState({
+            teamCreated: teamId
+        });
     }
 
     componentDidMount() {
-        // noinspection JSIgnoredPromiseFromCall
-        this.fetchTeams();
+        try {
+            if (this.props.access) {
+                this.setState({loading: false});
+            } else {
+                this.setState({loading: false, error: 'You need to request access first'});
+            }
+        } catch (e) {
+            console.error(e);
+            this.setState({loading: false, error: e.message});
+        }
     }
 
     // renderers
@@ -76,6 +90,13 @@ export class Teams extends Component {
             return (<Alert errors={[this.state.error]}/>);
         }
 
+        if (this.state.teamCreated) {
+            return (<div>
+                <Alert messages={[ 'Team created' ]}/>
+                <a className="btn btn-primary" href={`/team/${this.state.teamCreated}/edit`}>Edit players</a>
+            </div>);
+        }
+
         if (this.state.mode === 'view') {
             return this.renderTeams(this.props.teams);
         }
@@ -88,7 +109,7 @@ export class Teams extends Component {
         return (<div>
             {this.renderNav()}
             <hr/>
-            <EditTeam access={this.props.access} onChanged={this.onTeamCreated}/>
+            <EditTeam {...this.props} onCreated={this.onTeamCreated} />
         </div>);
     }
 
@@ -97,22 +118,8 @@ export class Teams extends Component {
             {this.renderNav()}
             <hr/>
             <div className="list-group">
-                {teams.map(team => <TeamOverview key={team.id} team={team} history={this.history}/>)}
+                {teams.map(team => <TeamOverview key={team.id} team={team} />)}
             </div>
         </div>);
-    }
-
-    // api access
-    async fetchTeams() {
-        try {
-            if (this.props.access) {
-                this.setState({loading: false});
-            } else {
-                this.setState({loading: false, error: 'You need tor request access first'});
-            }
-        } catch (e) {
-            console.error(e);
-            this.setState({loading: false, error: e.message});
-        }
     }
 }

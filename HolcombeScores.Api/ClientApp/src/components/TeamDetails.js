@@ -8,16 +8,18 @@ import {GameOverview} from './GameOverview';
 import {EditGame} from './EditGame';
 import {EditTeam} from './EditTeam';
 import {Alert} from './Alert';
-import {Functions} from '../functions'
 
 /*
 * Props:
 * - access
+* - team
 * - reloadTeams()
+* - reloadTeam(id, [reloadTeam, reloadPlayers, reloadGames])
 *
 * Events:
 * -none-
 * */
+// noinspection JSUnresolvedVariable
 export class TeamDetails extends Component {
     constructor(props) {
         super(props);
@@ -27,44 +29,45 @@ export class TeamDetails extends Component {
         this.accessApi = new Access(http);
         this.teamId = props.match.params.teamId;
         this.history = props.history;
+        const isAdmin = this.props.access.admin;
         this.state = {
-            loadingGames: true,
-            loadingNewGame: false,
-            games: null,
-            error: null,
-            team: null,
-            mode: props.match.params.mode || 'view'
+            error: !isAdmin && this.teamId !== this.props.access.teamId ? 'No access to team' : null,
+            mode: props.match.params.mode || 'view',
+            teamDeleted: null,
         };
-        this.onNewGameLoaded = this.onNewGameLoaded.bind(this);
         this.changeMode = this.changeMode.bind(this);
-        this.reloadGames = this.reloadGames.bind(this);
-        this.reloadTeam = this.reloadTeam.bind(this);
+        this.teamChanged = this.teamChanged.bind(this);
+        this.teamDeleted = this.teamDeleted.bind(this);
+        this.gameCreated = this.gameCreated.bind(this);
     }
 
-    componentDidMount() {
-        // noinspection JSIgnoredPromiseFromCall
-        this.fetchGames();
+    async componentDidMount() {
+        const reloadTeam = false;
+        const reloadPlayers = false;
+        const reloadGames = false;
+        await this.props.reloadTeam(this.teamId, reloadTeam, reloadPlayers, reloadGames);
     }
 
     // event handlers
-    async reloadGames() {
-        this.setState({
-            loadingGames: true,
-        });
-
-        await this.fetchGames();
+    async gameCreated() {
+        const reloadTeam = false;
+        const reloadPlayers = false;
+        const reloadGames = true;
+        await this.props.reloadTeam(this.teamId, reloadTeam, reloadPlayers, reloadGames);
     }
 
-    async reloadTeam() {
-        if (this.props.reloadTeams) {
-            this.props.reloadTeams();
-        }
+    async teamDeleted(teamId) {
+        await this.props.reloadTeams();
+        this.setState({
+            teamDeleted: teamId
+        });
     }
 
-    onNewGameLoaded() {
-        this.setState({
-            loadingNewGame: false,
-        });
+    async teamChanged() {
+        const reloadTeam = true;
+        const reloadPlayers = true;
+        const reloadGames = false;
+        await this.props.reloadTeam(this.teamId, reloadTeam, reloadPlayers, reloadGames);
     }
 
     changeMode(event) {
@@ -73,8 +76,7 @@ export class TeamDetails extends Component {
         const segments = url.split('/')
         const mode = segments[segments.length - 1];
         this.setState({
-            mode: mode,
-            loadingNewGame: mode === 'new-game',
+            mode: mode
         });
         window.history.replaceState(null, event.target.textContent, url);
     }
@@ -98,85 +100,65 @@ export class TeamDetails extends Component {
     }
 
     render() {
-        if (this.state.error) {
+        try {
+            if (!this.props.team) {
+                return (<div className="d-flex justify-content-center">
+                    <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                </div>);
+            }
+
+            if (this.state.error) {
+                return (<div>
+                    <Alert errors={[this.state.error]}/>
+                    <a className="btn btn-primary" href="/">Home</a>
+                </div>);
+            }
+
+            if (this.state.teamDeleted) {
+                return (<div>
+                    <Alert messages={['Team deleted']}/>
+                    <a className="btn btn-primary" href="/teams">View remaining teams</a>
+                </div>);
+            }
+
+            if (!this.props.access) {
+                return (<Alert warnings={["You need to login again, click on 'Home'"]}/>);
+            }
+
+            let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
+
+            if (this.state.mode === 'view') {
+                component = this.renderGames(this.props.team.games);
+            } else if (this.state.mode === 'new-game') {
+                component = (<EditGame team={this.props.team} onCreated={this.gameCreated}/>);
+            } else if (this.state.mode === 'edit') {
+                if (this.props.team.found) {
+                    component = (<EditTeam {...this.props} onChanged={this.teamChanged} onDeleted={this.teamDeleted}/>);
+                } else {
+                    component = (<div>
+                        <Alert warnings={['Team not found']}/>
+                        <a className="btn btn-primary" href="/teams">View teams</a>
+                    </div>);
+                }
+            }
+
             return (<div>
-                <Alert errors={[this.state.error]}/>
-                <a className="btn btn-primary" href="/">Home</a>
-            </div>);
-        }
-
-        if (!this.state.team) {
-            return (<div className="d-flex justify-content-center">
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>);
-        }
-
-        if (!this.props.access) {
-            return (<Alert warnings={["You need to login again, click on 'Home'"]}/>);
-        }
-
-        if (this.state.mode === 'view') {
-            return (<div>
-                <h3>{this.state.team.name}</h3>
+                {this.props.team ? (<h3>{this.props.team.name}</h3>) : null}
                 {this.renderNav()}
                 <hr/>
-                {this.renderGames(this.state.games)}
+                {component}
             </div>);
-        } else if (this.state.mode === 'new-game') {
-            return (<div>
-                <h3>{this.state.team.name}</h3>
-                {this.renderNav()}
-                <hr/>
-                <EditGame team={this.state.team} onLoaded={this.onNewGameLoaded} onChanged={this.reloadGames}/>
-            </div>);
-        } else if (this.state.mode === 'edit') {
-            return (<div>
-                <h3>{this.state.team.name}</h3>
-                {this.renderNav()}
-                <hr/>
-                <EditTeam access={this.props.access} team={this.state.team} onChanged={this.reloadTeam}/>
-            </div>);
+        } catch (e) {
+            console.error(e);
+            return (<Alert errors={[ e.message ]} />);
         }
-
-        return (<div>
-            <h3>{this.state.team.name}</h3>
-            {this.renderNav()}
-            <hr/>
-            <Alert warnings={[`Unknown mode ${this.state.mode}`]}/>
-        </div>);
     }
 
     renderGames(games) {
-        if (this.state.loadingGames) {
-            return (<div className="d-flex justify-content-center">
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>);
-        }
-
         return (<div className="list-group">
-            {games.map(g => (<GameOverview key={g.id} game={g} team={this.state.team} history={this.history}/>))}
+            {games.map(g => (<GameOverview key={g.id} game={g} team={this.props.team} />))}
         </div>);
-    }
-
-    // api access
-    async fetchGames() {
-        try {
-            const isAdmin = this.props.access.admin;
-            if (!isAdmin && this.teamId !== this.props.access.teamId) {
-                this.setState({error: 'No access to team', loadingGames: false});
-                return;
-            }
-            const games = await this.gameApi.getGames(this.teamId);
-            games.sort(Functions.gameSortFunction);
-            const team = await this.teamApi.getTeam(this.teamId);
-            this.setState({games: games, team: team, loadingGames: false});
-        } catch (e) {
-            console.error(e);
-            this.setState({loadingGames: false, error: e.message});
-        }
     }
 }

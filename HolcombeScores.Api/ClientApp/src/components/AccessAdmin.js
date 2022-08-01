@@ -62,9 +62,8 @@ export class AccessAdmin extends Component {
         window.history.replaceState(null, event.target.textContent, url);
     }
 
-    componentDidMount() {
-        // noinspection JSIgnoredPromiseFromCall
-        this.requestData();
+    async componentDidMount() {
+        await this.requestData();
         this.intervalHandle = window.setInterval(this.getCache, 1000);
         this.getCache();
     }
@@ -142,7 +141,7 @@ export class AccessAdmin extends Component {
             {this.renderNav()}
             <hr />
             <div className="list-group">
-                {this.state.allAccess.map(access => <AccessOverview key={access.userId} onAccessChanged={this.accessChanged} access={access} teams={this.state.teams}
+                {this.state.allAccess.map(access => <AccessOverview key={access.userId} onAccessChanged={this.accessChanged} onAccessRevoked={this.accessChanged} access={access} teams={this.state.teams}
                                                                     myAccess={this.props.access} />)}
             </div>
         </div>);
@@ -164,7 +163,7 @@ export class AccessAdmin extends Component {
     }
 
     renderRequest(request) {
-        return (<RequestOverview key={request.userId} request={request} teams={this.state.teams} onRequestChanged={this.requestChanged} />);
+        return (<RequestOverview key={request.userId} request={request} teams={this.state.teams} onRequestChanged={this.requestChanged} onRequestDeleted={this.requestChanged} />);
     }
 
     //api
@@ -214,6 +213,7 @@ export class AccessAdmin extends Component {
                 teams: teamsMap
             });
         } catch (e) {
+            console.error(e);
             this.setState({
                 error: e,
                 loading: false

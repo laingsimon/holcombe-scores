@@ -13,7 +13,7 @@ import {Functions} from "../functions";
 *
 * Events:
 * - onAccessChanged(userId)
-*
+* - onAccessRevoked(userId)
 */
 export class AccessOverview extends Component {
     constructor(props) {
@@ -42,9 +42,9 @@ export class AccessOverview extends Component {
     }
 
     // events
-    accessChanged() {
+    async accessChanged() {
         if (this.props.onAccessChanged) {
-            this.props.onAccessChanged(this.userId);
+            await this.props.onAccessChanged(this.userId);
         }
     }
 
@@ -93,7 +93,9 @@ export class AccessOverview extends Component {
                 processing: false
             });
 
-            this.accessChanged();
+            if (this.props.onAccessRevoked) {
+                await this.props.onAccessRevoked(this.userId);
+            }
         } else {
             alert(`Could not revoke access: ${Functions.getResultMessages(result)}`);
             this.setState({
@@ -123,7 +125,7 @@ export class AccessOverview extends Component {
                 processing: false
             });
 
-            this.accessChanged();
+            await this.accessChanged();
         } else {
             alert(`Could not change admin status: ${Functions.getResultMessages(result)}`);
             this.setState({
@@ -153,7 +155,7 @@ export class AccessOverview extends Component {
                 processing: false
             });
 
-            this.accessChanged();
+            await this.accessChanged();
         } else {
             alert(`Could not change manager status: ${Functions.getResultMessages(result)}`);
             this.setState({
@@ -178,7 +180,7 @@ export class AccessOverview extends Component {
                 processing: false
             });
 
-            this.accessChanged();
+            await this.accessChanged();
         } else {
             alert(`Could not change team: ${Functions.getResultMessages(result)}`);
             this.setState({

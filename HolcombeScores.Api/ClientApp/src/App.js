@@ -15,6 +15,7 @@ import {Access} from "./api/access";
 import {Team} from "./api/team";
 import {Functions} from "./functions";
 import {Game} from "./api/game";
+import {Player} from "./api/player";
 
 export default class App extends Component {
     constructor(props) {
@@ -23,6 +24,7 @@ export default class App extends Component {
         this.accessApi = new Access(http);
         this.teamApi = new Team(http);
         this.gameApi = new Game(http);
+        this.playerApi = new Player(http);
         this.state = {
             loading: true,
             subProps: null,
@@ -42,11 +44,27 @@ export default class App extends Component {
     async reloadGame(id) {
         const subProps = Object.assign({}, this.state.subProps);
         subProps.game = await this.gameApi.getGame(id);
-        subProps.game.asAt = new Date();
-        subProps.game.squad.sort(Functions.playerSortFunction);
+        if (subProps.game) {
+            subProps.game.found = true;
+            subProps.game.asAt = new Date();
+            subProps.game.squad.sort(Functions.playerSortFunction);
 
-        if (!subProps.team || subProps.team.id !== subProps.game.teamId) {
-            subProps.team = subProps.teams.filter(t => t.id === subProps.game.teamId)[0];
+            if (!subProps.team || subProps.team.id !== subProps.game.teamId) {
+                subProps.team = subProps.teams.filter(t => t.id === subProps.game.teamId)[0];
+
+                if (!subProps.team.players) {
+                    subProps.team.players = await this.playerApi.getPlayers(subProps.team.id);
+                    subProps.team.players.sort(Functions.playerSortFunction);
+                }
+            }
+        } else {
+            subProps.game = {
+                id: id,
+                asAt: new Date(),
+                squad: [],
+                found: false
+            };
+            subProps.team = null;
         }
 
         this.setState({
@@ -54,11 +72,41 @@ export default class App extends Component {
         });
     }
 
-    async reloadTeam(id) {
-        const teams = await this.reloadTeams();
+    async reloadTeam(id, reloadTeam, reloadPlayers, reloadGames) {
         const subProps = Object.assign({}, this.state.subProps);
-        subProps.team = teams.filter(t => t.id === id)[0];
-        subProps.team.players.sort(Functions.playerSortFunction);
+        const existingTeam = subProps.teams.filter(t => t.id === id)[0];
+        subProps.team = reloadTeam || !existingTeam ? await this.teamApi.getTeam(id) : existingTeam;
+
+        if (subProps.team) {
+            subProps.team.asAt = new Date();
+            subProps.team.found = true;
+            if (reloadPlayers || !existingTeam || !existingTeam.players) {
+                subProps.team.players = await this.playerApi.getPlayers(id);
+                subProps.team.players.sort(Functions.playerSortFunction);
+            } else {
+                subProps.team.players = existingTeam.players;
+            }
+
+            if (reloadGames || !existingTeam || !existingTeam.games) {
+                subProps.team.games = await this.gameApi.getGames(id);
+                subProps.team.games.sort(Functions.gameSortFunction);
+            } else {
+                subProps.team.games = existingTeam.games;
+            }
+
+            const replacementTeams = subProps.teams.filter(t => t.id !== subProps.team.id);
+            replacementTeams.push(subProps.team);
+            replacementTeams.sort(Functions.teamSortFunction);
+            subProps.teams = replacementTeams;
+        } else {
+            subProps.team = {
+                id: id,
+                players: [],
+                games: [],
+                found: false
+            }
+        }
+
         this.setState({
             subProps: subProps
         });
@@ -97,6 +145,7 @@ export default class App extends Component {
                 teams: teams,
                 reloadAccess: this.reloadAccess,
                 reloadTeams: this.reloadTeams,
+                reloadTeam: this.reloadTeam,
                 reloadGame: this.reloadGame
             },
             loading: false

@@ -71,7 +71,7 @@ export class EditPlayer extends Component {
                 });
 
                 if (this.props.onPlayerDeleted) {
-                    this.props.onPlayerDeleted(this.props.player.id, this.props.team.id);
+                    await this.props.onPlayerDeleted(this.props.player.id, this.props.team.id);
                 }
             } else {
                 alert(`Could not delete player: ${Functions.getResultMessages(result)}`);
@@ -112,11 +112,11 @@ export class EditPlayer extends Component {
 
                 if (this.props.player) {
                     if (this.props.onPlayerCreated) {
-                        this.props.onPlayerCreated(result.outcome.id, this.props.team.id);
+                        await this.props.onPlayerCreated(result.outcome.id, this.props.team.id);
                     }
                 } else {
                     if (this.props.onPlayerChanged) {
-                        this.props.onPlayerChanged(this.props.player.id, this.props.team.id);
+                        await this.props.onPlayerChanged(this.props.player.id, this.props.team.id);
                     }
                 }
             } else {
