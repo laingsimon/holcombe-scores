@@ -109,13 +109,13 @@ export class GameDetails extends Component {
         return (<ul className="nav nav-tabs">
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
-                   href={`/game/${this.gameId}/view`} onClick={this.changeMode}>View Game</a>
+                   href={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</a>
             </li>
-            {this.props.access.admin || this.props.access.manager ? editNav : null}
-            <li className="nav-item">
+            {(this.props.access.admin || this.props.access.manager) && !this.isReadOnly() ? editNav : null}
+            {this.isReadOnly() ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
-            </li>
+            </li>)}
         </ul>);
     }
 
@@ -146,7 +146,7 @@ export class GameDetails extends Component {
 
         let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
 
-        if (this.state.mode === 'view' || (this.isReadOnly() && this.state.mode === 'edit')) {
+        if (this.state.mode === 'view' || this.isReadOnly()) {
             component = (<ViewGame {...this.props} readOnly={this.isReadOnly()} onGoalRemoved={this.goalRemoved} />);
         } else if (this.state.mode === 'edit') {
             component = (<EditGame {...this.props} onChanged={this.gameChanged} readOnly={this.isReadOnly()} />);
