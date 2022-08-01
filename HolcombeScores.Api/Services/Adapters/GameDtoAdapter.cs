@@ -14,7 +14,7 @@ namespace HolcombeScores.Api.Services.Adapters
             _gamePlayerAdapter = gamePlayerAdapter;
         }
 
-        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals)
+        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals, bool readOnly)
         {
             if (game == null)
             {
@@ -30,7 +30,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Opponent = game.Opponent,
                 Squad = squad.Select(_gamePlayerAdapter.Adapt).ToArray(),
                 PlayingAtHome = game.PlayingAtHome,
-                ReadOnly = IsReadOnly(game)
+                ReadOnly = readOnly
             };
         }
 
@@ -49,11 +49,6 @@ namespace HolcombeScores.Api.Services.Adapters
                 PlayingAtHome = game.PlayingAtHome,
                 TeamId = game.TeamId,
             };
-        }
-
-        private static bool IsReadOnly(Game game)
-        {
-            return DateTime.UtcNow > game.Date.AddDays(2);
         }
     }
 }
