@@ -118,8 +118,8 @@ export class GameDetails extends Component {
                 <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</a>
             </li>
-            {(this.props.access.admin || this.props.access.manager) && !this.isReadOnly() ? editNav : null}
-            {this.isReadOnly() ? null : (<li className="nav-item">
+            {(this.props.access.admin || this.props.access.manager) && !this.props.game.readOnly ? editNav : null}
+            {this.props.game.readOnly ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
             </li>)}
@@ -153,12 +153,12 @@ export class GameDetails extends Component {
 
         let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
 
-        if (this.state.mode === 'view' || this.isReadOnly()) {
-            component = (<ViewGame {...this.props} readOnly={this.isReadOnly()} onGoalRemoved={this.goalRemoved} />);
+        if (this.state.mode === 'view' || this.props.game.readOnly) {
+            component = (<ViewGame {...this.props} onGoalRemoved={this.goalRemoved} />);
         } else if (this.state.mode === 'edit') {
-            component = (<EditGame {...this.props} onChanged={this.gameChanged} readOnly={this.isReadOnly()} />);
+            component = (<EditGame {...this.props} onChanged={this.gameChanged} />);
         } else if (this.state.mode === 'play') {
-            component = (<PlayGame {...this.props} readOnly={this.isReadOnly()} onGoalScored={this.goalScored} />);
+            component = (<PlayGame {...this.props} onGoalScored={this.goalScored} />);
         }
 
         return (<div>
@@ -181,14 +181,5 @@ export class GameDetails extends Component {
             {this.props.team.name}: {location} to {this.props.game.opponent} on {date.toDateString()} <Score
             playingAtHome={this.props.game.playingAtHome} score={score}/>
         </h4>);
-    }
-
-    // api access
-    isReadOnly() {
-        const date = new Date(this.props.game.date);
-        const timeDiff = this.props.game.asAt.getTime() - date.getTime();
-        const hourDiff = Math.floor(timeDiff / 1000 / 60 / 60);
-        const dayDiff = Math.floor(hourDiff / 24);
-        return dayDiff > 2;
     }
 }

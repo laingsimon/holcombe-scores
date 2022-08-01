@@ -8,7 +8,6 @@ import {Score} from "./Score";
 /*
 * Props:
 * - game
-* - [readOnly]
 *
 * Events:
 * - onGoalScored(gameId, holcombeGoal, playerId)
@@ -47,7 +46,7 @@ export class PlayGame extends Component {
     }
 
     componentDidMount() {
-        if (!this.props.readOnly) {
+        if (!this.props.game.readOnly) {
             this.setState({
                 refreshHandle: window.setInterval(this.refresh, 5000)
             });
@@ -59,15 +58,15 @@ export class PlayGame extends Component {
     }
 
     render() {
-        const notRefreshStatus = this.props.readOnly
+        const notRefreshStatus = this.props.game.readOnly
             ? 'Game over'
             : 'Not refreshing';
 
         return (<div>
             {this.renderScore()}
             <div className="d-flex flex-wrap justify-content-center score-goals-container">
-                {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} readOnly={this.props.readOnly} onGoalScored={this.onGoalScored} />))}
-                {this.props.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} readOnly={this.props.readOnly} onGoalScored={this.onGoalScored} />)}
+                {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} onGoalScored={this.onGoalScored} />))}
+                {this.props.game.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} onGoalScored={this.onGoalScored} />)}
             </div>
             <hr />
             <div className="text-center">

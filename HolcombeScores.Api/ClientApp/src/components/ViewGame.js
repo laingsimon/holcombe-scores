@@ -5,7 +5,6 @@ import {GoalOverview} from "./GoalOverview";
 /*
 * Props:
 * - game
-* - [readOnly]
 *
 * Events:
 * - onGoalRemoved(goalId, gameId)
@@ -73,7 +72,7 @@ export class ViewGame extends Component {
             runningScore.opponent++;
         }
 
-        return (<GoalOverview key={`${goal.goalId}_${runningScore.holcombe + runningScore.opponent}`} goal={goal} game={game} readOnly={this.props.readOnly} score={Object.assign({}, runningScore)} onGoalDeleted={this.goalRemoved} />);
+        return (<GoalOverview key={`${goal.goalId}_${runningScore.holcombe + runningScore.opponent}`} goal={goal} game={game} readOnly={this.props.game.readOnly} score={Object.assign({}, runningScore)} onGoalDeleted={this.goalRemoved} />);
     }
 
     renderPlayer(player) {

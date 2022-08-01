@@ -12,7 +12,6 @@ import { Link } from "react-router-dom";
 * - [game]
 * - team
 * - teamPlayers
-* - readOnly
 *
 * Events:
 * - onChanged(gameId, teamId)
@@ -27,6 +26,7 @@ export class EditGame extends Component {
         this.state = {
             loading: true,
             deleted: false,
+            readOnly: this.props.game ? this.props.game.readOnly : false,
             proposed: this.props.game ? null : this.defaultGameDetails() // the updated game details
         };
         this.valueChanged = this.valueChanged.bind(this);
@@ -193,12 +193,12 @@ export class EditGame extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">Opponent</span>
                     </div>
-                    <input readOnly={this.props.readOnly || false} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                    <input readOnly={this.state.readOnly || false} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="opponent" value={this.state.proposed.opponent} onChange={this.valueChanged}/>
                 </div>
                 <div className="input-group mb-3">
                     <div className="form-check form-switch">
-                        <input disabled={this.props.readOnly || false} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                        <input disabled={this.state.readOnly || false} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                                name="playingAtHome" checked={this.state.proposed.playingAtHome}  onChange={this.valueChanged}/>
                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Playing at home</label>
                     </div>
@@ -207,13 +207,13 @@ export class EditGame extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">📆 Date</span>
                     </div>
-                    <input readOnly={this.props.readOnly || false} type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                    <input readOnly={this.state.readOnly || false} type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
                 </div>
                 <PlayerList players={this.props.team.players} selected={this.state.proposed.players}
-                            onPlayerSelected={this.onPlayerSelected} readOnly={this.props.readOnly || false} />
+                            onPlayerSelected={this.onPlayerSelected} readOnly={this.state.readOnly || false} />
                 <hr/>
-                {this.props.readOnly ? null : (<button type="button" className="btn btn-primary"
+                {this.state.readOnly ? null : (<button type="button" className="btn btn-primary"
                         onClick={this.updateGame}>{this.props.game ? 'Update game' : 'Create game'}</button>)}
                 &nbsp;
                 {deleteButton}

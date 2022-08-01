@@ -8,7 +8,6 @@ import {Functions} from '../functions';
 * Props:
 * - [player]
 * - game
-* - [readOnly]
 *
 *
 * Events:
@@ -23,7 +22,6 @@ export class RecordGoal extends Component {
         this.state = {
             latestScorer: false
         };
-        this.readOnly = props.readOnly;
 
         this.recordGoal = this.recordGoal.bind(this);
     }
@@ -37,7 +35,7 @@ export class RecordGoal extends Component {
 
     // event handlers
     async recordGoal() {
-        if (this.readOnly) {
+        if (this.props.game.readOnly) {
             return;
         }
 
@@ -67,9 +65,9 @@ export class RecordGoal extends Component {
 
     renderHolcombeScoreButton() {
         const hasScored = this.props.game.goals.filter(g => g.holcombeGoal && g.player.id === this.props.player.id).length > 0;
-        const isLatestScorer = this.state.latestScorer || (this.readOnly && hasScored);
-        const colour = this.readOnly ? 'btn-light' : 'btn-primary';
-        const suffix = !this.readOnly || hasScored ? 'scored!' : 'played';
+        const isLatestScorer = this.state.latestScorer || (this.props.game.readOnly && hasScored);
+        const colour = this.props.game.readOnly ? 'btn-light' : 'btn-primary';
+        const suffix = !this.props.game.readOnly || hasScored ? 'scored!' : 'played';
 
         return (<button type="button" className={`btn ${isLatestScorer ? ' btn-outline-warning' : colour} btn-goal-scorer`} onClick={this.recordGoal}>
             {this.props.player.name} {suffix}
