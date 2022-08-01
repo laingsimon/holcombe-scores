@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {Http} from "../api/http";
 import {Settings} from "../api/settings";
 import {Game} from '../api/game';
@@ -7,9 +7,21 @@ import {Team} from '../api/team';
 import {Alert} from './Alert';
 import {EditGame} from "./EditGame";
 import {PlayGame} from "./PlayGame";
-import {Functions} from '../functions'
-import {GoalOverview} from "./GoalOverview";
+import {Score} from "./Score";
+import {ViewGame} from "./ViewGame";
+import { Link } from "react-router-dom";
 
+// noinspection JSUnresolvedVariable
+/*
+* Props:
+* - game
+* - team
+* - access
+* - reloadGame(gameId)
+*
+* Events:
+* -none-
+*/
 export class GameDetails extends Component {
     constructor(props) {
         super(props);
@@ -21,24 +33,49 @@ export class GameDetails extends Component {
         this.gameId = props.match.params.gameId;
         this.state = {
             loading: true,
-            game: null,
-            team: null,
             error: null,
             mode: props.match.params.mode || 'view'
         };
         this.changeMode = this.changeMode.bind(this);
+        this.goalScored = this.goalScored.bind(this);
+        this.goalRemoved = this.goalRemoved.bind(this);
         this.gameChanged = this.gameChanged.bind(this);
-        this.onGoalChanged = this.onGoalChanged.bind(this);
-
     }
 
     //event handlers
-    async onGoalChanged() {
-        await this.fetchGame(); // don't set the state to loading
+    async goalRemoved(goalId, gameId) {
+        await this.props.reloadGame(gameId); // don't set the state to loading
     }
 
-    async gameChanged() {
-        await this.fetchGame(); // don't set the state to loading
+    async gameChanged(gameId, teamId) {
+        await this.props.reloadGame(gameId); // don't set the state to loading
+    }
+
+    async goalScored(gameId, holcombeGoal, playerId) {
+        if (!gameId) {
+            // refresh
+            await this.props.reloadGame(gameId); // don't set the state to loading
+            return;
+        }
+
+        const game = Object.assign({}, this.props.game);
+        game.goals.push({
+            time: null,
+            holcombeGoal: holcombeGoal,
+            gameId: gameId,
+            player: holcombeGoal
+                ? {
+                    id: playerId,
+                    teamId: game.teamId
+                }
+                : null
+        });
+
+        this.setState({
+            game: game
+        });
+
+        await this.props.reloadGame(this.gameId); // don't set the state to loading
     }
 
     changeMode(event) {
@@ -52,25 +89,40 @@ export class GameDetails extends Component {
         window.history.replaceState(null, event.target.textContent, url);
     }
 
-    componentDidMount() {
-        // noinspection JSIgnoredPromiseFromCall
-        this.fetchGame();
+    async componentDidMount() {
+        if (this.props.game) {
+            this.setState({
+                loading: false
+            });
+            return;
+        }
+
+        if (this.gameId) {
+            await this.props.reloadGame(this.gameId);
+
+            this.setState({
+                loading: false
+            });
+        }
     }
 
     // renderers
     renderNav() {
         const editNav = <li className="nav-item">
-            <a className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} href={`/game/${this.gameId}/edit`} onClick={this.changeMode}>Edit Game</a>
+            <Link className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} to={`/game/${this.gameId}/edit`}
+               onClick={this.changeMode}>Edit Game</Link>
         </li>;
 
         return (<ul className="nav nav-tabs">
             <li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`} href={`/game/${this.gameId}/view`} onClick={this.changeMode}>View Game</a>
+                <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
+                   href={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</a>
             </li>
-            {this.state.access.access.admin || this.state.access.access.manager ? editNav : null}
-            <li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`} href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
-            </li>
+            {(this.props.access.admin || this.props.access.manager) && !this.props.game.readOnly ? editNav : null}
+            {this.props.game.readOnly ? null : (<li className="nav-item">
+                <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
+                   href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
+            </li>)}
         </ul>);
     }
 
@@ -84,143 +136,50 @@ export class GameDetails extends Component {
         }
         if (this.state.error) {
             return (<div>
-                <Alert errors={[ this.state.error ]} />
-                <a className="btn btn-primary" href="/">Home</a>
+                <Alert errors={[this.state.error]}/>
+                <Link className="btn btn-primary" to="/">Home</Link>
             </div>);
         }
-        if (!this.state.access.access) {
-            return <div>
+        if (!this.props.access) {
+            return (<div>
                 <h4>Not logged in</h4>
-                <a href="/" className="btn btn-primary">Home</a>
-            </div>
+                <Link to="/" className="btn btn-primary">Home</Link>
+            </div>)
         }
 
-        if (this.state.mode === 'view') {
-            return this.renderViewGame();
-        } else if (this.state.mode === 'edit') {
-            return this.renderEditGame();
-        } else if (this.state.mode === 'play') {
-            return this.renderPlayGame();
-        } else {
-            return (<div>
-                {this.renderHeading()}
-                {this.renderNav()}
-                <hr />
-                <Alert warnings={[ `Unknown mode ${this.state.mode}` ]} />
-            </div>);
+        if (!this.props.game) {
+            return (<Alert errors={[ 'Game not found' ]}/>);
         }
+
+        let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
+
+        if (this.state.mode === 'view' || this.props.game.readOnly) {
+            component = (<ViewGame {...this.props} onGoalRemoved={this.goalRemoved} />);
+        } else if (this.state.mode === 'edit') {
+            component = (<EditGame {...this.props} onChanged={this.gameChanged} />);
+        } else if (this.state.mode === 'play') {
+            component = (<PlayGame {...this.props} onGoalScored={this.goalScored} />);
+        }
+
+        return (<div>
+            {this.renderHeading()}
+            {this.renderNav()}
+            <hr/>
+            {component}
+        </div>)
     }
 
     renderHeading() {
-        const game = this.state.game;
-        const location = game.playingAtHome ? 'Home' : 'Away';
-        const date = new Date(Date.parse(game.date));
-        const holcombeGoals = game.goals.filter(g => g.holcombeGoal).length;
-        const opponentGoals = game.goals.filter(g => !g.holcombeGoal).length;
-        const score = game.playingAtHome
-            ? `${holcombeGoals}-${opponentGoals}`
-            : `${opponentGoals}-${holcombeGoals}`;
+        const location = this.props.game.playingAtHome ? 'Home' : 'Away';
+        const date = new Date(Date.parse(this.props.game.date));
+        const score = {
+            holcombe: this.props.game.goals.filter(g => g.holcombeGoal).length,
+            opponent: this.props.game.goals.filter(g => !g.holcombeGoal).length
+        };
 
         return (<h4>
-                {this.state.team.name}: {location} to {game.opponent} on {date.toDateString()} <span className="badge rounded-pill bg-primary">{score}</span>
-            </h4>);
-    }
-
-    renderViewGame() {
-        const game = this.state.game;
-        const date = new Date(Date.parse(game.date));
-        const runningScore = {
-            holcombe: 0,
-            opponent: 0,
-        }
-
-        game.squad.sort(Functions.playerSortFunction);
-
-        return (<div>
-            {this.renderHeading()}
-            {this.renderNav()}
-            <hr />
-            <h6>Start time: {date.toLocaleTimeString()}</h6>
-            <div>
-                <h5>Goals</h5>
-                {this.renderGoals(game, runningScore)}
-            </div>
-            <div>
-                <h5>Holcombe Players</h5>
-                <ul>
-                    {game.squad.map(p => this.renderPlayer(p))}
-                </ul>
-            </div>
-        </div>);
-    }
-
-    renderEditGame() {
-        return (<div>
-            {this.renderHeading()}
-            {this.renderNav()}
-            <hr />
-            <EditGame teamId={this.state.team.id} gameId={this.state.game.id} onChanged={this.gameChanged} />
-        </div>);
-    }
-
-    renderPlayGame() {
-        const game = this.state.game;
-        const homeTeam = game.playingAtHome ? this.state.team.name : game.opponent;
-        const awayTeam = game.playingAtHome ? game.opponent : this.state.team.name;
-
-        return (<div>
-            <h4>{homeTeam} vs {awayTeam}</h4>
-            {this.renderNav()}
-            <hr />
-            <PlayGame teamId={this.state.team.id} gameId={this.state.game.id} onChanged={this.gameChanged} />
-        </div>);
-    }
-
-    renderGoals(game, runningScore) {
-        if (game.goals.length === 0) {
-            return (<p>No goals</p>);
-        }
-
-        game.goals.map(goal => {
-            goal.jsTime = new Date(goal.time);
-            return goal;
-        });
-        game.goals.sort((a, b) => a.jsTime - b.jsTime);
-
-        return (<ol>
-            {game.goals.map(g => this.renderGoal(g, game, runningScore))}
-        </ol>);
-    }
-
-    renderGoal(goal, game, runningScore) {
-        if (goal.holcombeGoal) {
-            runningScore.holcombe++;
-        } else {
-            runningScore.opponent++;
-        }
-
-        return (<GoalOverview key={goal.goalId} goal={goal} game={game} runningScore={Object.assign({}, runningScore)} onGoalChanged={this.onGoalChanged} />);
-    }
-
-    renderPlayer(player) {
-        return (<li key={player.id}>{player.number ? (<span className="badge rounded-pill bg-primary">{player.number}</span>) : null} {player.name}</li>);
-    }
-
-    // api access
-    async fetchGame() {
-        try {
-            const game = await this.gameApi.getGame(this.gameId);
-            if (!game) {
-                this.setState({loading: false, error: 'Game not found, or no access to game' });
-                return;
-            }
-
-            const access = await this.accessApi.getMyAccess();
-            const team = await this.teamApi.getTeam(game.teamId);
-            this.setState({game: game, access:access,team: team, loading: false});
-        } catch (e) {
-            console.log(e);
-            this.setState({loading: false, error: e.message });
-        }
+            {this.props.team.name}: {location} to {this.props.game.opponent} on {date.toDateString()} <Score
+            playingAtHome={this.props.game.playingAtHome} score={score}/>
+        </h4>);
     }
 }

@@ -458,7 +458,7 @@ namespace HolcombeScores.Api.Services
                RevokedReason = null,
                TeamId = accessRequest.TeamId,
                UserId = accessRequest.UserId,
-               Token = accessRequest.Token,
+               Token = newToken,
             };
             await _accessRepository.AddAccess(newAccess);
 

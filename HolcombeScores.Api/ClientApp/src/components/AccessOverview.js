@@ -5,6 +5,16 @@ import {Access} from "../api/access";
 import {Team} from "../api/team";
 import {Functions} from "../functions";
 
+/*
+* Props:
+* - teams
+* - myAccess
+* - access
+*
+* Events:
+* - onAccessChanged(userId)
+* - onAccessRevoked(userId)
+*/
 export class AccessOverview extends Component {
     constructor(props) {
         super(props);
@@ -32,9 +42,9 @@ export class AccessOverview extends Component {
     }
 
     // events
-    accessChanged() {
+    async accessChanged() {
         if (this.props.onAccessChanged) {
-            this.props.onAccessChanged(this.userId);
+            await this.props.onAccessChanged(this.userId);
         }
     }
 
@@ -58,7 +68,7 @@ export class AccessOverview extends Component {
             return;
         }
 
-        if (this.state.access.admin && !this.myAccess.admin) {
+        if (this.props.access.admin && !this.myAccess.admin) {
             alert('Only admins can delete other admin acceses');
             return;
         }
@@ -83,7 +93,9 @@ export class AccessOverview extends Component {
                 processing: false
             });
 
-            this.accessChanged();
+            if (this.props.onAccessRevoked) {
+                await this.props.onAccessRevoked(this.userId);
+            }
         } else {
             alert(`Could not revoke access: ${Functions.getResultMessages(result)}`);
             this.setState({
@@ -113,7 +125,7 @@ export class AccessOverview extends Component {
                 processing: false
             });
 
-            this.accessChanged();
+            await this.accessChanged();
         } else {
             alert(`Could not change admin status: ${Functions.getResultMessages(result)}`);
             this.setState({
@@ -143,7 +155,7 @@ export class AccessOverview extends Component {
                 processing: false
             });
 
-            this.accessChanged();
+            await this.accessChanged();
         } else {
             alert(`Could not change manager status: ${Functions.getResultMessages(result)}`);
             this.setState({
@@ -168,7 +180,7 @@ export class AccessOverview extends Component {
                 processing: false
             });
 
-            this.accessChanged();
+            await this.accessChanged();
         } else {
             alert(`Could not change team: ${Functions.getResultMessages(result)}`);
             this.setState({

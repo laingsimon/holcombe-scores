@@ -3,7 +3,18 @@ import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
 import {Functions} from "../functions";
+import {Score} from "./Score";
 
+// noinspection JSUnresolvedVariable
+/*
+* Props:
+* - goal
+* - game
+* - score
+*
+* Events:
+* - onGoalDeleted(goalId, gameId)
+*/
 export class GoalOverview extends Component {
     constructor (props) {
         super(props);
@@ -13,24 +24,14 @@ export class GoalOverview extends Component {
             deleting: false
         }
 
-        this.goal = props.goal;
-        this.game = props.game;
-        this.runningScore = props.runningScore;
         this.removeGoal = this.removeGoal.bind(this);
-    }
-
-    // events
-    goalChanged() {
-        if (this.props.onGoalChanged) {
-            this.props.onGoalChanged(this.goal.id, this.game.id);
-        }
     }
 
     //event handlers
     async removeGoal() {
-        const detail = this.goal.holcombeGoal
-            ? this.goal.player.name
-            : this.game.opponent;
+        const detail = this.props.goal.holcombeGoal
+            ? this.props.goal.player.name
+            : this.props.game.opponent;
 
         if (!window.confirm(`Are you sure you want to remove ${detail}'s goal?`)) {
             return;
@@ -40,10 +41,12 @@ export class GoalOverview extends Component {
             deleting: true
         });
 
-        const result = await this.gameApi.removeGoal(this.game.id, this.goal.goalId);
+        const result = await this.gameApi.removeGoal(this.props.game.id, this.props.goal.goalId);
 
         if (result.success) {
-            this.goalChanged();
+            if (this.props.onGoalDeleted) {
+                await this.props.onGoalDeleted(this.props.goal.goalId, this.props.game.id);
+            }
         } else {
             alert(`Could not delete goal: ${Functions.getResultMessages(result)}`);
             this.setState({
@@ -54,28 +57,18 @@ export class GoalOverview extends Component {
 
     // renderers
     render() {
-        const time = new Date(Date.parse(this.goal.time)).toTimeString().substring(0, 5);
-        const colour = this.state.deleting
-            ? 'bg-secondary'
-            : this.goal.holcombeGoal ? 'bg-success' : 'bg-danger';
-        const name = this.goal.holcombeGoal ? this.goal.player.name : this.game.opponent;
+        const time = new Date(Date.parse(this.props.goal.time)).toTimeString().substring(0, 5);
+        const name = this.props.goal.holcombeGoal ? this.props.goal.player.name : this.props.game.opponent;
         const deleteContent = this.state.deleting
             ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>)
             : '🗑';
         const timeAndName = `${time} - ${name}`;
 
         return (
-            <li key={this.goal.goalId}>{this.renderRunningScore(this.runningScore, this.game.playingAtHome, colour)} {this.state.deleting ? (<s>{timeAndName}</s>) : timeAndName}
-                <button className="delete-goal" onClick={this.removeGoal}>{deleteContent}</button>
+            <li>
+                <Score playingAtHome={this.props.game.playingAtHome} score={this.props.score} /> {this.state.deleting ? (<s>{timeAndName}</s>) : timeAndName}
+                {this.props.game.readOnly ? null : (<button className="delete-goal" onClick={this.removeGoal}>{deleteContent}</button>)}
             </li>);
 
-    }
-
-    renderRunningScore(runningScore, playingAtHome, colour) {
-        const score = this.game.playingAtHome
-            ? `${runningScore.holcombe} - ${runningScore.opponent}`
-            : `${runningScore.opponent} - ${runningScore.holcombe}`;
-
-        return (<span className={`badge rounded-pill ${colour}`}>{score}</span>);
     }
 }

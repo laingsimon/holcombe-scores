@@ -1,10 +1,12 @@
 class Http {
     static cache = {};
+    static cacheEnabled = false;
     static timeoutSecs = 60;
-    
+
     constructor(settings) {
         this.settings = settings;
         this.cache = Http.cache;
+        this.cacheEnabled = Http.cacheEnabled;
         this.timeout = 1000 * Http.timeoutSecs;
     }
 
@@ -48,14 +50,14 @@ class Http {
             controller = 'Access';
         }
 
-        if (httpMethod === 'GET' && !bypassCache) {
+        if (httpMethod === 'GET' && !bypassCache && this.cacheEnabled) {
             const cache = this.cache[absoluteUrl];
             if (cache && cache.time + this.timeout > new Date().getTime()) {
                 cache.reads++;
                 return cache.data;
             }
         }
-        else {
+        else if (this.cacheEnabled) {
             Object.keys(this.cache).forEach(id => {
                 if (this.cache[id].controller === controller || this.cache[id].controller === controller + 's' || this.cache[id].controller + 's' === controller) {
                     delete this.cache[id];
@@ -81,7 +83,7 @@ class Http {
             .then(response => response.json())
             .catch(e => console.error("ERROR: " + e));
 
-        if (httpMethod === 'GET') {
+        if (httpMethod === 'GET' && this.cacheEnabled) {
             this.cache[absoluteUrl] = {
                 time: new Date().getTime(),
                 data: response,

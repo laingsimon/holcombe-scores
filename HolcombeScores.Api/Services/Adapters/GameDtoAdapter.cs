@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.AzureTables;
 using HolcombeScores.Api.Models.Dtos;
 
@@ -17,7 +14,7 @@ namespace HolcombeScores.Api.Services.Adapters
             _gamePlayerAdapter = gamePlayerAdapter;
         }
 
-        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals)
+        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals, bool readOnly)
         {
             if (game == null)
             {
@@ -33,6 +30,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Opponent = game.Opponent,
                 Squad = squad.Select(_gamePlayerAdapter.Adapt).ToArray(),
                 PlayingAtHome = game.PlayingAtHome,
+                ReadOnly = readOnly
             };
         }
 

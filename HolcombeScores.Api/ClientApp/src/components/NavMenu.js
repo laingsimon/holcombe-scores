@@ -2,20 +2,13 @@ import React, { Component } from 'react';
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
-import {Http} from "../api/http";
-import {Settings} from "../api/settings";
-import {Access} from "../api/access";
 
 export class NavMenu extends Component {
   constructor (props) {
     super(props);
-    const http = new Http(new Settings());
-    this.accessApi = new Access(http);
-
     this.toggleNavbar = this.toggleNavbar.bind(this);
     this.state = {
-      collapsed: true,
-      access: null
+      collapsed: true
     };
   }
 
@@ -23,13 +16,6 @@ export class NavMenu extends Component {
   toggleNavbar () {
     this.setState({
       collapsed: !this.state.collapsed
-    });
-  }
-
-  async componentDidMount() {
-    const access = await this.accessApi.getMyAccess();
-    this.setState({
-      access: access.access
     });
   }
 
@@ -46,13 +32,13 @@ export class NavMenu extends Component {
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/home/access">🏟️ Home</NavLink>
                 </NavItem>
-                {this.state.access ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to={`/team/${this.state.access.teamId}/view`}>⛹ Team</NavLink>
+                {this.props.access ? (<NavItem>
+                  <NavLink tag={Link} className="text-dark" to={`/team/${this.props.access.teamId}/view`}>⛹ Team</NavLink>
                 </NavItem>) : null}
-                {this.state.access && (this.state.access.admin) ? (<NavItem>
+                {this.props.access && (this.props.access.admin) ? (<NavItem>
                   <NavLink tag={Link} className="text-dark" to="/teams/view">🎽 Teams</NavLink>
                 </NavItem>) : null}
-                {this.state.access && (this.state.access.admin || this.state.access.manager) ? (<NavItem>
+                {this.props.access && (this.props.access.admin || this.props.access.manager) ? (<NavItem>
                   <NavLink tag={Link} className="text-dark" to="/admin/requests">⚙ Admin</NavLink>
                 </NavItem>) : null}
                 <NavItem>

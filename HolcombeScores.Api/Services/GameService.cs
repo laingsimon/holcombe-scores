@@ -1,3 +1,4 @@
+using HolcombeScores.Api.Models.AzureTables;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
 using HolcombeScores.Api.Services.Adapters;
@@ -49,7 +50,7 @@ namespace HolcombeScores.Api.Services
             {
                 var gamePlayers = await _gameRepository.GetPlayers(game.Id);
                 var goals = await _gameRepository.GetGoals(game.Id);
-                yield return await _gameDtoAdapter.Adapt(game, gamePlayers, goals);
+                yield return await _gameDtoAdapter.Adapt(game, gamePlayers, goals, IsReadOnly(game, access));
             }
         }
 
@@ -69,7 +70,7 @@ namespace HolcombeScores.Api.Services
 
             var gamePlayers = await _gameRepository.GetPlayers(game.Id);
             var goals = await _gameRepository.GetGoals(game.Id);
-            return await _gameDtoAdapter.Adapt(game, gamePlayers, goals);
+            return await _gameDtoAdapter.Adapt(game, gamePlayers, goals, IsReadOnly(game, access));
         }
 
         public async Task<ActionResultDto<GameDto>> CreateGame(GameDetailsDto gameDetailsDto)
@@ -153,6 +154,11 @@ namespace HolcombeScores.Api.Services
                 if (!await _accessService.CanAccessTeam(game.TeamId))
                 {
                     return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
+                }
+
+                if (IsReadOnly(game, await _accessService.GetAccess()))
+                {
+                    return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
                 }
 
                 var updates = new List<string>();
@@ -259,6 +265,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
             }
 
+            if (IsReadOnly(game, await _accessService.GetAccess()))
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
+            }
+
             var goal = _goalDtoAdapter.Adapt(goalDto, game);
             await _gameRepository.AddGoal(goal);
 
@@ -296,6 +307,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can update games");
             }
 
+            if (IsReadOnly(game, await _accessService.GetAccess()))
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
+            }
+
             await _gameRepository.DeleteGamePlayer(gameId, playerId);
 
             return _serviceHelper.Success("Game player deleted", await GetGame(gameId));
@@ -314,9 +330,30 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can remove goals");
             }
 
+            if (IsReadOnly(game, await _accessService.GetAccess()))
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
+            }
+
             await _gameRepository.DeleteGoal(gameId, goalId);
 
             return _serviceHelper.Success("Goal deleted", await GetGame(gameId));
+        }
+
+        private static bool IsReadOnly(Game game, AccessDto access)
+        {
+            return IsReadOnly(game.Date, access);
+        }
+
+        private static bool IsReadOnly(GameDto game, AccessDto access)
+        {
+            return IsReadOnly(game.Date, access);
+        }
+
+        private static bool IsReadOnly(DateTime gameDate, AccessDto access)
+        {
+            var expired = DateTime.UtcNow > gameDate.AddDays(2);
+            return !access.Admin && expired;
         }
     }
 }

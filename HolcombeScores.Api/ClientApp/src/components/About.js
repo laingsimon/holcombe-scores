@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from "react-router-dom";
 
 export class About extends Component {
     render() {
@@ -11,7 +12,7 @@ export class About extends Component {
             <p>This service has no affiliation with <a href="https://www.holcombeyfc.com/">Holcombe Youth Football Club</a>.</p>
             <h4>How it works</h4>
             <ol>
-                <li>Go to the <a href="/">registration page</a>, enter your name and select your team</li>
+                <li>Go to the <Link to="/">registration page</Link>, enter your name and select your team</li>
                 <li>A manager or administrator will approve your request at which point you'll be able to see the games</li>
                 <li>You can record the goals as they're scored from anywhere</li>
             </ol>

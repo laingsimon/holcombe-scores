@@ -1,34 +1,41 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
-import {Team} from '../api/team';
 import {Alert} from "./Alert";
 import {PlayerList} from "./PlayerList";
 import {Functions} from '../functions'
+import { Link } from "react-router-dom";
 
+/*
+* Props:
+* - [game]
+* - team
+* - teamPlayers
+*
+* Events:
+* - onChanged(gameId, teamId)
+* - onDeleted(gameId, teamId)
+* - onCreated(gameId, teamId)
+*/
 export class EditGame extends Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
-        this.teamApi = new Team(http);
         this.state = {
             loading: true,
-            playersLoaded: false,
             deleted: false,
-            current: null, // the current game details
-            proposed: this.props.gameId ? null : this.defaultGameDetails() // the updated game details
+            readOnly: this.props.game ? this.props.game.readOnly : false,
+            proposed: this.props.game ? null : this.defaultGameDetails() // the updated game details
         };
         this.valueChanged = this.valueChanged.bind(this);
         this.updateGame = this.updateGame.bind(this);
         this.deleteGame = this.deleteGame.bind(this);
-        this.onPlayerChanged = this.onPlayerChanged.bind(this);
-        this.onLoaded = this.onLoaded.bind(this);
+        this.onPlayerSelected = this.onPlayerSelected.bind(this);
     }
 
     componentDidMount() {
-        // noinspection JSIgnoredPromiseFromCall
         this.getGameDetails();
     }
 
@@ -47,7 +54,7 @@ export class EditGame extends Component {
         });
     }
 
-    onPlayerChanged(teamId, playerId, selected) {
+    onPlayerSelected(teamId, playerId, selected) {
         const proposedClone = Object.assign({}, this.state.proposed);
         proposedClone.players = selected
             ? Functions.union(this.state.proposed.players, playerId)
@@ -58,24 +65,8 @@ export class EditGame extends Component {
         });
     }
 
-    onLoaded() {
-        this.setState({
-            playersLoaded: true
-        });
-
-        // noinspection JSUnresolvedVariable
-        if (this.props.onLoaded) {
-            this.props.onLoaded();
-        }
-    }
-
     async updateGame() {
-        if (!this.state.playersLoaded) {
-            return;
-        }
-
         try {
-            const proposed = this.state.proposed;
             const playerIds = Object.keys(this.state.proposed.players);
 
             if (playerIds.length === 0) {
@@ -93,7 +84,7 @@ export class EditGame extends Component {
                 apiResult: null,
             });
 
-            await this.applyApiChanges(Functions.toUtcDateTime(new Date(proposed.date)), playerIds);
+            await this.applyApiChanges(Functions.toUtcDateTime(new Date(this.state.proposed.date)), playerIds);
         } catch (e) {
             console.error(e);
             this.setState({
@@ -112,7 +103,13 @@ export class EditGame extends Component {
             loading: true
         });
 
-        const result = await this.gameApi.deleteGame(this.props.gameId);
+        const result = await this.gameApi.deleteGame(this.props.game.id);
+
+        if (result.success) {
+            if (this.props.onDeleted) {
+                await this.props.onDeleted(this.props.game.id, this.props.team.id);
+            }
+        }
 
         this.setState({
             loading: false,
@@ -123,9 +120,10 @@ export class EditGame extends Component {
 
     renderGameDeleted() {
         return (<div>
-            <Alert messages={this.state.apiResult.messages} warnings={this.state.apiResult.warnings} errors={this.state.apiResult.errors} />
-            <hr />
-            <a href={`/team/${this.state.team.id}`} className="btn btn-primary">View games</a>
+            <Alert messages={this.state.apiResult.messages} warnings={this.state.apiResult.warnings}
+                   errors={this.state.apiResult.errors}/>
+            <hr/>
+            <Link to={`/team/${this.props.team.id}`} className="btn btn-primary">View games</Link>
         </div>);
     }
 
@@ -136,22 +134,16 @@ export class EditGame extends Component {
         }
 
         if (result.success) {
-            if (!this.props.gameId) {
-                document.location.href = `/game/${result.outcome.id}`;
+            if (!this.props.game.id) {
+                return (<div>
+                    <Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>
+                    <hr/>
+                    <Link to={`/game/${result.outcome.id}/play`} className="btn btn-primary">Play game</Link>
+                </div>);
             }
-
-            const openGame = this.props.gameId
-                ? null
-                : (<a href={`/game/${result.outcome.id}`} className="btn btn-primary">Open game</a>);
-
-            return (<div>
-                <Alert messages={result.messages} />
-                <hr />
-                {openGame}
-            </div>);
         }
 
-        return (<Alert messages={result.messages} warnings={result.warnings} errors={result.errors} />);
+        return (<Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>);
     }
 
     renderError(error) {
@@ -162,13 +154,13 @@ export class EditGame extends Component {
         });
 
         return (<div>
-            <Alert errors={[ error ]} />
-            <hr />
+            <Alert errors={[error]}/>
+            <hr/>
             <button type="button" className="btn btn-primary" onClick={back}>Back</button>
         </div>);
     }
 
-    render () {
+    render() {
         try {
             if (this.state.loading) {
                 return (<div className="d-flex justify-content-center">
@@ -186,11 +178,12 @@ export class EditGame extends Component {
                 return this.renderGameDeleted();
             }
 
-            if (!this.props.gameId && this.state.apiResult) {
+            if (!this.props.game && this.state.apiResult) {
+                // game created
                 return this.renderApiResult(this.state.apiResult);
             }
 
-            const deleteButton = this.props.gameId
+            const deleteButton = this.props.game
                 ? (<button className="btn btn-danger" onClick={this.deleteGame}>Delete game</button>)
                 : null;
 
@@ -200,14 +193,13 @@ export class EditGame extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">Opponent</span>
                     </div>
-                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                    <input readOnly={this.state.readOnly || false} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="opponent" value={this.state.proposed.opponent} onChange={this.valueChanged}/>
                 </div>
                 <div className="input-group mb-3">
                     <div className="form-check form-switch">
-                        <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
-                               name="playingAtHome" checked={this.state.proposed.playingAtHome}
-                               onChange={this.valueChanged}/>
+                        <input disabled={this.state.readOnly || false} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                               name="playingAtHome" checked={this.state.proposed.playingAtHome}  onChange={this.valueChanged}/>
                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Playing at home</label>
                     </div>
                 </div>
@@ -215,74 +207,75 @@ export class EditGame extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">📆 Date</span>
                     </div>
-                    <input type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                    <input readOnly={this.state.readOnly || false} type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
                 </div>
-                <PlayerList teamId={this.props.teamId} selected={this.state.proposed.players}
-                            onPlayerChanged={this.onPlayerChanged} onLoaded={this.onLoaded}/>
+                <PlayerList players={this.props.team.players} selected={this.state.proposed.players}
+                            onPlayerSelected={this.onPlayerSelected} readOnly={this.state.readOnly || false} />
                 <hr/>
-                <button type="button" className="btn btn-primary" onClick={this.updateGame}>{this.props.gameId ? 'Update game' : 'Create game'}</button>
+                {this.state.readOnly ? null : (<button type="button" className="btn btn-primary"
+                        onClick={this.updateGame}>{this.props.game ? 'Update game' : 'Create game'}</button>)}
                 &nbsp;
                 {deleteButton}
             </div>);
         } catch (e) {
             console.error(e);
-            return (<Alert errors={[ e.message ]} />);
+            return (<Alert errors={[e.message]}/>);
         }
     }
 
     // apis
-    async getGameDetails() {
-        const team = await this.teamApi.getTeam(this.props.teamId);
-        const game = this.props.gameId ? await this.gameApi.getGame(this.props.gameId) : null;
-        let proposedGame = this.state.proposed;
-        if (game) {
-            proposedGame = Object.assign({}, game);
-            proposedGame.date = Functions.toLocalDateTime(new Date(game.date));
+    getGameDetails() {
+        let proposedGame = Object.assign({}, this.props.game || {});
+        if (this.props.game) {
+            proposedGame.date = Functions.toLocalDateTime(new Date(this.props.game.date));
             proposedGame.players = {};
 
-            // noinspection JSUnresolvedVariable
             delete proposedGame.squad;
 
-            // noinspection JSUnresolvedVariable
-            game.squad.forEach(player => {
+            this.props.game.squad.forEach(player => {
                 proposedGame.players[player.id] = true;
             });
         }
 
         this.setState({
             loading: false,
-            current: game,
             proposed: proposedGame,
-            team: team
         });
     }
 
     async applyApiChanges(utcDateTime, playerIds) {
         try {
+            const game = this.props.game;
+            const team = this.props.team;
             const proposed = this.state.proposed;
-            const apiFunction = this.props.gameId
-                ? this.gameApi.updateGame.bind(this.gameApi)
-                : async (gameId, teamId, utcDateTime, opponent, playingAtHome, playerIds) => await this.gameApi.createGame(teamId, utcDateTime, opponent, playingAtHome, playerIds);
+            const apiFunction = this.props.game
+                ? async () => await this.gameApi.updateGame(game.id, team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds)
+                : async () => await this.gameApi.createGame(team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds);
 
-            const result = await apiFunction(this.props.gameId, this.props.teamId, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds);
+            const result = await apiFunction();
 
             if (result.success) {
-                this.setState({
-                    apiResult: result,
-                    current: result.outcome,
-                    loading: false
-                });
-
-                if (this.props.onChanged) {
-                    this.props.onChanged(result.outcome.id, result.outcome.teamId);
+                if (this.props.game) {
+                    if (this.props.onChanged) {
+                        await this.props.onChanged(result.outcome.id, result.outcome.teamId);
+                    }
+                } else {
+                    if (this.props.onCreated) {
+                        await this.props.onCreated(result.outcome.id, result.outcome.teamId);
+                    }
                 }
-            } else {
-                this.setState({
-                    apiResult: result,
-                    loading: false
-                });
             }
+
+            this.setState({
+                apiResult: result,
+                loading: false
+            });
+
+            this.setState({
+                apiResult: result,
+                loading: false
+            });
         } catch (e) {
             console.error(e);
             this.setState({

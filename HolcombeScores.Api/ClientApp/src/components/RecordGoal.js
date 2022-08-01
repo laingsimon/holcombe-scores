@@ -2,7 +2,18 @@ import React, { Component } from 'react';
 import {Settings} from '../api/settings';
 import {Http} from '../api/http';
 import {Game} from '../api/game';
+import {Functions} from '../functions';
 
+/*
+* Props:
+* - [player]
+* - game
+*
+*
+* Events:
+* - onGoalScored(holcombeGoal, playerId)
+* */
+// noinspection JSUnresolvedVariable
 export class RecordGoal extends Component {
     constructor(props) {
         super(props);
@@ -11,22 +22,20 @@ export class RecordGoal extends Component {
         this.state = {
             latestScorer: false
         };
-        this.readOnly = props.readOnly;
 
         this.recordGoal = this.recordGoal.bind(this);
     }
 
     // events
-    goalScored() {
+    async goalScored() {
         if (this.props.onGoalScored) {
-            this.props.onGoalScored(!!this.props.player, this.props.player ? this.props.player.id : null);
+            await this.props.onGoalScored(!!this.props.player, this.props.player ? this.props.player.id : null);
         }
     }
 
     // event handlers
     async recordGoal() {
-        if (this.readOnly) {
-            alert('Game has finished, no goals can be recorded');
+        if (this.props.game.readOnly) {
             return;
         }
 
@@ -40,12 +49,12 @@ export class RecordGoal extends Component {
             });
         }, 1500);
 
+        await this.goalScored();
         const result = await this.gameApi.recordGoal(this.props.game.id, new Date().toISOString(), !!this.props.player, this.props.player ? this.props.player.id : null);
-        if (result.success) {
-            this.goalScored();
+        if (!result.success) {
+            alert(`Could not record goal: ${Functions.getResultMessages(result)}`);
         }
     }
-
 
     // renderers
     render() {
@@ -55,10 +64,10 @@ export class RecordGoal extends Component {
     }
 
     renderHolcombeScoreButton() {
-        const hasScored = this.props.game.goals.filter(g => (g.holcombeGoal && g.player) && g.player.id === this.props.player.id).length > 0;
-        const isLatestScorer = this.state.latestScorer || (this.readOnly && hasScored);
-        const colour = this.readOnly ? 'btn-light' : 'btn-primary';
-        const suffix = !this.readOnly || hasScored ? 'scored!' : 'played';
+        const hasScored = this.props.game.goals.filter(g => g.holcombeGoal && g.player.id === this.props.player.id).length > 0;
+        const isLatestScorer = this.state.latestScorer || (this.props.game.readOnly && hasScored);
+        const colour = this.props.game.readOnly ? 'btn-light' : 'btn-primary';
+        const suffix = !this.props.game.readOnly || hasScored ? 'scored!' : 'played';
 
         return (<button type="button" className={`btn ${isLatestScorer ? ' btn-outline-warning' : colour} btn-goal-scorer`} onClick={this.recordGoal}>
             {this.props.player.name} {suffix}
