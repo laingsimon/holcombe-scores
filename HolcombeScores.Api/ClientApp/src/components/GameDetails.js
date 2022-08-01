@@ -90,7 +90,14 @@ export class GameDetails extends Component {
     }
 
     async componentDidMount() {
-        if (!this.props.game && this.gameId) {
+        if (this.props.game) {
+            this.setState({
+                loading: false
+            });
+            return;
+        }
+
+        if (this.gameId) {
             await this.props.reloadGame(this.gameId);
 
             this.setState({
