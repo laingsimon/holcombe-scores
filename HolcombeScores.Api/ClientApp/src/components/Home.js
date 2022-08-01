@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import {Settings} from '../api/settings';
 import {Http} from '../api/http';
-import {Team} from '../api/team';
 import {Access} from '../api/access';
 import {Alert} from "./Alert";
 import {EditAccess} from "./EditAccess";
 import {MyAccess} from "./MyAccess";
+import {RequestAccess} from "./RequestAccess";
 import {Functions} from "../functions";
 
 /*
@@ -25,21 +25,18 @@ export class Home extends Component {
         super(props);
         this.state = {
             loading: true,
-            request: {name: ''},
             mode: props.match.params.mode || 'access',
             recovery: {adminPassCode: ''}
         };
-        this.requestAccess = this.requestAccess.bind(this);
         this.recoverAccess = this.recoverAccess.bind(this);
-        this.requestChanged = this.requestChanged.bind(this);
         this.recoveryChanged = this.recoveryChanged.bind(this);
         this.removeError = this.removeError.bind(this);
         this.changeMode = this.changeMode.bind(this);
         this.accessDeleted = this.accessDeleted.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
+        this.requestCreated = this.requestCreated.bind(this);
         let http = new Http(new Settings());
         this.accessApi = new Access(http);
-        this.teamApi = new Team(http);
         this.history = props.history;
     }
 
@@ -49,6 +46,11 @@ export class Home extends Component {
     }
 
     //event handlers
+    async requestCreated() {
+        // noinspection JSUnresolvedFunction
+        await this.props.reloadAll();
+    }
+
     async accessDeleted() {
         // noinspection JSUnresolvedFunction
         await this.props.reloadAll();
@@ -70,20 +72,6 @@ export class Home extends Component {
         window.history.replaceState(null, event.target.textContent, url);
     }
 
-    async requestAccess() {
-        if (!this.state.request.name) {
-            alert('You must enter a name');
-            return;
-        }
-
-        if (!this.state.request.teamId) {
-            alert('You must select a team');
-            return;
-        }
-
-        await this.sendAccessRequest(this.state.request);
-    }
-
     async recoverAccess() {
         if (!this.state.recovery.adminPassCode) {
             alert('You must enter the admin pass code');
@@ -97,14 +85,6 @@ export class Home extends Component {
 
         this.setState({loading: true});
         await this.sendAccessRecovery(this.state.recovery);
-    }
-
-    requestChanged(event) {
-        let input = event.target;
-        let name = input.name;
-        let stateUpdate = {request: this.state.request};
-        stateUpdate.request[name] = input.value;
-        this.setState(stateUpdate);
     }
 
     recoveryChanged(event) {
@@ -137,24 +117,6 @@ export class Home extends Component {
         </ul>);
     }
 
-    renderTeams(teams) {
-        let setSelectedTeam = function (event) {
-            let item = event.target;
-            let id = item.getAttribute('data-id');
-            let stateUpdate = {request: this.state.request};
-            stateUpdate.request.teamId = id;
-            this.setState(stateUpdate);
-        }.bind(this);
-
-        return teams.map(team => {
-            let selected = team.id === this.state.request.teamId;
-            return (<li key={team.id} className={`list-group-item ${selected ? ' active' : ''}`} data-id={team.id}
-                        onClick={setSelectedTeam}>
-                {team.name}
-            </li>)
-        });
-    }
-
     renderRecoveryAccounts(recoveryAccounts) {
         let setSelectedAccount = function (event) {
             let item = event.target;
@@ -169,45 +131,6 @@ export class Home extends Component {
             return (<li key={recoveryAccount.recoveryId} className={className} data-id={recoveryAccount.recoveryId}
                         onClick={setSelectedAccount}>{recoveryAccount.recoveryId} {recoveryAccount.name}</li>)
         });
-    }
-
-    renderRequestAccess(access, request, teams) {
-        if (request && !access) {
-            // no access, but requested
-            return (<div>
-                {this.renderNav()}
-                <br/>
-                <p>Your access request hasn't been approved, yet...</p>
-            </div>);
-        }
-
-        if (!teams.length) {
-            return (<div>
-                {this.renderNav()}
-                <br/>
-                <p>You don't currently have access. <strong>There are no teams to request access for</strong>.</p>
-            </div>);
-        }
-
-        return (<div>
-            {this.renderNav()}
-            <br/>
-            <p>You don't currently have access, enter your details below to request access</p>
-            <div className="input-group mb-3">
-                <div className="input-group-prepend">
-                    <span className="input-group-text" id="basic-addon3">Your name</span>
-                </div>
-                <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name"
-                       value={this.state.request.name} onChange={this.requestChanged}/>
-            </div>
-
-            <p>Select your team</p>
-            <ul className="list-group">
-                {this.renderTeams(teams)}
-            </ul>
-            <hr/>
-            <button type="button" className="btn btn-primary" onClick={this.requestAccess}>Request access</button>
-        </div>);
     }
 
     renderRecoveryOptions(recoveryAccounts) {
@@ -258,7 +181,7 @@ export class Home extends Component {
             </div>);
         }
 
-        return this.renderRequestAccess(this.props.access, this.props.request, this.props.teams);
+        return <RequestAccess {...this.props} onRequestCreated={this.requestCreated} />
     }
 
     renderUpdateMode() {
@@ -303,24 +226,6 @@ export class Home extends Component {
         } catch (e) {
             console.error(e);
             this.setState({mode: 'access', error: e.message, loading: false});
-        }
-    }
-
-    async sendAccessRequest(details) {
-        this.setState({error: null, loading: true});
-        try {
-            const data = await this.accessApi.createAccessRequest(details.name, details.teamId);
-            if (data.errors && data.errors.length > 0) {
-                this.setState({error: data.errors, loading: false});
-                return;
-            }
-
-            if (this.props.reloadAccess) {
-                await this.props.reloadAccess();
-            }
-        } catch (e) {
-            console.error(e);
-            this.setState({error: e.message, loading: false});
         }
     }
 
