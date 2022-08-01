@@ -4,6 +4,7 @@ import {Http} from '../api/http';
 import {Team} from '../api/team';
 import {Access} from '../api/access';
 import {Alert} from "./Alert";
+import {EditAccess} from "./EditAccess";
 import {Functions} from "../functions";
 import { Link } from "react-router-dom";
 
@@ -26,8 +27,7 @@ export class Home extends Component {
             loading: true,
             request: {name: ''},
             mode: props.match.params.mode || 'access',
-            recovery: {adminPassCode: ''},
-            proposedAccess: {}
+            recovery: {adminPassCode: ''}
         };
         this.requestAccess = this.requestAccess.bind(this);
         this.recoverAccess = this.recoverAccess.bind(this);
@@ -35,9 +35,8 @@ export class Home extends Component {
         this.recoveryChanged = this.recoveryChanged.bind(this);
         this.removeError = this.removeError.bind(this);
         this.changeMode = this.changeMode.bind(this);
-        this.updateAccess = this.updateAccess.bind(this);
+        this.accessDeleted = this.accessDeleted.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
-        this.removeAccess = this.removeAccess.bind(this);
         let http = new Http(new Settings());
         this.accessApi = new Access(http);
         this.teamApi = new Team(http);
@@ -50,56 +49,14 @@ export class Home extends Component {
     }
 
     //event handlers
-    async removeAccess() {
-        if (!window.confirm('Are you sure you want to remove your access')) {
-            return;
-        }
-
-        this.setState({loading: true});
-
-        const result = await this.accessApi.deleteAccess(this.props.access.userId);
-
-        if (result.success) {
-            this.setState({mode: 'access'});
-            if (this.props.updateAccess) {
-                await this.props.updateAccess();
-            }
-        } else {
-            alert('Could not delete your details');
-        }
+    async accessDeleted() {
+        // noinspection JSUnresolvedFunction
+        await this.props.reloadAll();
     }
 
-    async updateAccess() {
-        if (!this.state.proposedAccess.name) {
-            alert('You need to enter a name');
-            return;
-        }
-
-        const currentAccessCopy = Object.assign({}, this.props.access);
-        const accessUpdate = Object.assign(currentAccessCopy, this.state.proposedAccess);
-
-        this.setState({loading: true});
-
-        const result = await this.accessApi.updateAccess(accessUpdate.teamId, accessUpdate.userId, accessUpdate.name, accessUpdate.admin, accessUpdate.manager);
-
-        if (result.success) {
-            if (this.props.updateAccess) {
-                await this.props.updateAccess();
-            }
-        } else {
-            alert('Could not update your access');
-        }
-    }
-
-    accessChanged(event) {
-        const name = event.target.getAttribute('name');
-        const value = event.target.value;
-        const proposedAccess = Object.assign({}, this.state.proposedAccess);
-        proposedAccess[name] = value;
-
-        this.setState({
-            proposedAccess: proposedAccess
-        });
+    async accessChanged(accessUpdate) {
+        // noinspection JSUnresolvedFunction
+        await this.props.updateAccess(accessUpdate.teamId, accessUpdate.userId, accessUpdate.name, accessUpdate.admin, accessUpdate.manager);
     }
 
     changeMode(event) {
@@ -343,17 +300,7 @@ export class Home extends Component {
         return (<div>
             {this.renderNav()}
             <br/>
-            <div className="input-group mb-3">
-                <div className="input-group-prepend">
-                    <span className="input-group-text" id="basic-addon3">Your name</span>
-                </div>
-                <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name"
-                       value={this.state.proposedAccess.name} onChange={this.accessChanged}/>
-            </div>
-            <hr/>
-            <button type="button" className="btn btn-primary" onClick={this.updateAccess}>Update details</button>
-            &nbsp;
-            <button type="button" className="btn btn-danger" onClick={this.removeAccess}>Remove access</button>
+            <EditAccess {...this.props} onAccessDeleted={this.accessDeleted} onAccessChanged={this.accessChanged} />
         </div>)
     }
 
@@ -385,7 +332,6 @@ export class Home extends Component {
             recoveryAccounts.sort(Functions.recoverySortFunction);
 
             this.setState({
-                proposedAccess: Object.assign({}, this.props.access),
                 loading: false,
                 recoveryAccounts: recoveryAccounts
             });
