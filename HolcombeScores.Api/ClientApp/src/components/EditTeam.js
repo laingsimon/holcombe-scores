@@ -7,6 +7,7 @@ import {Access} from '../api/access';
 import {Player} from '../api/player';
 import {Alert} from "./Alert";
 import {EditPlayer} from "./EditPlayer";
+import { Link } from "react-router-dom";
 
 /*
 * Props:
@@ -161,7 +162,7 @@ export class EditTeam extends Component {
             return (<div>
                 {this.renderUpdateResult(this.state.updateResult)}
                 <hr />
-                <a className="btn btn-primary" href="/teams">View teams</a>
+                <Link className="btn btn-primary" to="/teams">View teams</Link>
             </div>);
         }
 

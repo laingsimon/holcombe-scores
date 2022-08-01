@@ -6,6 +6,7 @@ import {TeamOverview} from "./TeamOverview";
 import {Alert} from "./Alert";
 import {EditTeam} from "./EditTeam";
 import {EditGame} from "./EditGame";
+import { Link } from "react-router-dom";
 
 /*
 * Props:
@@ -93,7 +94,7 @@ export class Teams extends Component {
         if (this.state.teamCreated) {
             return (<div>
                 <Alert messages={[ 'Team created' ]}/>
-                <a className="btn btn-primary" href={`/team/${this.state.teamCreated}/edit`}>Edit players</a>
+                <Link className="btn btn-primary" to={`/team/${this.state.teamCreated}/edit`}>Edit players</Link>
             </div>);
         }
 

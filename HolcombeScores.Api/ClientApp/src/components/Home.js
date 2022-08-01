@@ -5,6 +5,7 @@ import {Team} from '../api/team';
 import {Access} from '../api/access';
 import {Alert} from "./Alert";
 import {Functions} from "../functions";
+import { Link } from "react-router-dom";
 
 /*
 * Props:
@@ -225,7 +226,7 @@ export class Home extends Component {
             <br/>
             Hello <strong>{access.name}</strong>, you have access to <strong>{this.renderTeam(team)}</strong>
             <br/>
-            <a href={`/team/${team.id}/view`} className="btn btn-primary">View Games</a>
+            <Link to={`/team/${team.id}/view`} className="btn btn-primary">View Games</Link>
         </div>);
     }
 

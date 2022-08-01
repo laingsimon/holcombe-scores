@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Score} from "./Score";
+import { Link } from "react-router-dom";
 
 /*
 * Props:
@@ -22,9 +23,9 @@ export class GameOverview extends Component {
             opponent: opponent
         };
 
-        return (<a href={`/game/${game.id}`} className="list-group-item d-flex justify-content-between align-items-center">
+        return (<Link to={`/game/${game.id}`} className="list-group-item d-flex justify-content-between align-items-center">
             {location} to {game.opponent} on {date.toDateString()}
             <Score playingAtHome={game.playingAtHome} score={score} />
-        </a>);
+        </Link>);
     }
 }

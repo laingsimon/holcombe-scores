@@ -9,6 +9,7 @@ import {EditGame} from "./EditGame";
 import {PlayGame} from "./PlayGame";
 import {Score} from "./Score";
 import {ViewGame} from "./ViewGame";
+import { Link } from "react-router-dom";
 
 // noinspection JSUnresolvedVariable
 /*
@@ -101,8 +102,8 @@ export class GameDetails extends Component {
     // renderers
     renderNav() {
         const editNav = <li className="nav-item">
-            <a className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} href={`/game/${this.gameId}/edit`}
-               onClick={this.changeMode}>Edit Game</a>
+            <Link className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} to={`/game/${this.gameId}/edit`}
+               onClick={this.changeMode}>Edit Game</Link>
         </li>;
 
         return (<ul className="nav nav-tabs">
@@ -129,13 +130,13 @@ export class GameDetails extends Component {
         if (this.state.error) {
             return (<div>
                 <Alert errors={[this.state.error]}/>
-                <a className="btn btn-primary" href="/">Home</a>
+                <Link className="btn btn-primary" to="/">Home</Link>
             </div>);
         }
         if (!this.props.access) {
             return (<div>
                 <h4>Not logged in</h4>
-                <a href="/" className="btn btn-primary">Home</a>
+                <Link to="/" className="btn btn-primary">Home</Link>
             </div>)
         }
 

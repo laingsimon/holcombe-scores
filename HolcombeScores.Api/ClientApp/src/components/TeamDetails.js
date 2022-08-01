@@ -8,6 +8,7 @@ import {GameOverview} from './GameOverview';
 import {EditGame} from './EditGame';
 import {EditTeam} from './EditTeam';
 import {Alert} from './Alert';
+import { Link } from "react-router-dom";
 
 /*
 * Props:
@@ -112,14 +113,14 @@ export class TeamDetails extends Component {
             if (this.state.error) {
                 return (<div>
                     <Alert errors={[this.state.error]}/>
-                    <a className="btn btn-primary" href="/">Home</a>
+                    <Link className="btn btn-primary" to="/">Home</Link>
                 </div>);
             }
 
             if (this.state.teamDeleted) {
                 return (<div>
                     <Alert messages={['Team deleted']}/>
-                    <a className="btn btn-primary" href="/teams">View remaining teams</a>
+                    <Link className="btn btn-primary" to="/teams">View remaining teams</Link>
                 </div>);
             }
 
@@ -139,7 +140,7 @@ export class TeamDetails extends Component {
                 } else {
                     component = (<div>
                         <Alert warnings={['Team not found']}/>
-                        <a className="btn btn-primary" href="/teams">View teams</a>
+                        <Link className="btn btn-primary" to="/teams">View teams</Link>
                     </div>);
                 }
             }

@@ -5,6 +5,7 @@ import {Game} from '../api/game';
 import {Alert} from "./Alert";
 import {PlayerList} from "./PlayerList";
 import {Functions} from '../functions'
+import { Link } from "react-router-dom";
 
 /*
 * Props:
@@ -122,7 +123,7 @@ export class EditGame extends Component {
             <Alert messages={this.state.apiResult.messages} warnings={this.state.apiResult.warnings}
                    errors={this.state.apiResult.errors}/>
             <hr/>
-            <a href={`/team/${this.props.team.id}`} className="btn btn-primary">View games</a>
+            <Link to={`/team/${this.props.team.id}`} className="btn btn-primary">View games</Link>
         </div>);
     }
 
@@ -137,7 +138,7 @@ export class EditGame extends Component {
                 return (<div>
                     <Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>
                     <hr/>
-                    <a href={`/game/${result.outcome.id}/play`} className="btn btn-primary">Play game</a>
+                    <Link to={`/game/${result.outcome.id}/play`} className="btn btn-primary">Play game</Link>
                 </div>);
             }
         }
