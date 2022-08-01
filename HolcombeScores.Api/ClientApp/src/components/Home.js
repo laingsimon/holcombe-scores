@@ -5,8 +5,8 @@ import {Team} from '../api/team';
 import {Access} from '../api/access';
 import {Alert} from "./Alert";
 import {EditAccess} from "./EditAccess";
+import {MyAccess} from "./MyAccess";
 import {Functions} from "../functions";
-import { Link } from "react-router-dom";
 
 /*
 * Props:
@@ -155,10 +155,6 @@ export class Home extends Component {
         });
     }
 
-    renderTeam(team) {
-        return (<span><strong>{team.name}</strong> (Coach {team.coach})</span>);
-    }
-
     renderRecoveryAccounts(recoveryAccounts) {
         let setSelectedAccount = function (event) {
             let item = event.target;
@@ -173,35 +169,6 @@ export class Home extends Component {
             return (<li key={recoveryAccount.recoveryId} className={className} data-id={recoveryAccount.recoveryId}
                         onClick={setSelectedAccount}>{recoveryAccount.recoveryId} {recoveryAccount.name}</li>)
         });
-    }
-
-    renderAccess(access, teams) {
-        // access granted
-        let team = teams.filter(t => t.id === access.teamId)[0];
-        return (<div>
-            {this.renderNav()}
-            <br/>
-            Hello <strong>{access.name}</strong>, you have access to <strong>{this.renderTeam(team)}</strong>
-            <br/>
-            <Link to={`/team/${team.id}/view`} className="btn btn-primary">View Games</Link>
-        </div>);
-    }
-
-    renderAccessRejected(request) {
-        return (<div>
-            {this.renderNav()}
-            <br/>
-            <p>Sorry, {request.name}, your access request was rejected.</p>
-            <p>Reason: <b>{request.reason ? request.reason : 'No reason given'}</b></p>
-        </div>);
-    }
-
-    renderAccessPending() {
-        return (<div>
-            {this.renderNav()}
-            <br/>
-            <p>Your access request hasn't been approved, yet...</p>
-        </div>);
     }
 
     renderRequestAccess(access, request, teams) {
@@ -283,14 +250,12 @@ export class Home extends Component {
     }
 
     renderAccessMode() {
-        if (this.props.access) {
-            return this.renderAccess(this.props.access, this.props.teams);
-        }
-        if (this.props.request && this.props.request.rejected) {
-            return this.renderAccessRejected(this.props.request);
-        }
-        if (this.props.request && !this.props.access) {
-            return this.renderAccessPending();
+        if (this.props.access || this.props.request) {
+            return (<div>
+                {this.renderNav()}
+                <br/>
+                <MyAccess {...this.props} />
+            </div>);
         }
 
         return this.renderRequestAccess(this.props.access, this.props.request, this.props.teams);
