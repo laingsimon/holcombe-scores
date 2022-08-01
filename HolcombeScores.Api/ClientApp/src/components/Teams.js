@@ -5,7 +5,6 @@ import {Access} from '../api/access';
 import {TeamOverview} from "./TeamOverview";
 import {Alert} from "./Alert";
 import {EditTeam} from "./EditTeam";
-import {EditGame} from "./EditGame";
 import { Link } from "react-router-dom";
 
 /*

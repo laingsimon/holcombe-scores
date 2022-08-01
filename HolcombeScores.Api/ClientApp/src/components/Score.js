@@ -9,10 +9,6 @@ import React, { Component } from 'react';
 * -none-
 * */
 export class Score extends Component {
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         const score = this.props.playingAtHome
             ? `${this.props.score.holcombe}-${this.props.score.opponent}`
