@@ -6,6 +6,14 @@ import {TeamOverview} from "./TeamOverview";
 import {Alert} from "./Alert";
 import {EditTeam} from "./EditTeam";
 
+/*
+* Props:
+* - teams
+* - access
+*
+* Events:
+* -none-
+* */
 export class Teams extends Component {
     constructor(props) {
         super(props);

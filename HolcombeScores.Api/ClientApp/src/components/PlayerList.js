@@ -4,6 +4,16 @@ import {Settings} from "../api/settings";
 import {Player} from "../api/player";
 import {Functions} from '../functions'
 
+/*
+* Props:
+* - selected
+* - teamId
+* -
+*
+* Events
+* - onPlayerSelected(teamId, playerId, selected)
+* - onLoaded()
+* */
 export class PlayerList extends Component {
     constructor(props) {
         super(props);
@@ -33,7 +43,7 @@ export class PlayerList extends Component {
         this.setState({
             selected: newSelected
         });
-        this.props.onPlayerChanged(this.props.teamId, playerId, !currentlySelected);
+        this.props.onPlayerSelected(this.props.teamId, playerId, !currentlySelected);
     }
 
     // renderers

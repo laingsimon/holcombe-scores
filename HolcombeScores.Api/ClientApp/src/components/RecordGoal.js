@@ -4,6 +4,16 @@ import {Http} from '../api/http';
 import {Game} from '../api/game';
 import {Functions} from '../functions';
 
+/*
+* Props:
+* - [player]
+* - game
+* - [readOnly]
+*
+*
+* Events:
+* - onGoalScored(holcombeGoal, playerId)
+* */
 // noinspection JSUnresolvedVariable
 export class RecordGoal extends Component {
     constructor(props) {

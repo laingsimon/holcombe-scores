@@ -7,6 +7,14 @@ import {Alert} from "./Alert";
 import {AccessOverview} from "./AccessOverview";
 import {RequestOverview} from "./RequestOverview";
 
+/*
+* Props:
+* - access
+* - teams
+*
+* Events:
+* -none-
+*/
 export class AccessAdmin extends Component {
     constructor (props) {
         super(props);

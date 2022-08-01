@@ -5,6 +5,14 @@ import {Game} from '../api/game';
 import {RecordGoal} from './RecordGoal';
 import {Score} from "./Score";
 
+/*
+* Props:
+* - game
+* - [readOnly]
+*
+* Events:
+* - onChanged(gameId, holcombeGoal, playerId)           // TODO: Rename to goalScored
+* */
 // noinspection JSUnresolvedVariable
 export class PlayGame extends Component {
     constructor(props) {

@@ -1,5 +1,14 @@
 import React, { Component } from 'react';
 
+/*
+* Props:
+* - [messages]
+* - [warnings]
+* - [errors]
+*
+* Events:
+* -none-
+* */
 export class Alert extends Component {
     render() {
         return (<div>

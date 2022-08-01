@@ -4,6 +4,14 @@ import {Settings} from "../api/settings";
 import {Access} from "../api/access";
 import {Functions} from "../functions";
 
+/*
+* Props:
+* - request
+* - teams
+*
+* Events:
+* - onRequestChanged(userId)
+* */
 export class RequestOverview extends Component {
     constructor (props) {
         super(props);

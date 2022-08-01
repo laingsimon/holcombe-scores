@@ -1,6 +1,15 @@
 import React, { Component } from 'react';
 import {Score} from "./Score";
 
+/*
+* Props:
+* - game
+* - team
+* - showTeam        // TODO: Is this ever set/used?
+*
+* Events:
+* -none-
+* */
 export class GameOverview extends Component {
     constructor(props) {
         super(props);
@@ -12,25 +21,26 @@ export class GameOverview extends Component {
 
     // renderers
     render() {
-        const location = this.game.playingAtHome ? 'Home' : 'Away';
-        const date = new Date(Date.parse(this.game.date));
-        const holcombe = this.game.goals.filter(g => g.holcombeGoal).length;
-        const opponent = this.game.goals.filter(g => !g.holcombeGoal).length;
+        const game = this.props.game;
+        const location = game.playingAtHome ? 'Home' : 'Away';
+        const date = new Date(Date.parse(game.date));
+        const holcombe = game.goals.filter(g => g.holcombeGoal).length;
+        const opponent = game.goals.filter(g => !g.holcombeGoal).length;
         const score = {
             holcombe: holcombe,
             opponent: opponent
         };
 
-        return (<a href={`/game/${this.game.id}`} className="list-group-item d-flex justify-content-between align-items-center">
-            {this.renderTeam()} {this.showTeam ? location : location.toLowerCase()} to {this.game.opponent} on {date.toDateString()}
-            <Score playingAtHome={this.game.playingAtHome} score={score} />
+        return (<a href={`/game/${game.id}`} className="list-group-item d-flex justify-content-between align-items-center">
+            {this.renderTeam()} {this.props.showTeam ? location : location.toLowerCase()} to {game.opponent} on {date.toDateString()}
+            <Score playingAtHome={game.playingAtHome} score={score} />
         </a>);
     }
 
     renderTeam() {
-        if (!this.showTeam) {
+        if (!this.props.showTeam) {
             return null;
         }
-        return (<strong>{this.team.name}</strong>);
+        return (<strong>{this.props.team.name}</strong>);
     }
 }

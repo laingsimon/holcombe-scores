@@ -10,6 +10,14 @@ import {EditTeam} from './EditTeam';
 import {Alert} from './Alert';
 import {Functions} from '../functions'
 
+/*
+* Props:
+* - access
+* - reloadTeams()
+*
+* Events:
+* -none-
+* */
 export class TeamDetails extends Component {
     constructor(props) {
         super(props);

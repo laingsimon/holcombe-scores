@@ -1,5 +1,13 @@
 import React, { Component } from 'react';
 
+/*
+* Props:
+* - playingAtHome
+* - score
+*
+* Events:
+* -none-
+* */
 export class Score extends Component {
     constructor(props) {
         super(props);

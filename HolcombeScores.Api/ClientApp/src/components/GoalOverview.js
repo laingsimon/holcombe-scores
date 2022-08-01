@@ -6,6 +6,15 @@ import {Functions} from "../functions";
 import {Score} from "./Score";
 
 // noinspection JSUnresolvedVariable
+/*
+* Props:
+* - goal
+* - game
+* - score
+*
+* Events:
+* - onGoalDeleted(goalId, gameId)
+*/
 export class GoalOverview extends Component {
     constructor (props) {
         super(props);
@@ -19,13 +28,6 @@ export class GoalOverview extends Component {
         this.game = props.game;
         this.runningScore = props.score;
         this.removeGoal = this.removeGoal.bind(this);
-    }
-
-    // events
-    goalChanged() {
-        if (this.props.onGoalChanged) {
-            this.props.onGoalChanged(this.goal.goalId, this.game.id);
-        }
     }
 
     //event handlers
@@ -45,7 +47,9 @@ export class GoalOverview extends Component {
         const result = await this.gameApi.removeGoal(this.game.id, this.goal.goalId);
 
         if (result.success) {
-            this.goalChanged();
+            if (this.props.onGoalDeleted) {
+                this.props.onGoalDeleted(this.goal.goalId, this.game.id);
+            }
         } else {
             alert(`Could not delete goal: ${Functions.getResultMessages(result)}`);
             this.setState({

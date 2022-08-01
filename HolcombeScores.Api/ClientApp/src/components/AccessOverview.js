@@ -5,6 +5,16 @@ import {Access} from "../api/access";
 import {Team} from "../api/team";
 import {Functions} from "../functions";
 
+/*
+* Props:
+* - teams
+* - myAccess
+* - access
+*
+* Events:
+* - onAccessChanged(userId)
+*
+*/
 export class AccessOverview extends Component {
     constructor(props) {
         super(props);
@@ -58,7 +68,7 @@ export class AccessOverview extends Component {
             return;
         }
 
-        if (this.state.access.admin && !this.myAccess.admin) {
+        if (this.props.access.admin && !this.myAccess.admin) {
             alert('Only admins can delete other admin acceses');
             return;
         }

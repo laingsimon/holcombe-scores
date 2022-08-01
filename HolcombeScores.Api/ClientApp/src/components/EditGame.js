@@ -31,7 +31,7 @@ export class EditGame extends Component {
         this.valueChanged = this.valueChanged.bind(this);
         this.updateGame = this.updateGame.bind(this);
         this.deleteGame = this.deleteGame.bind(this);
-        this.onPlayerChanged = this.onPlayerChanged.bind(this);
+        this.onPlayerSelected = this.onPlayerSelected.bind(this);
         this.onLoaded = this.onLoaded.bind(this);
     }
 
@@ -54,7 +54,7 @@ export class EditGame extends Component {
         });
     }
 
-    onPlayerChanged(teamId, playerId, selected) {
+    onPlayerSelected(teamId, playerId, selected) {
         const proposedClone = Object.assign({}, this.state.proposed);
         proposedClone.players = selected
             ? Functions.union(this.state.proposed.players, playerId)
@@ -227,7 +227,7 @@ export class EditGame extends Component {
                            name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
                 </div>
                 <PlayerList teamId={this.props.team.id} selected={this.state.proposed.players}
-                            onPlayerChanged={this.onPlayerChanged} onLoaded={this.onLoaded}/>
+                            onPlayerSelected={this.onPlayerSelected} onLoaded={this.onLoaded}/>
                 <hr/>
                 <button type="button" className="btn btn-primary"
                         onClick={this.updateGame}>{this.props.game ? 'Update game' : 'Create game'}</button>

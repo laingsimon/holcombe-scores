@@ -6,6 +6,17 @@ import {Access} from '../api/access';
 import {Alert} from "./Alert";
 import {Functions} from "../functions";
 
+/*
+* Props:
+* - access
+* - request
+* - teams
+* - updateAccess()
+* - reloadAccess()
+*
+* Events:
+* -none-
+* */
 // noinspection JSUnresolvedVariable
 export class Home extends Component {
     constructor(props) {

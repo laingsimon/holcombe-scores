@@ -2,6 +2,14 @@ import React, { Component } from 'react';
 import {Functions} from '../functions'
 import {GoalOverview} from "./GoalOverview";
 
+/*
+* Props:
+* - game
+* - [readOnly]
+*
+* Events:
+* - onGoalRemoved(goalId, gameId)
+* */
 // noinspection JSUnresolvedVariable
 export class ViewGame extends Component {
     constructor(props) {
@@ -9,16 +17,11 @@ export class ViewGame extends Component {
         this.onGoalChanged = this.onGoalChanged.bind(this);
     }
 
-    // events
-    goalRemoved(goalId, gameId) {
+    // event handlers
+    onGoalChanged(goalId, gameId) {
         if (this.props.onGoalRemoved) {
             this.props.onGoalRemoved(goalId, gameId);
         }
-    }
-
-    // event handlers
-    onGoalChanged(goalId, gameId) {
-        this.goalRemoved(goalId, gameId);
     }
 
     // renderers

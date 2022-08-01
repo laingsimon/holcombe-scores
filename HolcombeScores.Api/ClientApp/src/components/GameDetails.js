@@ -16,9 +16,10 @@ import {ViewGame} from "./ViewGame";
 * - game
 * - team
 * - access
+* - reloadGame(gameId)
 *
 * Events:
-*
+* -none-
 */
 export class GameDetails extends Component {
     constructor(props) {
