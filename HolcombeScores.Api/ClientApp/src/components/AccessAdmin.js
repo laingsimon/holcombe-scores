@@ -25,6 +25,7 @@ export class AccessAdmin extends Component {
             loading: true,
             error: null,
             mode: props.match.params.mode || 'requests',
+            teams: {},
             requests: null,
             allAccess: null,
             processing: [],
@@ -140,11 +141,20 @@ export class AccessAdmin extends Component {
         return (<div>
             {this.renderNav()}
             <hr />
+            <h5>Active</h5>
             <div className="list-group">
-                {this.state.allAccess.map(access => <AccessOverview key={access.userId} onAccessChanged={this.accessChanged} onAccessRevoked={this.accessChanged} access={access} teams={this.state.teams}
-                                                                    myAccess={this.props.access} />)}
+                {this.state.allAccess.filter(a => !a.revoked).map(access => this.renderAccessOverview(access))}
+            </div>
+            <h5>Canceled</h5>
+            <div className="list-group">
+                {this.state.allAccess.filter(a => a.revoked).map(access => this.renderAccessOverview(access))}
             </div>
         </div>);
+    }
+
+    renderAccessOverview(access) {
+        return (<AccessOverview key={access.userId} onAccessChanged={this.accessChanged} onAccessRevoked={this.accessChanged} access={access} teams={this.state.teams}
+                        myAccess={this.props.access} />);
     }
 
     renderRequests() {

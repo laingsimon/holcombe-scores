@@ -55,7 +55,7 @@ export class AccessOverview extends Component {
         });
     }
 
-    prepareCancelAccess() {
+    async prepareCancelAccess() {
         if (this.state.mode === 'cancel') {
             this.setState({
                 mode: 'view'
@@ -71,6 +71,33 @@ export class AccessOverview extends Component {
         if (this.props.access.admin && !this.myAccess.admin) {
             alert('Only admins can delete other admin acceses');
             return;
+        }
+
+        if (this.props.access.revoked)
+        {
+            if (!window.confirm('Are you sure you want to DELETE this access')) {
+                return;
+            }
+
+            this.setState({
+                processing: true
+            });
+
+            const result = await this.accessApi.deleteAccess(this.userId);
+            if (result.success) {
+                this.setState({
+                    processing: false
+                });
+
+                if (this.props.onAccessRevoked) {
+                    await this.props.onAccessRevoked(this.userId);
+                }
+            } else {
+                alert(`Could not revoke access: ${Functions.getResultMessages(result)}`);
+                this.setState({
+                    processing: false
+                });
+            }
         }
 
         this.setState({
@@ -200,21 +227,21 @@ export class AccessOverview extends Component {
         return (<div key={this.userId} className="list-group-item list-group-item-action flex-column align-items-start">
             <span>
                 <strong>{this.state.access.name}</strong>,
-                Team: <select value={this.state.access.teamId} onChange={this.changeTeam}>
+                Team: {this.props.access.revoked ? this.teams[this.props.access.teamId].name : (<select value={this.state.access.teamId} onChange={this.changeTeam}>
                 {Object.keys(this.teams).map(teamId => <option value={teamId} key={teamId}>{this.teams[teamId].name}</option>)}
-                </select>
+                </select>)}
             </span>
             <span className="float-end">
-                {this.myAccess.admin ? (<span className="form-check form-switch form-check-inline">
+                {this.myAccess.admin && !this.props.access.revoked ? (<span className="form-check form-switch form-check-inline">
                     <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                            checked={this.state.access.admin} onChange={this.adminChanged}/>
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Admin</label>
                 </span>) : null}
-                <span className="form-check form-switch form-check-inline">
+                {!this.props.access.revoked ? (<span className="form-check form-switch form-check-inline">
                     <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                            checked={this.state.access.manager} onChange={this.managerChanged}/>
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Manager</label>
-                </span>
+                </span>): null}
                 &nbsp;
                 <button type="button"
                         className={`btn ${btnClassName}`}
