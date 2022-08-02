@@ -158,8 +158,12 @@ export class TeamDetails extends Component {
     }
 
     renderGames(games) {
+        if (!games) {
+            return (<div>Loading</div>);
+        }
+
         return (<div className="list-group">
-            {games.map(g => (<GameOverview key={g.id} game={g} team={this.props.team} />))}
+            {games.map(g => (<GameOverview reloadGame={this.props.reloadGame} history={this.props.history} key={g.id} game={g} team={this.props.team} />))}
         </div>);
     }
 }

@@ -118,7 +118,7 @@ export class Teams extends Component {
             {this.renderNav()}
             <hr/>
             <div className="list-group">
-                {teams.map(team => <TeamOverview key={team.id} team={team} />)}
+                {teams.map(team => <TeamOverview reloadTeam={this.props.reloadTeam} history={this.props.history} key={team.id} team={team} />)}
             </div>
         </div>);
     }
