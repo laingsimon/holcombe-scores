@@ -14,6 +14,8 @@ import {Score} from "./Score";
 * */
 // noinspection JSUnresolvedVariable
 export class PlayGame extends Component {
+    static REFRESH_INTERVAL = 5000;
+
     constructor(props) {
         super(props);
         const http = new Http(new Settings());
@@ -28,14 +30,20 @@ export class PlayGame extends Component {
 
     // events
     async onGoalScored(holcombeGoal, playerId) {
-        if (this.props.onChanged) {
+        if (this.props.onGoalScored) {
             await this.props.onGoalScored(this.props.game.id, holcombeGoal, playerId);
         }
     }
 
     // event handler
     async refresh() {
-        await this.onGoalScored(); // pretend a goal was scored, causing the outer component to refresh
+        const now = new Date().getTime();
+        const asAt = this.props.game.asAt.getTime();
+        const diff = now - asAt;
+
+        if (diff > (PlayGame.REFRESH_INTERVAL)) { // half the refresh interval
+            await this.props.reloadGame(this.props.game.id);
+        }
     }
 
     stopRefresh() {
@@ -48,7 +56,7 @@ export class PlayGame extends Component {
     componentDidMount() {
         if (!this.props.game.readOnly) {
             this.setState({
-                refreshHandle: window.setInterval(this.refresh, 5000)
+                refreshHandle: window.setInterval(this.refresh, PlayGame.REFRESH_INTERVAL)
             });
         }
     }

@@ -66,24 +66,20 @@ export class GameDetails extends Component {
             return;
         }
 
-        const game = Object.assign({}, this.props.game);
-        game.goals.push({
-            time: null,
+        this.props.game.goals.push({
+            time: new Date().toISOString(),
             holcombeGoal: holcombeGoal,
             gameId: gameId,
             player: holcombeGoal
                 ? {
                     id: playerId,
-                    teamId: game.teamId
+                    teamId: this.props.game.teamId
                 }
-                : null
+                : null,
+            local: true
         });
 
-        this.setState({
-            game: game
-        });
-
-        await this.props.reloadGame(this.gameId); // don't set the state to loading
+        await this.props.updateGame(this.props.game); // will also trigger a reload
     }
 
     changeMode(event) {

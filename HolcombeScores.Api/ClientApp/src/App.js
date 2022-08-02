@@ -35,10 +35,28 @@ export default class App extends Component {
         this.reloadGame = this.reloadGame.bind(this);
         this.reloadTeam = this.reloadTeam.bind(this);
         this.combineProps = this.combineProps.bind(this);
+        this.updateGame = this.updateGame.bind(this);
     }
 
     async componentDidMount() {
         await this.reloadAll();
+    }
+
+    async updateGame(game) {
+        const subProps = Object.assign({}, this.state.subProps);
+        if (subProps.game && subProps.game.id === game.id) {
+            subProps.game = game;
+        }
+        if (subProps.team != null && subProps.team.id === game.teamId && subProps.team.games) {
+            const teamGames = subProps.team.games.filter(g => g.id !== game.id);
+            teamGames.push(game);
+            teamGames.sort(Functions.gameSortFunction);
+            subProps.team.games = teamGames;
+        }
+
+        this.setState({
+            subProps: subProps
+        });
     }
 
     async reloadGame(id) {
@@ -147,7 +165,8 @@ export default class App extends Component {
                 reloadTeams: this.reloadTeams,
                 reloadTeam: this.reloadTeam,
                 reloadGame: this.reloadGame,
-                reloadAll: this.reloadAll
+                reloadAll: this.reloadAll,
+                updateGame: this.updateGame
             },
             loading: false
         });
