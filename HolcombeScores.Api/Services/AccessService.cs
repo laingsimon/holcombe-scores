@@ -107,12 +107,13 @@ namespace HolcombeScores.Api.Services
 
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
         {
-            if (!await IsManagerOrAdmin())
+            var myAccess = await GetAccess();
+            if (!myAccess.Admin && !myAccess.Manager)
             {
                 yield break;
             }
 
-            await foreach (var access in _accessRepository.GetAllAccess())
+            await foreach (var access in _accessRepository.GetAllAccess(myAccess.Admin ? null : myAccess.TeamId))
             {
                 yield return _accessDtoAdapter.Adapt(access);
             }
@@ -224,12 +225,13 @@ namespace HolcombeScores.Api.Services
 
         public async IAsyncEnumerable<AccessRequestDto> GetAccessRequests()
         {
-            if (!await IsManagerOrAdmin())
+            var myAccess = await GetAccess();
+            if (!myAccess.Admin && !myAccess.Manager)
             {
                 yield break;
             }
 
-            await foreach (var item in _accessRepository.GetAllAccessRequests())
+            await foreach (var item in _accessRepository.GetAllAccessRequests(myAccess.Admin ? null : myAccess.TeamId))
             {
                 yield return _accessRequestDtoAdapter.Adapt(item);
             }
@@ -238,7 +240,7 @@ namespace HolcombeScores.Api.Services
         public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId)
         {
             var myAccess = await GetAccessInternal();
-            if (!await IsManagerOrAdmin() && myAccess.UserId != userId)
+            if (!myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId)
             {
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
@@ -249,13 +251,19 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<AccessDto>("Access not found");
             }
 
+            if (myAccess.Manager && access.TeamId != myAccess.TeamId)
+            {
+                return _serviceHelper.NotPermitted<AccessDto>("Only admins can delete access for another team");
+            }
+
             await _accessRepository.RemoveAccess(access.UserId);
             return _serviceHelper.Success("Access removed", _accessDtoAdapter.Adapt(access));
         }
 
         public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId)
         {
-            if (!await IsManagerOrAdmin())
+            var myAccess = await GetAccessInternal();
+            if (!myAccess.Admin && !myAccess.Manager)
             {
                 return _serviceHelper.NotAnAdmin<AccessRequestDto>();
             }
@@ -266,13 +274,19 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<AccessRequestDto>("Access request not found");
             }
 
+            if (myAccess.Manager && accessRequest.TeamId != myAccess.TeamId)
+            {
+                return _serviceHelper.NotPermitted<AccessRequestDto>("Only admins can delete requests for another team");
+            }
+
             await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
             return _serviceHelper.Success("Access request removed", _accessRequestDtoAdapter.Adapt(accessRequest));
         }
 
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
         {
-            if (!await IsManagerOrAdmin())
+            var myAccess = await GetAccessInternal();
+            if (!myAccess.Admin && !myAccess.Manager)
             {
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
@@ -288,6 +302,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.Success("Access already revoked", _accessDtoAdapter.Adapt(access));
             }
 
+            if (myAccess.Manager && access.TeamId != myAccess.TeamId)
+            {
+                return _serviceHelper.NotPermitted<AccessDto>("Only admins can revoke requests for another team");
+            }
+
             access.Revoked = DateTime.UtcNow;
             access.RevokedReason = accessResponseDto.Reason;
             await _accessRepository.UpdateAccess(access);
@@ -297,17 +316,18 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated)
         {
-            var accessToUpdate = await GetAccessInternal();
+            var myAccess = await GetAccessInternal();
 
-            if (accessToUpdate == null)
+            if (myAccess == null)
             {
                 return _serviceHelper.NotLoggedIn<AccessDto>();
             }
 
-            var isAdmin = accessToUpdate.Admin;
-            var isManager = accessToUpdate.Manager;
+            var isAdmin = myAccess.Admin;
+            var isManager = myAccess.Manager;
+            var accessToUpdate = myAccess;
 
-            if (updated.UserId != accessToUpdate.UserId)
+            if (updated.UserId != myAccess.UserId)
             {
                 if (!isAdmin && !isManager)
                 {
@@ -319,6 +339,11 @@ namespace HolcombeScores.Api.Services
                 if (accessToUpdate == null)
                 {
                     return _serviceHelper.NotFound<AccessDto>($"Access not found for user ${updated.UserId}");
+                }
+
+                if (!isAdmin && accessToUpdate.TeamId != myAccess.TeamId)
+                {
+                    return _serviceHelper.NotPermitted<AccessDto>("Only a admins can change access details for another team");
                 }
             }
 

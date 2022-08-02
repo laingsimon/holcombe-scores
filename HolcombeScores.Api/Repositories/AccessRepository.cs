@@ -15,14 +15,18 @@ namespace HolcombeScores.Api.Repositories
             _accessRequestTableClient = new TypedTableClient<AccessRequest>(tableServiceClientFactory.CreateTableClient("AccessRequest"));
         }
 
-        public IAsyncEnumerable<Access> GetAllAccess()
+        public IAsyncEnumerable<Access> GetAllAccess(Guid? teamId = null)
         {
-            return _accessTableClient.QueryAsync();
+            return teamId.HasValue
+                ? _accessTableClient.QueryAsync(r => r.TeamId == teamId.Value)
+                : _accessTableClient.QueryAsync();
         }
 
-        public IAsyncEnumerable<AccessRequest> GetAllAccessRequests()
+        public IAsyncEnumerable<AccessRequest> GetAllAccessRequests(Guid? teamId = null)
         {
-            return _accessRequestTableClient.QueryAsync();
+            return teamId.HasValue
+                ? _accessRequestTableClient.QueryAsync(r => r.TeamId == teamId.Value)
+                : _accessRequestTableClient.QueryAsync();
         }
 
         public async Task<AccessRequest> GetAccessRequest(string token, Guid userId)
