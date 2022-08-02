@@ -147,8 +147,11 @@ export class GameDetails extends Component {
             </div>)
         }
 
-        if (!this.props.game) {
-            return (<Alert errors={[ 'Game not found' ]}/>);
+        if (!this.props.game || !this.props.game.found) {
+            return (<div>
+                <Alert errors={[ 'Game not found' ]}/>
+                <Link to="/" className="btn btn-primary">Home</Link>
+            </div>);
         }
 
         let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
