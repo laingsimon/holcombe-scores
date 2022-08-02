@@ -134,7 +134,7 @@ export class EditGame extends Component {
         }
 
         if (result.success) {
-            if (!this.props.game.id) {
+            if (!this.props.game) {
                 return (<div>
                     <Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>
                     <hr/>
