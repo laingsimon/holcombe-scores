@@ -24,19 +24,15 @@ export class EditGame extends Component {
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
         this.state = {
-            loading: true,
+            loading: false,
             deleted: false,
             readOnly: this.props.game ? this.props.game.readOnly : false,
-            proposed: this.props.game ? null : this.defaultGameDetails() // the updated game details
+            proposed: this.props.game ? this.getGameDetails(this.props.game) : this.defaultGameDetails()
         };
         this.valueChanged = this.valueChanged.bind(this);
         this.updateGame = this.updateGame.bind(this);
         this.deleteGame = this.deleteGame.bind(this);
         this.onPlayerSelected = this.onPlayerSelected.bind(this);
-    }
-
-    componentDidMount() {
-        this.getGameDetails();
     }
 
     // event handlers
@@ -225,23 +221,18 @@ export class EditGame extends Component {
     }
 
     // apis
-    getGameDetails() {
-        let proposedGame = Object.assign({}, this.props.game || {});
-        if (this.props.game) {
-            proposedGame.date = Functions.toLocalDateTime(new Date(this.props.game.date));
-            proposedGame.players = {};
+    getGameDetails(game) {
+        let proposedGame = Object.assign({}, game);
+        proposedGame.date = Functions.toLocalDateTime(new Date(game.date));
+        proposedGame.players = {};
 
-            delete proposedGame.squad;
+        delete proposedGame.squad; //remove squad to prevent confusion between players (dict) and squad (array)
 
-            this.props.game.squad.forEach(player => {
-                proposedGame.players[player.id] = true;
-            });
-        }
-
-        this.setState({
-            loading: false,
-            proposed: proposedGame,
+        game.squad.forEach(player => {
+            proposedGame.players[player.id] = true;
         });
+
+        return proposedGame;
     }
 
     async applyApiChanges(utcDateTime, playerIds) {
@@ -288,7 +279,7 @@ export class EditGame extends Component {
     // utility functions
     defaultGameDetails() {
         return {
-            opponent: "",
+            opponent: '',
             playingAtHome: true,
             date: new Date().toISOString().substring(0, 10) + 'T11:00'
         };
