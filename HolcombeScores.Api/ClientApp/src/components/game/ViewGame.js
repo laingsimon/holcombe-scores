@@ -46,6 +46,8 @@ export class ViewGame extends Component {
                     {game.squad.map(p => this.renderPlayer(p))}
                 </ul>
             </div>
+
+            <Link to={`/team/${this.props.game.teamId}`} className="btn btn-primary">View other games</Link>
         </div>);
     }
 
