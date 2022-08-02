@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
-import {Settings} from '../api/settings';
-import {Http} from '../api/http';
-import {Access} from '../api/access';
-import {TeamOverview} from "./TeamOverview";
-import {Alert} from "./Alert";
-import {EditTeam} from "./EditTeam";
-import { Link } from "react-router-dom";
+import {Settings} from '../../api/settings';
+import {Http} from '../../api/http';
+import {Access} from '../../api/access';
+import {TeamOverview} from './TeamOverview';
+import {Alert} from '../Alert';
+import {EditTeam} from './EditTeam';
+import { Link } from 'react-router-dom';
 
 /*
 * Props:

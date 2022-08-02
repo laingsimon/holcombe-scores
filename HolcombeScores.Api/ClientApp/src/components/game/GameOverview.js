@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import {Score} from "./Score";
-import { Link } from "react-router-dom";
+import {Score} from './Score';
+import { Link } from 'react-router-dom';
 
 /*
 * Props:

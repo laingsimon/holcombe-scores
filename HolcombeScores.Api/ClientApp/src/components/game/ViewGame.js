@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import {Functions} from '../functions'
-import {GoalOverview} from "./GoalOverview";
+import {Functions} from '../../functions'
+import {GoalOverview} from './GoalOverview';
 
 /*
 * Props:

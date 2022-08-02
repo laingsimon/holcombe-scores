@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {Alert} from "./Alert";
-import { Link } from "react-router-dom";
+import {Alert} from '../Alert';
+import { Link } from 'react-router-dom';
 
 /*
 * Props:

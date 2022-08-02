@@ -1,21 +1,21 @@
 import React, {Component} from 'react';
 import {Route} from 'react-router';
 import {Layout} from './components/Layout';
-import {Home} from './components/Home';
-import {TeamDetails} from './components/TeamDetails';
-import {GameDetails} from './components/GameDetails';
-import {Teams} from './components/Teams';
-import {AccessAdmin} from './components/AccessAdmin';
+import {Home} from './components/access/Home';
+import {TeamDetails} from './components/team/TeamDetails';
+import {GameDetails} from './components/game/GameDetails';
+import {Teams} from './components/team/Teams';
+import {AccessAdmin} from './components/access/AccessAdmin';
 import {About} from './components/About';
 
 import './custom.css'
-import {Http} from "./api/http";
-import {Settings} from "./api/settings";
-import {Access} from "./api/access";
-import {Team} from "./api/team";
-import {Functions} from "./functions";
-import {Game} from "./api/game";
-import {Player} from "./api/player";
+import {Http} from './api/http';
+import {Settings} from './api/settings';
+import {Access} from './api/access';
+import {Team} from './api/team';
+import {Functions} from './functions';
+import {Game} from './api/game';
+import {Player} from './api/player';
 
 export default class App extends Component {
     constructor(props) {

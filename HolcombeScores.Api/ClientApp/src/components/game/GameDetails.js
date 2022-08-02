@@ -1,15 +1,15 @@
 import React, {Component} from 'react';
-import {Http} from "../api/http";
-import {Settings} from "../api/settings";
-import {Game} from '../api/game';
-import {Access} from '../api/access';
-import {Team} from '../api/team';
-import {Alert} from './Alert';
-import {EditGame} from "./EditGame";
-import {PlayGame} from "./PlayGame";
-import {Score} from "./Score";
-import {ViewGame} from "./ViewGame";
-import { Link } from "react-router-dom";
+import {Http} from '../../api/http';
+import {Settings} from '../../api/settings';
+import {Game} from '../../api/game';
+import {Access} from '../../api/access';
+import {Team} from '../../api/team';
+import {Alert} from '../Alert';
+import {EditGame} from './EditGame';
+import {PlayGame} from './PlayGame';
+import {Score} from './Score';
+import {ViewGame} from './ViewGame';
+import { Link } from 'react-router-dom';
 
 // noinspection JSUnresolvedVariable
 /*

@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
-import {Settings} from '../api/settings';
-import {Http} from '../api/http';
-import {Access} from '../api/access';
-import {Alert} from "./Alert";
+import {Settings} from '../../api/settings';
+import {Http} from '../../api/http';
+import {Access} from '../../api/access';
+import {Alert} from '../Alert';
 
 /*
 * Props:

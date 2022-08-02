@@ -1,14 +1,14 @@
 import React, {Component} from 'react';
-import {Settings} from '../api/settings';
-import {Http} from '../api/http';
-import {Game} from '../api/game';
-import {Team} from '../api/team';
-import {Access} from '../api/access';
-import {GameOverview} from './GameOverview';
-import {EditGame} from './EditGame';
+import {Settings} from '../../api/settings';
+import {Http} from '../../api/http';
+import {Game} from '../../api/game';
+import {Team} from '../../api/team';
+import {Access} from '../../api/access';
+import {GameOverview} from '../game/GameOverview';
+import {EditGame} from '../game/EditGame';
 import {EditTeam} from './EditTeam';
-import {Alert} from './Alert';
-import { Link } from "react-router-dom";
+import {Alert} from '../Alert';
+import { Link } from 'react-router-dom';
 
 /*
 * Props:

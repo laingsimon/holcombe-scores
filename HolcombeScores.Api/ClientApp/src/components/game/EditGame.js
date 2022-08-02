@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
-import {Settings} from '../api/settings';
-import {Http} from '../api/http';
-import {Game} from '../api/game';
-import {Alert} from "./Alert";
-import {PlayerList} from "./PlayerList";
-import {Functions} from '../functions'
-import { Link } from "react-router-dom";
+import {Settings} from '../../api/settings';
+import {Http} from '../../api/http';
+import {Game} from '../../api/game';
+import {Alert} from '../Alert';
+import {PlayerList} from './PlayerList';
+import {Functions} from '../../functions'
+import { Link } from 'react-router-dom';
 
 /*
 * Props:

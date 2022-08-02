@@ -12,9 +12,9 @@ import React, { Component } from 'react';
 export class Alert extends Component {
     render() {
         return (<div>
-            {this.renderMessages(this.props.messages, "alert-success")}
-            {this.renderMessages(this.props.warnings, "alert-warning")}
-            {this.renderMessages(this.props.errors, "alert-danger")}
+            {this.renderMessages(this.props.messages, 'alert-success')}
+            {this.renderMessages(this.props.warnings, 'alert-warning')}
+            {this.renderMessages(this.props.errors, 'alert-danger')}
         </div>)
     }
 
@@ -24,7 +24,7 @@ export class Alert extends Component {
         }
 
         return (<div className={`alert ${className}`} role="alert">
-            {lines.reduce((current, msg) => current + "\n" + msg, "")}
+            {lines.reduce((current, msg) => current + '\n' + msg, '')}
         </div>);
     }
 }

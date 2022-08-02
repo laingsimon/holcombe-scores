@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import {Http} from "../api/http";
-import {Settings} from "../api/settings";
-import {Access} from "../api/access";
-import {Team} from "../api/team";
-import {Alert} from "./Alert";
-import {AccessOverview} from "./AccessOverview";
-import {RequestOverview} from "./RequestOverview";
+import {Http} from '../../api/http';
+import {Settings} from '../../api/settings';
+import {Access} from '../../api/access';
+import {Team} from '../../api/team';
+import {Alert} from '../Alert';
+import {AccessOverview} from './AccessOverview';
+import {RequestOverview} from './RequestOverview';
 
 /*
 * Props:

@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import {Settings} from '../api/settings';
-import {Http} from '../api/http';
-import {Game} from '../api/game';
-import {Team} from '../api/team';
-import {Access} from '../api/access';
-import {Player} from '../api/player';
-import {Functions} from '../functions'
+import {Settings} from '../../api/settings';
+import {Http} from '../../api/http';
+import {Game} from '../../api/game';
+import {Team} from '../../api/team';
+import {Access} from '../../api/access';
+import {Player} from '../../api/player';
+import {Functions} from '../../functions'
 
 /*
 * Props:

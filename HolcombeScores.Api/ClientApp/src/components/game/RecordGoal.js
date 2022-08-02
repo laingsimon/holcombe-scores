@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import {Settings} from '../api/settings';
-import {Http} from '../api/http';
-import {Game} from '../api/game';
-import {Functions} from '../functions';
+import {Settings} from '../../api/settings';
+import {Http} from '../../api/http';
+import {Game} from '../../api/game';
+import {Functions} from '../../functions';
 
 /*
 * Props:

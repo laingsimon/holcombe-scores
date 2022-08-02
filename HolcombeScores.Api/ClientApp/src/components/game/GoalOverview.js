@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import {Settings} from '../api/settings';
-import {Http} from '../api/http';
-import {Game} from '../api/game';
-import {Functions} from "../functions";
-import {Score} from "./Score";
+import {Settings} from '../../api/settings';
+import {Http} from '../../api/http';
+import {Game} from '../../api/game';
+import {Functions} from '../../functions';
+import {Score} from './Score';
 
 // noinspection JSUnresolvedVariable
 /*

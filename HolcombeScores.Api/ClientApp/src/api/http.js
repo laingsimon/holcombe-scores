@@ -81,7 +81,7 @@ class Http {
             credentials: 'include'
         })
             .then(response => response.json())
-            .catch(e => console.error("ERROR: " + e));
+            .catch(e => console.error('ERROR: ' + e));
 
         if (httpMethod === 'GET' && this.cacheEnabled) {
             this.cache[absoluteUrl] = {

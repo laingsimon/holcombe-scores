@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
-import {Alert} from "./Alert";
-import {EditAccess} from "./EditAccess";
-import {MyAccess} from "./MyAccess";
-import {RequestAccess} from "./RequestAccess";
-import {RecoverAccess} from "./RecoverAccess";
+import {Alert} from '../Alert';
+import {EditAccess} from './EditAccess';
+import {MyAccess} from './MyAccess';
+import {RequestAccess} from './RequestAccess';
+import {RecoverAccess} from './RecoverAccess';
 
 /*
 * Props:
