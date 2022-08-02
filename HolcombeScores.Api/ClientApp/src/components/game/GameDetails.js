@@ -71,10 +71,7 @@ export class GameDetails extends Component {
             holcombeGoal: holcombeGoal,
             gameId: gameId,
             player: holcombeGoal
-                ? {
-                    id: playerId,
-                    teamId: this.props.game.teamId
-                }
+                ? this.props.game.squad.filter(p => p.id === playerId)[0]
                 : null,
             local: true
         });
