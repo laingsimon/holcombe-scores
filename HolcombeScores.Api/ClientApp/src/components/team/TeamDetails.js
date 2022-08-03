@@ -9,6 +9,7 @@ import {EditGame} from '../game/EditGame';
 import {EditTeam} from './EditTeam';
 import {Alert} from '../Alert';
 import { Link } from 'react-router-dom';
+import {Functions} from '../../functions';
 
 /*
 * Props:
@@ -133,7 +134,7 @@ export class TeamDetails extends Component {
             if (this.state.mode === 'view') {
                 component = this.renderGames(this.props.team.games);
             } else if (this.state.mode === 'new-game') {
-                component = (<EditGame {...this.props} onCreated={this.gameCreated}/>);
+                component = (<EditGame {...Functions.except(this.props, 'game')} onCreated={this.gameCreated}/>);
             } else if (this.state.mode === 'edit') {
                 if (this.props.team.found) {
                     component = (<EditTeam {...this.props} onChanged={this.teamChanged} onDeleted={this.teamDeleted}/>);

@@ -6,6 +6,7 @@ import {TeamOverview} from './TeamOverview';
 import {Alert} from '../Alert';
 import {EditTeam} from './EditTeam';
 import { Link } from 'react-router-dom';
+import {Functions} from '../../functions';
 
 /*
 * Props:
@@ -109,7 +110,7 @@ export class Teams extends Component {
         return (<div>
             {this.renderNav()}
             <br/>
-            <EditTeam {...this.props} onCreated={this.onTeamCreated} />
+            <EditTeam {...Functions.except(this.props, 'team')} onCreated={this.onTeamCreated} />
         </div>);
     }
 
