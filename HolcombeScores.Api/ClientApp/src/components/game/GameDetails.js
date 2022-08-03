@@ -122,6 +122,9 @@ export class GameDetails extends Component {
         </li>;
 
         return (<ul className="nav nav-tabs">
+            <li className="nav-item">
+                <Link className="nav-link" to={`/team/${this.props.team.id}`}>⬅️</Link>
+            </li>
             {this.state.gameDeleted ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</a>
