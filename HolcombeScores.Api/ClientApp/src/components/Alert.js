@@ -19,7 +19,7 @@ export class Alert extends Component {
     }
 
     renderMessages(lines, className) {
-        if (!lines || lines.length === 0) {
+        if (!lines || !lines.length) {
             return;
         }
 
