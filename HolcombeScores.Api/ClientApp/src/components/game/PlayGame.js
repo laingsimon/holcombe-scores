@@ -66,12 +66,17 @@ export class PlayGame extends Component {
     }
 
     render() {
+        const score = {
+            holcombe: this.props.game.goals.filter(g => g.holcombeGoal).length,
+            opponent: this.props.game.goals.filter(g => !g.holcombeGoal).length
+        };
+
         const notRefreshStatus = this.props.game.readOnly
             ? 'Game over'
             : 'Not refreshing';
 
         return (<div>
-            {this.renderScore()}
+            <h1 className="text-center"><Score playingAtHome={this.props.game.playingAtHome} score={score} /></h1>
             <div className="d-flex flex-wrap justify-content-center score-goals-container">
                 {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} onGoalScored={this.onGoalScored} />))}
                 {this.props.game.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} onGoalScored={this.onGoalScored} />)}
@@ -83,14 +88,5 @@ export class PlayGame extends Component {
                 {this.state.refreshHandle ? (<button className="btn btn-secondary" onClick={this.stopRefresh}>Stop Refresh</button>) : <span>{notRefreshStatus}</span>}
             </div>
         </div>);
-    }
-
-    renderScore() {
-        const score = {
-            holcombe: this.props.game.goals.filter(g => g.holcombeGoal).length,
-            opponent: this.props.game.goals.filter(g => !g.holcombeGoal).length
-        };
-
-        return (<h4 className="text-center"><Score playingAtHome={this.props.game.playingAtHome} score={score} /></h4>);
     }
 }

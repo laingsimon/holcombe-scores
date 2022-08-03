@@ -100,7 +100,7 @@ export class AccessAdmin extends Component {
         if (this.state.error) {
             return (<div>
                 {this.renderNav()}
-                <hr />
+                <br />
                 <Alert errors={[ this.state.error ]} />
             </div>);
         }
@@ -125,7 +125,7 @@ export class AccessAdmin extends Component {
     renderCache() {
         return (<div>
             {this.renderNav()}
-            <hr />
+            <br />
             <h5>Cache as at: {this.state.cacheAt ? this.state.cacheAt.toLocaleTimeString() : 'not retrieved'}</h5>
             <div className="list-group">
                 {this.state.cache ? this.state.cache.map(item => {
@@ -140,7 +140,7 @@ export class AccessAdmin extends Component {
     renderAccess() {
         return (<div>
             {this.renderNav()}
-            <hr />
+            <br />
             <h5>Active</h5>
             <div className="list-group">
                 {this.state.allAccess.filter(a => !a.revoked).map(access => this.renderAccessOverview(access))}
@@ -160,7 +160,7 @@ export class AccessAdmin extends Component {
     renderRequests() {
         return (<div>
             {this.renderNav()}
-            <hr />
+            <br />
             <h5>Pending: {this.state.requests.filter(r => !r.rejected).length}</h5>
             <div className="list-group">
                 {this.state.requests.filter(r => !r.rejected).map(request => this.renderRequest(request))}

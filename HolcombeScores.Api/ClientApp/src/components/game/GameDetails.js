@@ -175,7 +175,7 @@ export class GameDetails extends Component {
         return (<div>
             {this.renderHeading()}
             {this.renderNav()}
-            <hr/>
+            <br/>
             {component}
         </div>)
     }

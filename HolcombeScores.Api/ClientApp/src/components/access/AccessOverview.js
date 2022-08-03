@@ -232,17 +232,16 @@ export class AccessOverview extends Component {
                 </select>)}
             </span>
             <span className="float-end">
-                {this.myAccess.admin && !this.props.access.revoked ? (<span className="form-check form-switch form-check-inline">
+                {this.myAccess.admin && !this.props.access.revoked ? (<span className="form-check form-switch form-check-inline margin-right">
                     <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                            checked={this.state.access.admin} onChange={this.adminChanged}/>
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Admin</label>
                 </span>) : null}
-                {!this.props.access.revoked ? (<span className="form-check form-switch form-check-inline">
+                {!this.props.access.revoked ? (<span className="form-check form-switch form-check-inline margin-right">
                     <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                            checked={this.state.access.manager} onChange={this.managerChanged}/>
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Manager</label>
                 </span>): null}
-                &nbsp;
                 <button type="button"
                         className={`btn ${btnClassName}`}
                         onClick={this.prepareCancelAccess}>{this.state.mode === 'view' ? '🗑' : '🔙'}</button>

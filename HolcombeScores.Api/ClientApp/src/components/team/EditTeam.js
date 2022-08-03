@@ -184,9 +184,7 @@ export class EditTeam extends Component {
                 </div>
                 <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="coach" value={this.state.proposed.coach} onChange={this.valueChanged} />
             </div>
-            <hr />
-            <button type="button" className="btn btn-primary" onClick={this.updateTeam}>{this.props.team ? 'Update team' : 'Create team'}</button>
-            &nbsp;
+            <button type="button" className="btn btn-primary margin-right" onClick={this.updateTeam}>{this.props.team ? 'Update team' : 'Create team'}</button>
             {deleteTeamButton}
             {this.props.team ? <hr /> : null}
             {this.props.team ? this.renderEditPlayers() : null}

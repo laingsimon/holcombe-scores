@@ -137,8 +137,8 @@ export class EditPlayer extends Component {
 
     // renderers
     render() {
-        const saveButton = (<button className={`btn ${this.state.changed && this.state.proposed.name ? 'btn-success' : 'btn-light'}`} onClick={this.savePlayer}>{this.props.player ? '💾' : '➕'}</button>);
-        const savingButton = (<button className="btn btn-light"><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;</button>);
+        const saveButton = (<button className={`btn ${this.state.changed && this.state.proposed.name ? 'btn-success' : 'btn-light'} margin-right`} onClick={this.savePlayer}>{this.props.player ? '💾' : '➕'}</button>);
+        const savingButton = (<button className="btn btn-light margin-right"><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;</button>);
 
         return (<div className="row">
             <div className="col">
@@ -156,7 +156,6 @@ export class EditPlayer extends Component {
             </div>
             <div className="col">
                 {this.state.saving ? savingButton : saveButton}
-                &nbsp;
                 {this.props.player ? (<button className={`btn ${this.state.saving ? 'btn-light' : 'btn-danger'}`} onClick={this.deletePlayer}>🗑</button>) : null}
             </div>
         </div>);

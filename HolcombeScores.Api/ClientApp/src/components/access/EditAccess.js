@@ -91,9 +91,7 @@ export class EditAccess extends Component {
                     <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name"
                            value={this.state.proposed.name} onChange={this.accessChanged}/>
                 </div>
-                <hr/>
-                <button type="button" className="btn btn-primary" onClick={this.updateAccess}>Update details</button>
-                &nbsp;
+                <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>Update details</button>
                 <button type="button" className="btn btn-danger" onClick={this.removeAccess}>Remove access</button>
             </div>)
         } catch (e) {

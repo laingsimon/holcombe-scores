@@ -13,6 +13,32 @@ import { Link } from 'react-router-dom';
 * */
 // noinspection JSUnresolvedVariable
 export class MyAccess extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            navigating: false
+        };
+        this.beforeNavigate = this.beforeNavigate.bind(this);
+    }
+
+    async beforeNavigate(event) {
+        event.preventDefault();
+        this.setState({
+            navigating: true
+        });
+
+        const reloadTeam = false;
+        const reloadPlayers = true;
+        const reloadGames = true;
+        await this.props.reloadTeam(this.props.access.teamId, reloadTeam, reloadPlayers, reloadGames);
+
+        this.setState({
+            navigating: false
+        });
+
+        this.props.history.push(event.target.getAttribute('href'));
+    }
+
     // renderers
     renderAccess() {
         let team = this.props.teams.filter(t => t.id === this.props.access.teamId)[0];
@@ -20,7 +46,10 @@ export class MyAccess extends Component {
         return (<div>
             Hello <strong>{this.props.access.name}</strong>, you have access to <strong><span><strong>{team.name}</strong> (Coach {team.coach})</span></strong>
             <br/>
-            <Link to={`/team/${team.id}/view`} className="btn btn-primary">View Games</Link>
+            <Link onClick={this.beforeNavigate} to={`/team/${team.id}/view`} className="btn btn-primary">
+                {this.state.navigating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                View Games
+            </Link>
         </div>);
     }
 

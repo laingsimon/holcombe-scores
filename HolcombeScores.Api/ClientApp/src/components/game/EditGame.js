@@ -36,9 +36,17 @@ export class EditGame extends Component {
         this.deleteGame = this.deleteGame.bind(this);
         this.onPlayerSelected = this.onPlayerSelected.bind(this);
         this.beforePlayNewGame = this.beforePlayNewGame.bind(this);
+        this.reset = this.reset.bind(this);
     }
 
     // event handlers
+    reset() {
+        this.setState({
+            proposed: this.defaultGameDetails(),
+            apiResult: null,
+        });
+    }
+
     valueChanged(event) {
         const name = event.target.name;
         const type = event.target.getAttribute('type');
@@ -162,10 +170,13 @@ export class EditGame extends Component {
                 return (<div>
                     <Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>
                     <hr/>
-                    <Link to={`/game/${result.outcome.id}/play`} onClick={this.beforePlayNewGame} className="btn btn-primary">
-                        {this.state.loadingGame ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : null}
+                    <Link to={`/game/${result.outcome.id}/play`} onClick={this.beforePlayNewGame} className="btn btn-primary margin-right">
+                        {this.state.loadingGame ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                         {this.state.loadingGame ? 'Loading game...' : 'Play game'}
                     </Link>
+                    <button onClick={this.reset} className="btn btn-primary">
+                        Create another
+                    </button>
                 </div>);
             }
         }
@@ -207,7 +218,7 @@ export class EditGame extends Component {
 
             const deleteButton = this.props.game
                 ? (<button className="btn btn-danger" onClick={this.deleteGame}>
-                    {this.state.deleting ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : null}
+                    {this.state.deleting ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Delete game
                    </button>)
                 : null;
@@ -237,11 +248,10 @@ export class EditGame extends Component {
                 <PlayerList players={this.props.team.players} selected={this.state.proposed.players}
                             onPlayerSelected={this.onPlayerSelected} readOnly={this.state.readOnly || this.state.saving || this.state.deleting} />
                 <hr/>
-                {this.state.readOnly ? null : (<button type="button" className="btn btn-primary" onClick={this.updateGame}>
-                    {this.state.saving ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : null}
+                {this.state.readOnly ? null : (<button type="button" className="btn btn-primary margin-right" onClick={this.updateGame}>
+                    {this.state.saving ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     {this.props.game ? 'Update game' : 'Create game'}
                 </button>)}
-                &nbsp;
                 {deleteButton}
                 {this.renderApiResult(this.state.apiResult)}
             </div>);

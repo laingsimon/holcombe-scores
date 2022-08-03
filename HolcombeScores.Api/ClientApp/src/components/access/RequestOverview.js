@@ -102,8 +102,7 @@ export class RequestOverview extends Component {
         return (<div className="list-group-item list-group-item-action flex-column align-items-start">
             <span>Name: <strong>{this.request.name}</strong>, Team: {team.name}, Requested: {requestedDate.toLocaleString()}</span>
             <span className="float-end">
-                {this.state.processing || !this.request.rejected ? null : (<button type="button" className={`btn ${this.state.processing ? 'btn-light' : 'btn-danger'}`} onClick={this.deleteRequest}>🗑</button>)}
-                &nbsp;
+                {this.state.processing || !this.request.rejected ? null : (<button type="button" className={`btn ${this.state.processing ? 'btn-light' : 'btn-danger'} margin-right`} onClick={this.deleteRequest}>🗑</button>)}
                 {this.request.rejected ? null : respondRequestButton}
             </span>
             {this.state.mode === 'reject' && !this.state.processing ? this.renderRejectOptions() : null}
@@ -121,10 +120,9 @@ export class RequestOverview extends Component {
                 <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                        name="reason" value={this.state.reason} onChange={this.reasonChanged}/>
                 <button type="button"
-                        className={`btn ${this.state.processing || this.self ? 'btn-light' : 'btn-danger'}`}
+                        className={`btn ${this.state.processing || this.self ? 'btn-light' : 'btn-danger'} margin-right`}
                         onClick={this.rejectRequest}>🚷 Reject
                 </button>
-                &nbsp;
                 <button type="button"
                         className={`btn ${this.state.processing || this.self ? 'btn-light' : 'btn-success'}`}
                         onClick={this.approveRequest}>❤ Approve

@@ -148,7 +148,7 @@ export class TeamDetails extends Component {
             return (<div>
                 {this.props.team ? (<h3>{this.props.team.name}</h3>) : null}
                 {this.renderNav()}
-                <hr/>
+                <br/>
                 {component}
             </div>);
         } catch (e) {
