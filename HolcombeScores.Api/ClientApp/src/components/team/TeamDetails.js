@@ -133,7 +133,7 @@ export class TeamDetails extends Component {
             if (this.state.mode === 'view') {
                 component = this.renderGames(this.props.team.games);
             } else if (this.state.mode === 'new-game') {
-                component = (<EditGame team={this.props.team} onCreated={this.gameCreated}/>);
+                component = (<EditGame {...this.props} onCreated={this.gameCreated}/>);
             } else if (this.state.mode === 'edit') {
                 if (this.props.team.found) {
                     component = (<EditTeam {...this.props} onChanged={this.teamChanged} onDeleted={this.teamDeleted}/>);

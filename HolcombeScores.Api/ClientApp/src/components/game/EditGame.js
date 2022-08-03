@@ -27,12 +27,14 @@ export class EditGame extends Component {
             loading: false,
             deleted: false,
             readOnly: this.props.game ? this.props.game.readOnly : false,
-            proposed: this.props.game ? this.getGameDetails(this.props.game) : this.defaultGameDetails()
+            proposed: this.props.game ? this.getGameDetails(this.props.game) : this.defaultGameDetails(),
+            loadingGame: false
         };
         this.valueChanged = this.valueChanged.bind(this);
         this.updateGame = this.updateGame.bind(this);
         this.deleteGame = this.deleteGame.bind(this);
         this.onPlayerSelected = this.onPlayerSelected.bind(this);
+        this.beforePlayNewGame = this.beforePlayNewGame.bind(this);
     }
 
     // event handlers
@@ -114,6 +116,22 @@ export class EditGame extends Component {
         });
     }
 
+    async beforePlayNewGame(event) {
+        event.preventDefault();
+        this.setState({
+            loadingGame: true
+        });
+
+        await this.props.reloadGame(this.state.apiResult.outcome.id);
+
+        this.setState({
+            loadingGame: false
+        });
+
+        this.props.history.push(event.target.getAttribute('href'));
+    }
+
+    // renders
     renderGameDeleted() {
         return (<div>
             <Alert messages={this.state.apiResult.messages} warnings={this.state.apiResult.warnings}
@@ -123,7 +141,6 @@ export class EditGame extends Component {
         </div>);
     }
 
-    // renders
     renderApiResult(result) {
         if (!result) {
             return;
@@ -134,7 +151,10 @@ export class EditGame extends Component {
                 return (<div>
                     <Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>
                     <hr/>
-                    <Link to={`/game/${result.outcome.id}/play`} className="btn btn-primary">Play game</Link>
+                    <Link to={`/game/${result.outcome.id}/play`} onClick={this.beforePlayNewGame} className="btn btn-primary">
+                        {this.state.loadingGame ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : null}
+                        {this.state.loadingGame ? 'Loading game...' : 'Play game'}
+                    </Link>
                 </div>);
             }
         }
