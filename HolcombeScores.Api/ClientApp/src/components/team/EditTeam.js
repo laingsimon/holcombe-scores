@@ -30,7 +30,8 @@ export class EditTeam extends Component {
         this.playerApi = new Player(http);
         this.accessApi = new Access(http);
         this.state = {
-            loading: false,
+            saving: false,
+            deleting: false,
             proposed: Object.assign({}, this.props.team || { name: '', coach: '' }),
             players: null
         };
@@ -45,7 +46,7 @@ export class EditTeam extends Component {
         const reloadTeam = false;
         const reloadPlayers = true;
         const reloadGames = false;
-        await this.props.reloadTeam(this.teamId, reloadTeam, reloadPlayers, reloadGames);
+        await this.props.reloadTeam(this.props.team.id, reloadTeam, reloadPlayers, reloadGames);
     }
 
     valueChanged(event) {
@@ -60,12 +61,16 @@ export class EditTeam extends Component {
     }
 
     async deleteTeam() {
+        if (this.state.deleting || this.state.saving) {
+            return;
+        }
+
         if (!window.confirm('Are you sure you want to delete this team?')) {
             return;
         }
 
         this.setState({
-            loading: true,
+            deleting: true,
             updateResult: null,
         });
 
@@ -81,22 +86,26 @@ export class EditTeam extends Component {
             }
 
             this.setState({
-                loading: false,
+                deleting: false,
                 deleted: result.success,
                 updateResult: result,
             });
         } catch (e) {
             console.error(e);
             this.setState({
-                loading: false,
+                deleting: false,
                 error: e.message
             });
         }
     }
 
     async updateTeam() {
+        if (this.state.deleting || this.state.saving) {
+            return;
+        }
+
         this.setState({
-            loading: true,
+            saving: true,
             updateResult: null,
         });
 
@@ -118,13 +127,13 @@ export class EditTeam extends Component {
             }
 
             this.setState({
-                loading: false,
+                saving: false,
                 updateResult: result,
             });
         } catch (e) {
             console.error(e);
             this.setState({
-                loading: false,
+                saving: false,
                 error: e.message
             });
         }
@@ -146,14 +155,6 @@ export class EditTeam extends Component {
     }
 
     render () {
-        if (this.state.loading) {
-            return (<div className="d-flex justify-content-center">
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>);
-        }
-
         if (this.state.error) {
             return (<Alert errors={[ this.state.error ]} />);
         }
@@ -166,27 +167,31 @@ export class EditTeam extends Component {
             </div>);
         }
 
-        const deleteTeamButton = this.props.access.admin && this.props.team
-            ? (<button className="btn btn-danger" onClick={this.deleteTeam}>Delete team</button>)
-            : null;
-
         return (<div>
-            {this.renderUpdateResult(this.state.updateResult)}
             <div className="input-group mb-3">
                 <div className="input-group-prepend">
                     <span className="input-group-text" id="basic-addon3">Name</span>
                 </div>
-                <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.proposed.name} onChange={this.valueChanged} />
+                <input readOnly={this.state.deleting || this.state.saving} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.proposed.name} onChange={this.valueChanged} />
             </div>
             <div className="input-group mb-3">
                 <div className="input-group-prepend">
                     <span className="input-group-text" id="basic-addon3">Coach</span>
                 </div>
-                <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="coach" value={this.state.proposed.coach} onChange={this.valueChanged} />
+                <input readOnly={this.state.deleting || this.state.saving} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="coach" value={this.state.proposed.coach} onChange={this.valueChanged} />
             </div>
-            <button type="button" className="btn btn-primary margin-right" onClick={this.updateTeam}>{this.props.team ? 'Update team' : 'Create team'}</button>
-            {deleteTeamButton}
+            <button type="button" className="btn btn-primary margin-right" onClick={this.updateTeam}>
+                {this.state.saving ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                {this.props.team ? 'Update team' : 'Create team'}
+            </button>
+            {this.props.access.admin && this.props.team
+                ? (<button className="btn btn-danger" onClick={this.deleteTeam}>
+                    {this.state.deleting ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                    Delete team
+                </button>)
+                : null}
             {this.props.team ? <hr /> : null}
+            {this.renderUpdateResult(this.state.updateResult)}
             {this.props.team ? this.renderEditPlayers() : null}
         </div>);
     }
@@ -195,11 +200,11 @@ export class EditTeam extends Component {
         return (<div className="container">
             <h4>Players...</h4>
             {this.props.team.players.map(p => this.renderEditPlayer(p))}
-            <EditPlayer key={'new'} team={this.props.team} newPlayer={true} onPlayerChanged={this.onPlayerChanged} />
+            {this.state.deleting || this.state.saving ? null : (<EditPlayer key={'new'} team={this.props.team} newPlayer={true} onPlayerCreated={this.onPlayerChanged} />)}
         </div>);
     }
 
     renderEditPlayer(player) {
-        return (<EditPlayer key={player.id} team={this.props.team} player={player} onPlayerChanged={this.onPlayerChanged} />);
+        return (<EditPlayer readOnly={this.state.saving || this.state.deleting} key={player.id} team={this.props.team} player={player} onPlayerDeleted={this.onPlayerChanged} onPlayerChanged={this.onPlayerChanged} />);
     }
 }

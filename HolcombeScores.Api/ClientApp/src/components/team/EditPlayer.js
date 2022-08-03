@@ -11,6 +11,7 @@ import {Functions} from '../../functions'
 * Props:
 * - team
 * - [player]
+* - [readOnly]
 *
 * Events:
 * - onPlayerChanged(playerId, teamId)
@@ -41,17 +42,17 @@ export class EditPlayer extends Component {
         const value = event.target.value;
 
         const newProposed = Object.assign({}, this.state.proposed);
-        newProposed.changed = true;
         newProposed[name] = value;
 
         this.setState({
-            proposed: newProposed
+            proposed: newProposed,
+            changed: this.props.player ? this.hasChanged(newProposed) : true
         });
     }
 
     async deletePlayer() {
         try {
-            if (this.state.saving) {
+            if (this.state.saving || this.props.readOnly) {
                 return;
             }
 
@@ -87,11 +88,11 @@ export class EditPlayer extends Component {
 
     async savePlayer() {
         try {
-            if (this.state.saving) {
+            if (this.state.saving || this.props.readOnly) {
                 return;
             }
 
-            const number = this.state.number ? Number.parseInt(this.state.proposed.number) : null;
+            const number = this.state.proposed.number ? Number.parseInt(this.state.proposed.number) : null;
             if (number && (number <= 0 || isNaN(number))) {
                 alert('Invalid player number, must be a whole positive number');
                 return;
@@ -107,16 +108,16 @@ export class EditPlayer extends Component {
                 this.setState({
                     saving: false,
                     changed: false,
-                    proposed: this.props.player ? this.state.proposed : { name: '', number: '' },
+                    proposed: this.props.player ? result.outcome : { name: '', number: '' },
                 });
 
                 if (this.props.player) {
-                    if (this.props.onPlayerCreated) {
-                        await this.props.onPlayerCreated(result.outcome.id, this.props.team.id);
-                    }
-                } else {
                     if (this.props.onPlayerChanged) {
                         await this.props.onPlayerChanged(this.props.player.id, this.props.team.id);
+                    }
+                } else {
+                    if (this.props.onPlayerCreated) {
+                        await this.props.onPlayerCreated(result.outcome.id, this.props.team.id);
                     }
                 }
             } else {
@@ -127,7 +128,7 @@ export class EditPlayer extends Component {
                 console.log(result);
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
             this.setState({
                 saving: false,
                 error: e
@@ -137,13 +138,10 @@ export class EditPlayer extends Component {
 
     // renderers
     render() {
-        const saveButton = (<button className={`btn ${this.state.changed && this.state.proposed.name ? 'btn-success' : 'btn-light'} margin-right`} onClick={this.savePlayer}>{this.props.player ? '💾' : '➕'}</button>);
-        const savingButton = (<button className="btn btn-light margin-right"><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;</button>);
-
         return (<div className="row">
             <div className="col">
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.proposed.name || ''} onChange={this.playerValueChanged} />
+                    <input readOnly={this.props.readOnly} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value={this.state.proposed.name || ''} onChange={this.playerValueChanged} />
                 </div>
             </div>
             <div className="col">
@@ -151,13 +149,22 @@ export class EditPlayer extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">#️⃣</span>
                     </div>
-                    <input type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="number" value={this.state.proposed.number || ''} onChange={this.playerValueChanged} />
+                    <input readOnly={this.props.readOnly} type="number" min="1" max="50" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="number" value={this.state.proposed.number || ''} onChange={this.playerValueChanged} />
                 </div>
             </div>
             <div className="col">
-                {this.state.saving ? savingButton : saveButton}
+                <button className={`btn ${!this.state.saving && this.state.changed && this.state.proposed.name && !this.props.readOnly ? 'btn-success' : 'btn-light'} margin-right`} onClick={this.savePlayer}>
+                    {this.state.saving
+                        ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>)
+                        : this.props.player ? '💾' : '➕'}
+                </button>
                 {this.props.player ? (<button className={`btn ${this.state.saving ? 'btn-light' : 'btn-danger'}`} onClick={this.deletePlayer}>🗑</button>) : null}
             </div>
         </div>);
+    }
+
+    hasChanged(newProposed) {
+        return newProposed.name !== this.props.player.name
+        || newProposed.number !== this.props.player.number;
     }
 }
