@@ -24,7 +24,8 @@ export class EditGame extends Component {
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
         this.state = {
-            loading: false,
+            saving: false,
+            deleting: false,
             deleted: false,
             readOnly: this.props.game ? this.props.game.readOnly : false,
             proposed: this.props.game ? this.getGameDetails(this.props.game) : this.defaultGameDetails(),
@@ -65,7 +66,13 @@ export class EditGame extends Component {
 
     async updateGame() {
         try {
-            const playerIds = Object.keys(this.state.proposed.players);
+            if (this.state.deleting || this.state.saving) {
+                return;
+            }
+
+            const playerIds = this.state.proposed.players
+                ? Object.keys(this.state.proposed.players)
+                : [];
 
             if (playerIds.length === 0) {
                 alert('You must select some players');
@@ -78,7 +85,7 @@ export class EditGame extends Component {
             }
 
             this.setState({
-                loading: true,
+                saving: true,
                 apiResult: null,
             });
 
@@ -86,19 +93,23 @@ export class EditGame extends Component {
         } catch (e) {
             console.error(e);
             this.setState({
-                loading: false,
+                saving: false,
                 error: e.message
             });
         }
     }
 
     async deleteGame() {
+        if (this.state.deleting || this.state.saving) {
+            return;
+        }
+
         if (!window.confirm('Are you sure you want to delete this game?')) {
             return;
         }
 
         this.setState({
-            loading: true
+            deleting: true
         });
 
         const result = await this.gameApi.deleteGame(this.props.game.id);
@@ -110,7 +121,7 @@ export class EditGame extends Component {
         }
 
         this.setState({
-            loading: false,
+            deleting: false,
             deleted: true,
             apiResult: result
         });
@@ -159,7 +170,10 @@ export class EditGame extends Component {
             }
         }
 
-        return (<Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>);
+        return (<div>
+            <hr />
+            <Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>
+        </div>);
     }
 
     renderError(error) {
@@ -178,14 +192,6 @@ export class EditGame extends Component {
 
     render() {
         try {
-            if (this.state.loading) {
-                return (<div className="d-flex justify-content-center">
-                    <div className="spinner-border" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
-                </div>);
-            }
-
             if (this.state.error) {
                 return this.renderError(this.state.error);
             }
@@ -200,21 +206,23 @@ export class EditGame extends Component {
             }
 
             const deleteButton = this.props.game
-                ? (<button className="btn btn-danger" onClick={this.deleteGame}>Delete game</button>)
+                ? (<button className="btn btn-danger" onClick={this.deleteGame}>
+                    {this.state.deleting ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : null}
+                    Delete game
+                   </button>)
                 : null;
 
             return (<div>
-                {this.renderApiResult(this.state.apiResult)}
                 <div className="input-group mb-3">
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">Opponent</span>
                     </div>
-                    <input readOnly={this.state.readOnly || false} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                    <input readOnly={this.state.readOnly || this.state.saving || this.state.deleting} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="opponent" value={this.state.proposed.opponent} onChange={this.valueChanged}/>
                 </div>
                 <div className="input-group mb-3">
                     <div className="form-check form-switch">
-                        <input disabled={this.state.readOnly || false} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                                name="playingAtHome" checked={this.state.proposed.playingAtHome}  onChange={this.valueChanged}/>
                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Playing at home</label>
                     </div>
@@ -223,16 +231,19 @@ export class EditGame extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">📆 Date</span>
                     </div>
-                    <input readOnly={this.state.readOnly || false} type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                    <input readOnly={this.state.readOnly || this.state.saving || this.state.deleting} type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
                 </div>
                 <PlayerList players={this.props.team.players} selected={this.state.proposed.players}
-                            onPlayerSelected={this.onPlayerSelected} readOnly={this.state.readOnly || false} />
+                            onPlayerSelected={this.onPlayerSelected} readOnly={this.state.readOnly || this.state.saving || this.state.deleting} />
                 <hr/>
-                {this.state.readOnly ? null : (<button type="button" className="btn btn-primary"
-                        onClick={this.updateGame}>{this.props.game ? 'Update game' : 'Create game'}</button>)}
+                {this.state.readOnly ? null : (<button type="button" className="btn btn-primary" onClick={this.updateGame}>
+                    {this.state.saving ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : null}
+                    {this.props.game ? 'Update game' : 'Create game'}
+                </button>)}
                 &nbsp;
                 {deleteButton}
+                {this.renderApiResult(this.state.apiResult)}
             </div>);
         } catch (e) {
             console.error(e);
@@ -279,18 +290,19 @@ export class EditGame extends Component {
             }
 
             this.setState({
+                proposed: this.props.game ? proposed : this.defaultGameDetails(),
                 apiResult: result,
-                loading: false
+                saving: false
             });
 
             this.setState({
                 apiResult: result,
-                loading: false
+                saving: false
             });
         } catch (e) {
             console.error(e);
             this.setState({
-                loading: false,
+                saving: false,
                 error: e.message
             });
         }
