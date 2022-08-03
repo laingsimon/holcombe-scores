@@ -67,7 +67,7 @@ export class GoalOverview extends Component {
         return (
             <li>
                 <Score playingAtHome={this.props.game.playingAtHome} score={this.props.score} /> {this.state.deleting ? (<s>{timeAndName}</s>) : timeAndName}
-                {this.props.game.readOnly ? null : (<button className="delete-goal" onClick={this.removeGoal}>{deleteContent}</button>)}
+                {this.props.game.readOnly || !this.props.goal.goalId ? null : (<button className="delete-goal" onClick={this.removeGoal}>{deleteContent}</button>)}
             </li>);
 
     }
