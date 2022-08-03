@@ -33,6 +33,7 @@ export class GameDetails extends Component {
         this.gameId = props.match.params.gameId;
         this.state = {
             loading: true,
+            gameDeleted: false,
             error: null,
             mode: props.match.params.mode || 'view'
         };
@@ -53,6 +54,10 @@ export class GameDetails extends Component {
         const reloadPlayers = false;
         const reloadGames = true;
         await this.props.reloadTeam(teamId, reloadTeam, reloadPlayers, reloadGames);
+
+        this.setState({
+            gameDeleted: true
+        });
     }
 
     async gameChanged(gameId, teamId) {
@@ -111,16 +116,18 @@ export class GameDetails extends Component {
     renderNav() {
         const editNav = <li className="nav-item">
             <Link className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} to={`/game/${this.gameId}/edit`}
-               onClick={this.changeMode}>Edit Game</Link>
+               onClick={this.changeMode}>
+                {this.state.gameDeleted ? 'Game deleted' : 'Edit Game'}
+            </Link>
         </li>;
 
         return (<ul className="nav nav-tabs">
-            <li className="nav-item">
+            {this.state.gameDeleted ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</a>
-            </li>
+            </li>)}
             {(this.props.access.admin || this.props.access.manager) && !this.props.game.readOnly ? editNav : null}
-            {this.props.game.readOnly ? null : (<li className="nav-item">
+            {this.props.game.readOnly || this.state.gameDeleted ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
             </li>)}
