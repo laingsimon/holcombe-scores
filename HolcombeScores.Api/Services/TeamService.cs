@@ -77,7 +77,7 @@ namespace HolcombeScores.Api.Services
 
         public async Task<ActionResultDto<TeamDto>> UpdateTeam(TeamDto teamDto)
         {
-            if (!await _accessService.IsAdmin())
+            if (!await _accessService.IsManagerOrAdmin())
             {
                 return _serviceHelper.NotAnAdmin<TeamDto>();
             }
