@@ -60,3 +60,34 @@ body > div#root > div {
 .margin-right {
   margin-right: 5px;
 }
+
+.margin-top-50 {
+  margin-top: 50px;
+}
+
+.spinner-football:before {
+  content: "⚽";
+  font-size: 50px;
+  width: 68px;
+  height: 80px;
+  margin: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
+}
+
+.spinner-football {
+  border: none;
+
+  width: 60px;
+  height: 60px;
+  position: relative;
+  animation: 0.75s linear infinite spinner-football;
+}
+
+@keyframes spinner-football {
+  100% {
+    transform: rotate(360deg);
+  }
+}

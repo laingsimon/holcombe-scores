@@ -61,9 +61,8 @@ export class RecoverAccess extends Component {
 
     // renderers
     renderLoading() {
-        // show a spinner?
         return (<div className="d-flex justify-content-center">
-            <div className="spinner-border" role="status">
+            <div className="spinner-border spinner-football" role="status">
                 <span className="visually-hidden">Loading...</span>
             </div>
         </div>);

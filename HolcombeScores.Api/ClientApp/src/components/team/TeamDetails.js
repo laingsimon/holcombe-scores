@@ -105,7 +105,7 @@ export class TeamDetails extends Component {
         try {
             if (!this.props.team) {
                 return (<div className="d-flex justify-content-center">
-                    <div className="spinner-border" role="status">
+                    <div className="spinner-border spinner-football" role="status">
                         <span className="visually-hidden">Loading...</span>
                     </div>
                 </div>);
@@ -161,7 +161,7 @@ export class TeamDetails extends Component {
     renderGames(games) {
         if (!games) {
             return (<div className="d-flex justify-content-center">
-                <div className="spinner-border" role="status">
+                <div className="spinner-border spinner-football" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div>
             </div>);
