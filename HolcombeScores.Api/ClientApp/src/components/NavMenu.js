@@ -7,6 +7,7 @@ export class NavMenu extends Component {
   constructor (props) {
     super(props);
     this.toggleNavbar = this.toggleNavbar.bind(this);
+    this.collapseNavbar = this.collapseNavbar.bind(this);
     this.state = {
       collapsed: true
     };
@@ -16,6 +17,12 @@ export class NavMenu extends Component {
   toggleNavbar () {
     this.setState({
       collapsed: !this.state.collapsed
+    });
+  }
+
+  collapseNavbar () {
+    this.setState({
+      collapsed: true
     });
   }
 
@@ -30,19 +37,19 @@ export class NavMenu extends Component {
             <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
               <ul className="navbar-nav flex-grow">
                 <NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/home/access">🏟️ Home</NavLink>
+                  <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to="/home/access">🏟️ Home</NavLink>
                 </NavItem>
                 {this.props.access ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to={`/team/${this.props.access.teamId}/view`}>⛹ Team</NavLink>
+                  <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to={`/team/${this.props.access.teamId}/view`}>⛹ Team</NavLink>
                 </NavItem>) : null}
                 {this.props.access && (this.props.access.admin) ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/teams/view">🎽 Teams</NavLink>
+                  <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to="/teams/view">🎽 Teams</NavLink>
                 </NavItem>) : null}
                 {this.props.access && (this.props.access.admin || this.props.access.manager) ? (<NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/admin/requests">⚙ Admin</NavLink>
+                  <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to="/admin/requests">⚙ Admin</NavLink>
                 </NavItem>) : null}
                 <NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/about">⁉ About</NavLink>
+                  <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to="/about">⁉ About</NavLink>
                 </NavItem>
               </ul>
             </Collapse>
