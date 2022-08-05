@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {Functions} from '../../functions'
 import {GoalOverview} from './GoalOverview';
-import { Link } from 'react-router-dom';
 
 /*
 * Props:
