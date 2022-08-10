@@ -98,7 +98,7 @@ namespace HolcombeScores.Api.Controllers
         }
 
         [HttpPost("/api/Access/Logout")]
-        public async Task<ActionResultDto<string>> RecoverAccess()
+        public async Task<ActionResultDto<string>> Logout()
         {
             try
             {
