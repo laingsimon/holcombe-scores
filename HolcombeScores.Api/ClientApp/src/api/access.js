@@ -3,6 +3,10 @@ class Access {
         this.http = http;
     }
 
+    async logout() {
+       // Todo: call API to remove cookies
+    }
+
     getAllAccess(bypassCache) {
         return bypassCache
             ? this.http.getNoCache(`/api/Access`)
