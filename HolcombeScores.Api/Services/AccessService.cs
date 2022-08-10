@@ -72,9 +72,8 @@ namespace HolcombeScores.Api.Services
             
             SetImpersonatedByCookies(existingAccess.Token, existingAccess.UserId);
 
-            var access = await GetAccessInternal(permitRevoked: true);
-            var accessRequest = await GetAccessRequestInternal();
-            var myAccess = _myAccessDtoAdapter.Adapt(access, accessRequest);
+            var adminAccess = await GetAccessInternal(permitRevoked: true);
+            var myAccess = _myAccessDtoAdapter.Adapt(existingAccess, null, adminAccess);
             return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
         }
 
@@ -82,10 +81,8 @@ namespace HolcombeScores.Api.Services
         {
             RemoveImpersonationCookies();
 
-            var access = await GetAccessInternal(permitRevoked: true);
-            var accessRequest = await GetAccessRequestInternal();
-            var myAccess = _myAccessDtoAdapter.Adapt(access, accessRequest, existingAccess);
-            return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
+            var impersonatedAccess = await GetImpersonatedAccessInternal();
+            return _myAccessDtoAdapter.Adapt(impersonatedAccess, null);
         }
 
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
