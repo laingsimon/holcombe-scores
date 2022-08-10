@@ -109,12 +109,21 @@ export class EditAccess extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">Your name</span>
                     </div>
-                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name"
+                    <input readOnly={this.state.updating || this.state.deleting || this.state.loggingOut} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name"
                            value={this.state.proposed.name} onChange={this.accessChanged}/>
                 </div>
-                <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>Update details</button>
-                <button type="button" className="btn btn-danger margin-right" onClick={this.removeAccess}>Remove access</button>
-                <button type="button" className="btn btn-danger" onClick={this.logout}>Logout</button>
+                <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>
+                    {this.state.updating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                    Update details
+                </button>
+                <button type="button" className="btn btn-danger margin-right" onClick={this.removeAccess}>
+                    {this.state.deleting ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                    Remove access
+                </button>
+                <button type="button" className="btn btn-danger" onClick={this.logout}>
+                    {this.state.loggingOut ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                    Logout
+                </button>
             </div>)
         } catch (e) {
             console.error(e);
