@@ -9,6 +9,8 @@ namespace HolcombeScores.Api.Services
     {
         private const string TokenCookieName = "HS_Token";
         private const string UserIdCookieName = "HS_User";
+        private const string ImpersonatedByTokenCookieName = "HS_ImpersonatedByToken";
+        private const string ImpersonatedByUserIdCookieName = "HS_ImpersonatedByUserId";
 
         private readonly IAccessRepository _accessRepository;
         private readonly IAccessRequestedDtoAdapter _accessRequestedDtoAdapter;
@@ -391,11 +393,37 @@ namespace HolcombeScores.Api.Services
             return null;
         }
 
+        private string GetImpersonatedByToken()
+        {
+            var request = _httpContextAccessor.HttpContext?.Request;
+            var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
+            if (cookies.TryGetValue(ImpersonatedByTokenCookieName, out var token))
+            {
+                return token;
+            }
+
+            return null;
+        }
+
         private Guid? GetRequestUserId()
         {
             var request = _httpContextAccessor.HttpContext?.Request;
             var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
             if (cookies.TryGetValue(UserIdCookieName, out var userIdString))
+            {
+                return Guid.TryParse(userIdString, out var userId)
+                    ? userId
+                    : null;
+            }
+
+            return null;
+        }
+
+        private Guid? GetImpersonatedByUserId()
+        {
+            var request = _httpContextAccessor.HttpContext?.Request;
+            var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
+            if (cookies.TryGetValue(ImpersonatedByUserIdCookieName, out var userIdString))
             {
                 return Guid.TryParse(userIdString, out var userId)
                     ? userId
@@ -433,6 +461,25 @@ namespace HolcombeScores.Api.Services
                 return access;
             }
 
+            if (access?.Revoked != null)
+            {
+                // the access has been revoked
+                return null;
+            }
+
+            return access;
+        }
+
+        private async Task<Access> GetImpersonatedByAccess()
+        {
+            var token = GetImpersonatedByToken();
+            var userId = GetImpersonatedByUserId();
+            if (token == null || userId == null)
+            {
+                return null;
+            }
+
+            var access = await _accessRepository.GetAccess(token, userId.Value);
             if (access?.Revoked != null)
             {
                 // the access has been revoked
