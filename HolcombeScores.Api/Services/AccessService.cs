@@ -74,6 +74,16 @@ namespace HolcombeScores.Api.Services
 
             var access = await GetAccessInternal(permitRevoked: true);
             var accessRequest = await GetAccessRequestInternal();
+            var myAccess = _myAccessDtoAdapter.Adapt(access, accessRequest);
+            return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
+        }
+
+        public async Task<MyAccessDto> Unimpersonate()
+        {
+            RemoveImpersonationCookies();
+
+            var access = await GetAccessInternal(permitRevoked: true);
+            var accessRequest = await GetAccessRequestInternal();
             var myAccess = _myAccessDtoAdapter.Adapt(access, accessRequest, existingAccess);
             return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
         }
@@ -483,6 +493,13 @@ namespace HolcombeScores.Api.Services
             };
             response?.Cookies.Append(ImpersonatedByTokenCookieName, token, options);
             response?.Cookies.Append(ImpersonatedByUserIdCookieName, userId.ToString(), options);
+        }
+
+        private void RemoveImpersonationCookies()
+        {
+            var response = _httpContextAccessor.HttpContext?.Response;
+            response?.Cookies.Delete(ImpersonatedByTokenCookieName);
+            response?.Cookies.Delete(ImpersonatedByUserIdCookieName);
         }
 
         private async Task<Access> GetAccessInternal(bool permitRevoked = false)
