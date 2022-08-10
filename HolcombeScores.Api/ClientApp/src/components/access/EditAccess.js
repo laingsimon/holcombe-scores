@@ -24,26 +24,46 @@ export class EditAccess extends Component {
         this.updateAccess = this.updateAccess.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
         this.removeAccess = this.removeAccess.bind(this);
+        this.logout = this.logout.bind(this);
         let http = new Http(new Settings());
         this.accessApi = new Access(http);
     }
 
     //event handlers
+    async logout() {
+        if (!window.confirm('Are you sure you want to logout?')) {
+            return;
+        }
+
+        this.setState({loggingOut: true});
+
+        const result = await this.accessApi.logout();
+
+        if (result.success) {
+            if (this.props.onLoggedOut) {
+                await this.props.onLoggedOut(this.props.access.userId);
+            }
+        } else {
+            this.setState({loggingOut: false});
+            alert('Could not logout');
+        }
+    }
+
     async removeAccess() {
         if (!window.confirm('Are you sure you want to remove your access')) {
             return;
         }
 
-        this.setState({loading: true});
+        this.setState({deleting: true});
 
         const result = await this.accessApi.deleteAccess(this.props.access.userId);
 
         if (result.success) {
-            this.setState({mode: 'access'});
             if (this.props.onAccessDeleted) {
                 await this.props.onAccessDeleted(this.props.access.userId);
             }
         } else {
+            this.setState({deleting: false});
             alert('Could not delete your details');
         }
     }
@@ -57,7 +77,7 @@ export class EditAccess extends Component {
         const currentAccessCopy = Object.assign({}, this.props.access);
         const accessUpdate = Object.assign(currentAccessCopy, this.state.proposed);
 
-        this.setState({loading: true});
+        this.setState({updating: true});
 
         const result = await this.accessApi.updateAccess(accessUpdate.teamId, accessUpdate.userId, accessUpdate.name, accessUpdate.admin, accessUpdate.manager);
 
@@ -65,7 +85,9 @@ export class EditAccess extends Component {
             if (this.props.onAccessChanged) {
                 await this.props.onAccessChanged(accessUpdate);
             }
+            this.setState({updating: false});
         } else {
+            this.setState({updating: false});
             alert('Could not update your access');
         }
     }
@@ -88,11 +110,21 @@ export class EditAccess extends Component {
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">Your name</span>
                     </div>
-                    <input type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name"
+                    <input readOnly={this.state.updating || this.state.deleting || this.state.loggingOut} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name"
                            value={this.state.proposed.name} onChange={this.accessChanged}/>
                 </div>
-                <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>Update details</button>
-                <button type="button" className="btn btn-danger" onClick={this.removeAccess}>Remove access</button>
+                <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>
+                    {this.state.updating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                    Update details
+                </button>
+                <button type="button" className="btn btn-danger margin-right" onClick={this.removeAccess}>
+                    {this.state.deleting ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                    Remove access
+                </button>
+                <button type="button" className="btn btn-warning" onClick={this.logout}>
+                    {this.state.loggingOut ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                    Logout
+                </button>
             </div>)
         } catch (e) {
             console.error(e);

@@ -3,6 +3,10 @@ class Access {
         this.http = http;
     }
 
+    async logout() {
+       return this.http.post(`/api/Access/Logout`, {});
+    }
+
     getAllAccess(bypassCache) {
         return bypassCache
             ? this.http.getNoCache(`/api/Access`)

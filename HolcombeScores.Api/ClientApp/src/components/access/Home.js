@@ -28,10 +28,19 @@ export class Home extends Component {
         this.accessChanged = this.accessChanged.bind(this);
         this.requestCreated = this.requestCreated.bind(this);
         this.accessRecovered = this.accessRecovered.bind(this);
+        this.loggedOut = this.loggedOut.bind(this);
         this.history = props.history;
     }
 
     //event handlers
+    async loggedOut() {
+        // noinspection JSUnresolvedFunction
+        await this.props.reloadAll();
+        this.setState({
+            mode: 'access'
+        });
+    }
+
     async requestCreated() {
         // noinspection JSUnresolvedFunction
         await this.props.reloadAll();
@@ -40,6 +49,9 @@ export class Home extends Component {
     async accessDeleted() {
         // noinspection JSUnresolvedFunction
         await this.props.reloadAll();
+        this.setState({
+            mode: 'access'
+        });
     }
 
     async accessChanged() {
@@ -110,7 +122,7 @@ export class Home extends Component {
             } else if (this.state.mode === 'recover') {
                 component = (<RecoverAccess {...this.props} onRecoverySuccess={this.accessRecovered} />);
             } else if (this.state.mode === 'update') {
-                component = (<EditAccess {...this.props} onAccessDeleted={this.accessDeleted} onAccessChanged={this.accessChanged} />);
+                component = (<EditAccess {...this.props} onAccessDeleted={this.accessDeleted} onLoggedOut={this.loggedOut} onAccessChanged={this.accessChanged} />);
             }
 
             return (<div>

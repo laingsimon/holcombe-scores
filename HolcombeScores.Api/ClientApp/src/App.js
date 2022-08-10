@@ -158,8 +158,8 @@ export default class App extends Component {
         teams.sort(Functions.teamSortFunction);
         this.setState({
             subProps: {
-                access: access.access,
-                request: access.request,
+                access: access ? access.access : null,
+                request: access ? access.request : null,
                 teams: teams,
                 reloadAccess: this.reloadAccess,
                 reloadTeams: this.reloadTeams,
