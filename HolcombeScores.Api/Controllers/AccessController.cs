@@ -109,5 +109,18 @@ namespace HolcombeScores.Api.Controllers
                 return _serviceHelper.Error<string>(exc.ToString());
             }
         }
+
+        [HttpPost("/api/Access/Unimpersonate")]
+        public async Task<ActionResultDto<string>> Impersonate()
+        {
+            try
+            {
+                return await _accessService.Unimpersonate();
+            }
+            catch (Exception exc)
+            {
+                return _serviceHelper.Error<MyAccessDto>(exc.ToString());
+            }
+        }
     }
 }
