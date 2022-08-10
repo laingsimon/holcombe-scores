@@ -85,6 +85,7 @@ export class EditAccess extends Component {
             if (this.props.onAccessChanged) {
                 await this.props.onAccessChanged(accessUpdate);
             }
+            this.setState({updating: false});
         } else {
             this.setState({updating: false});
             alert('Could not update your access');
