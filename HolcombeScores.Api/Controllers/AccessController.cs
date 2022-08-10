@@ -124,7 +124,7 @@ namespace HolcombeScores.Api.Controllers
         }
 
         [HttpPost("/api/Access/Unimpersonate")]
-        public async Task<ActionResultDto<MyAccessDto>> Unimpersonate()
+        public async Task<MyAccessDto> Unimpersonate()
         {
             try
             {
