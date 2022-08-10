@@ -49,7 +49,7 @@ namespace HolcombeScores.Api.Services
             var access = await GetAccessInternal(permitRevoked: true);
             var accessRequest = await GetAccessRequestInternal();
 
-            return _myAccessDtoAdapter.Adapt(access, accessRequest);
+            return _myAccessDtoAdapter.Adapt(access, accessRequest, GetImpersonatedByAccess());
         }
 
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
