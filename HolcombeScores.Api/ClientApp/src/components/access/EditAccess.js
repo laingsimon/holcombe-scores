@@ -35,16 +35,16 @@ export class EditAccess extends Component {
             return;
         }
 
-        this.setState({loading: true});
+        this.setState({loggingOut: true});
 
         const result = await this.accessApi.logout();
 
         if (result.success) {
-            this.setState({mode: 'access'});
             if (this.props.onLoggedOut) {
                 await this.props.onLoggedOut(this.props.access.userId);
             }
         } else {
+            this.setState({loggingOut: false});
             alert('Could not logout');
         }
     }
@@ -54,16 +54,16 @@ export class EditAccess extends Component {
             return;
         }
 
-        this.setState({loading: true});
+        this.setState({deleting: true});
 
         const result = await this.accessApi.deleteAccess(this.props.access.userId);
 
         if (result.success) {
-            this.setState({mode: 'access'});
             if (this.props.onAccessDeleted) {
                 await this.props.onAccessDeleted(this.props.access.userId);
             }
         } else {
+            this.setState({deleting: false});
             alert('Could not delete your details');
         }
     }
@@ -77,7 +77,7 @@ export class EditAccess extends Component {
         const currentAccessCopy = Object.assign({}, this.props.access);
         const accessUpdate = Object.assign(currentAccessCopy, this.state.proposed);
 
-        this.setState({loading: true});
+        this.setState({updating: true});
 
         const result = await this.accessApi.updateAccess(accessUpdate.teamId, accessUpdate.userId, accessUpdate.name, accessUpdate.admin, accessUpdate.manager);
 
@@ -86,6 +86,7 @@ export class EditAccess extends Component {
                 await this.props.onAccessChanged(accessUpdate);
             }
         } else {
+            this.setState({updating: false});
             alert('Could not update your access');
         }
     }
