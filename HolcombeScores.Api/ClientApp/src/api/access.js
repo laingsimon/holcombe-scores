@@ -4,7 +4,7 @@ class Access {
     }
 
     async logout() {
-       // Todo: call API to remove cookies
+       return this.http.post(`/api/Access/Logout`, {});
     }
 
     getAllAccess(bypassCache) {
