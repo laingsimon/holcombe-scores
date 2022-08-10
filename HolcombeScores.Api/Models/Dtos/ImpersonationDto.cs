@@ -6,6 +6,6 @@ namespace HolcombeScores.Api.Models.Dtos
     public class ImpersonationDto
     {
         public Guid UserId { get; set; }
-        public string AdminPassword { get; set; }
+        public string AdminPassCode { get; set; }
     }
 }
