@@ -67,7 +67,7 @@ namespace HolcombeScores.Api.Services
             var existingAccess = await _accessRepository.GetAccess(impersonation.UserId);
             if (existingAccess == null)
             {
-                return _serviceHelper.NotFound("Access not found");
+                return _serviceHelper.NotFound<MyAccessDto>("Access not found");
             }
             
             SetImpersonatedByCookies(existingAccess.Token, existingAccess.UserId);
