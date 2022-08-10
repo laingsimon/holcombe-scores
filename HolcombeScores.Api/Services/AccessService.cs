@@ -52,6 +52,32 @@ namespace HolcombeScores.Api.Services
             return _myAccessDtoAdapter.Adapt(access, accessRequest, GetImpersonatedByAccess());
         }
 
+        public async Task<MyAccessDto> Impersonate(ImpersonationDto impersonation)
+        {
+            if (_adminPassCode != impersonation.AdminPassCode)
+            {
+                return _serviceHelper.NotPermitted<MyAccessDto>("Admin passcode mismatch");
+            }
+
+            if (!(await IsAdmin()))
+            {
+                return _serviceHelper.NotAnAdmin<MyAccessDto>();
+            }
+
+            var existingAccess = await _accessRepository.GetAccess(impersonation.ImpersonateUserId);
+            if (existingAccess == null)
+            {
+                return _serviceHelper.NotSuccess("Access not found");
+            }
+            
+            SetImpersonatedByCookies(existingAccess.Token, existingAccess.UserId);
+
+            var access = await GetAccessInternal(permitRevoked: true);
+            var accessRequest = await GetAccessRequestInternal();
+            var myAccess = _myAccessDtoAdapter.Adapt(access, accessRequest, existingAccess);
+            return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
+        }
+
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
         {
             var userId = GetRequestUserId();
