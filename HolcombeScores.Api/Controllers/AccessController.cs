@@ -98,7 +98,7 @@ namespace HolcombeScores.Api.Controllers
         }
 
         [HttpPost("/api/Access/Logout")]
-        public async Task<ActionResultDto<string>> Logout()
+        public async Task<ActionResultDto<MyAccessDto>> Logout()
         {
             try
             {
@@ -111,7 +111,7 @@ namespace HolcombeScores.Api.Controllers
         }
 
         [HttpPost("/api/Access/Unimpersonate")]
-        public async Task<ActionResultDto<string>> Impersonate()
+        public async Task<ActionResultDto<MyAccessDto>> Impersonate()
         {
             try
             {
