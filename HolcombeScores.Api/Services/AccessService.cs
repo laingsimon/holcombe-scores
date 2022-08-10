@@ -446,6 +446,19 @@ namespace HolcombeScores.Api.Services
             response?.Cookies.Append(UserIdCookieName, userId.ToString(), options);
         }
 
+        private void SetImpersonatedByCookies(string token, Guid userId)
+        {
+            var response = _httpContextAccessor.HttpContext?.Response;
+            var options = new CookieOptions
+            {
+                Secure = true,
+                Expires = DateTime.UtcNow.AddDays(7),
+                SameSite = SameSiteMode.None,
+            };
+            response?.Cookies.Append(ImpersonatedByTokenCookieName, token, options);
+            response?.Cookies.Append(ImpersonatedByUserIdCookieName, userId.ToString(), options);
+        }
+
         private async Task<Access> GetAccessInternal(bool permitRevoked = false)
         {
             var token = GetRequestToken();
