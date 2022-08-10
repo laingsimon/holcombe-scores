@@ -36,14 +36,14 @@ export class Home extends Component {
     async loggedOut() {
         // noinspection JSUnresolvedFunction
         await this.props.reloadAll();
+        this.setState({
+            mode: 'access'
+        });
     }
 
     async requestCreated() {
         // noinspection JSUnresolvedFunction
         await this.props.reloadAll();
-        this.setState({
-            mode: 'access'
-        });
     }
 
     async accessDeleted() {
