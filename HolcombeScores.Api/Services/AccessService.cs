@@ -375,6 +375,8 @@ namespace HolcombeScores.Api.Services
             var response = _httpContextAccessor.HttpContext?.Response;
             response.Cookies.Delete(TokenCookieName);
             response.Cookies.Delete(UserIdCookieName);
+
+            return _serviceHelper.Success("Logged out", "Cookies removed, access can be recovered");
         }
 
         private string GetRequestToken()
