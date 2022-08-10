@@ -485,7 +485,7 @@ namespace HolcombeScores.Api.Services
             var options = new CookieOptions
             {
                 Secure = true,
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddHours(1),
                 SameSite = SameSiteMode.None,
             };
             response?.Cookies.Append(ImpersonatedByTokenCookieName, token, options);
