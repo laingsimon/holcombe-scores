@@ -13,5 +13,6 @@ namespace HolcombeScores.Api.Models.Dtos
         public bool Manager { get; set; }
         public string Name { get; set; }
         public string RevokedReason { get; set; }
+        public AccessDto ImpersonatedBy { get; set; }
     }
 }
