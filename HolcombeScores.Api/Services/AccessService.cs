@@ -64,7 +64,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotAnAdmin<MyAccessDto>();
             }
 
-            var existingAccess = await _accessRepository.GetAccess(impersonation.ImpersonateUserId);
+            var existingAccess = await _accessRepository.GetAccess(impersonation.UserId);
             if (existingAccess == null)
             {
                 return _serviceHelper.NotSuccess("Access not found");
