@@ -112,7 +112,7 @@ export class EditAccess extends Component {
                            value={this.state.proposed.name} onChange={this.accessChanged}/>
                 </div>
                 <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>Update details</button>
-                <button type="button" className="btn btn-danger" onClick={this.removeAccess}>Remove access</button>
+                <button type="button" className="btn btn-danger margin-right" onClick={this.removeAccess}>Remove access</button>
                 <button type="button" className="btn btn-danger" onClick={this.logout}>Logout</button>
             </div>)
         } catch (e) {
