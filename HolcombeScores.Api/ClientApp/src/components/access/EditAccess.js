@@ -121,7 +121,7 @@ export class EditAccess extends Component {
                     {this.state.deleting ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Remove access
                 </button>
-                <button type="button" className="btn btn-danger" onClick={this.logout}>
+                <button type="button" className="btn btn-warning" onClick={this.logout}>
                     {this.state.loggingOut ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Logout
                 </button>
