@@ -52,7 +52,7 @@ namespace HolcombeScores.Api.Services
             return _myAccessDtoAdapter.Adapt(access, accessRequest, await GetImpersonatedByAccess());
         }
 
-        public async Task<MyAccessDto> Impersonate(ImpersonationDto impersonation)
+        public async Task<ActionResultDto<MyAccessDto>> Impersonate(ImpersonationDto impersonation)
         {
             if (_adminPassCode != impersonation.AdminPassCode)
             {
