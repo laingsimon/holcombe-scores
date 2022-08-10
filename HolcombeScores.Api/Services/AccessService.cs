@@ -370,13 +370,13 @@ namespace HolcombeScores.Api.Services
             return _serviceHelper.Success("Access updated", _accessDtoAdapter.Adapt(accessToUpdate));
         }
 
-        public async Task<ActionResultDto<string>> Logout()
+        public Task<ActionResultDto<string>> Logout()
         {
             var response = _httpContextAccessor.HttpContext?.Response;
             response.Cookies.Delete(TokenCookieName);
             response.Cookies.Delete(UserIdCookieName);
 
-            return _serviceHelper.Success("Logged out", "Cookies removed, access can be recovered");
+            return Task.FromResult(_serviceHelper.Success("Logged out", "Cookies removed, access can be recovered"));
         }
 
         private string GetRequestToken()
