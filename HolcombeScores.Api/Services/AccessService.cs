@@ -370,6 +370,13 @@ namespace HolcombeScores.Api.Services
             return _serviceHelper.Success("Access updated", _accessDtoAdapter.Adapt(accessToUpdate));
         }
 
+        public Task<ActionResult<string>> Logout()
+        {
+            var response = _httpContextAccessor.HttpContext?.Response;
+            response.Cookies.Delete(TokenCookieName);
+            response.Cookies.Delete(UserIdCookieName);
+        }
+
         private string GetRequestToken()
         {
             var request = _httpContextAccessor.HttpContext?.Request;
