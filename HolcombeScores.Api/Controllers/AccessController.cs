@@ -96,5 +96,18 @@ namespace HolcombeScores.Api.Controllers
                 return _serviceHelper.Error<AccessDto>(exc.ToString());
             }
         }
+
+        [HttpPost("/api/Access/Logout")]
+        public async Task<ActionResultDto<string>> RecoverAccess()
+        {
+            try
+            {
+                return await _accessService.Logout();
+            }
+            catch (Exception exc)
+            {
+                return _serviceHelper.Error<string>(exc.ToString());
+            }
+        }
     }
 }
