@@ -24,11 +24,31 @@ export class EditAccess extends Component {
         this.updateAccess = this.updateAccess.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
         this.removeAccess = this.removeAccess.bind(this);
+        this.logout = this.logout.bind(this);
         let http = new Http(new Settings());
         this.accessApi = new Access(http);
     }
 
     //event handlers
+    async logout() {
+        if (!window.confirm('Are you sure you want to logout?')) {
+            return;
+        }
+
+        this.setState({loading: true});
+
+        const result = await this.accessApi.logout();
+
+        if (result.success) {
+            this.setState({mode: 'access'});
+            if (this.props.onLoggedOut) {
+                await this.props.onLoggedOut(this.props.access.userId);
+            }
+        } else {
+            alert('Could not logout');
+        }
+    }
+
     async removeAccess() {
         if (!window.confirm('Are you sure you want to remove your access')) {
             return;
@@ -93,6 +113,7 @@ export class EditAccess extends Component {
                 </div>
                 <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>Update details</button>
                 <button type="button" className="btn btn-danger" onClick={this.removeAccess}>Remove access</button>
+                <button type="button" className="btn btn-danger" onClick={this.logout}>Logout</button>
             </div>)
         } catch (e) {
             console.error(e);
