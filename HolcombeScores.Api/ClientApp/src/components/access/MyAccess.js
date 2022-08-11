@@ -65,9 +65,9 @@ export class MyAccess extends Component {
                 {this.state.navigating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                 View Games
             </Link>
-            {this.props.isImpersonated ? (<Button className="btn btn-secondary" onClick={this.unimpersonate}>
+            {this.props.isImpersonated ? (<button className="btn btn-secondary" onClick={this.unimpersonate}>
                 Unimpersonate
-            </Button>) : null}
+            </button>) : null}
         </div>);
     }
 
