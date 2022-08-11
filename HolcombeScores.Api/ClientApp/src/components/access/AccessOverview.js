@@ -181,14 +181,17 @@ export class AccessOverview extends Component {
             }
 
             this.setState({
-                processing: false
+                processing: false,
+                adminPassCode: '',
+                mode: 'view'
             });
 
             alert('Impersonation successful');
         } else {
             alert(`Could not impersonate access: ${Functions.getResultMessages(result)}`);
             this.setState({
-                processing: false
+                processing: false,
+                adminPassCode: ''
             });
         }
     }
