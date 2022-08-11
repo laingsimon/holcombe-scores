@@ -150,13 +150,13 @@ export class AccessOverview extends Component {
 
         const result = await this.accessApi.revokeAccess(this.userId, this.state.access.teamId, this.state.reason);
         if (result.success) {
-            this.setState({
-                processing: false
-            });
-
             if (this.props.onAccessRevoked) {
                 await this.props.onAccessRevoked(this.userId);
             }
+
+            this.setState({
+                processing: false
+            });
         } else {
             alert(`Could not revoke access: ${Functions.getResultMessages(result)}`);
             this.setState({
@@ -176,13 +176,13 @@ export class AccessOverview extends Component {
 
         const result = await this.accessApi.impersonate(this.userId, this.state.adminPassCode);
         if (result.success) {
-            this.setState({
-                processing: false
-            });
-
             if (this.props.onAccessImpersonated) {
                 await this.props.onAccessImpersonated(this.userId);
             }
+
+            this.setState({
+                processing: false
+            });
 
             alert('Impersonation successful');
         } else {
@@ -312,9 +312,9 @@ export class AccessOverview extends Component {
                 <button type="button"
                         className={`btn ${btnCancelClassName}`}
                         onClick={this.prepareCancelAccess}>{this.state.mode === 'cancel' ? '🔙' : '🗑'}</button>
-                <button type="button"
+                {this.props.isImpersonated ? null : (<button type="button"
                         className={`btn ${btnImpersonateClassName}`}
-                        onClick={this.prepareImpersonateAccess}>{this.state.mode === 'impersonate' ? '🔙' : '🕵️'}</button>
+                        onClick={this.prepareImpersonateAccess}>{this.state.mode === 'impersonate' ? '🔙' : '🕵️'}</button>)}
             </span>
             {this.state.mode === 'cancel' && !this.state.processing ? this.renderCancelOptions() : null}
             {this.state.mode === 'impersonate' && !this.state.processing ? this.renderImpersonationOptions() : null}
