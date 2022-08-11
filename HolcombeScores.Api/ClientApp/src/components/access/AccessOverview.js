@@ -308,10 +308,10 @@ export class AccessOverview extends Component {
                 </span>): null}
                 <button type="button"
                         className={`btn ${btnCancelClassName}`}
-                        onClick={this.prepareCancelAccess}>{this.state.mode === 'view' ? '🗑' : '🔙'}</button>
+                        onClick={this.prepareCancelAccess}>{this.state.mode === 'cancel' ? '🔙' : '🗑'}</button>
                 <button type="button"
                         className={`btn ${btnImpersonateClassName}`}
-                        onClick={this.prepareImpersonateAccess}>{this.state.mode === 'view' ? '🕵️' : '🔙'}</button>
+                        onClick={this.prepareImpersonateAccess}>{this.state.mode === 'impersonate' ? '🔙' : '🕵️'}</button>
             </span>
             {this.state.mode === 'cancel' && !this.state.processing ? this.renderCancelOptions() : null}
             {this.state.mode === 'impersonate' && !this.state.processing ? this.renderImpersonationOptions() : null}
