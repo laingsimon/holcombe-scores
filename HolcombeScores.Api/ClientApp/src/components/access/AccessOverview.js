@@ -277,7 +277,12 @@ export class AccessOverview extends Component {
 
     // renderers
     render() {
-        const btnClassName = this.state.processing || this.self
+        const btnCancelClassName = this.state.processing || this.self
+            ? 'btn-light'
+            : this.state.mode === 'view'
+                ? 'btn-danger'
+                : 'btn-warning';
+        const btnImpersonateClassName = this.state.processing || this.self
             ? 'btn-light'
             : this.state.mode === 'view'
                 ? 'btn-danger'
@@ -302,8 +307,11 @@ export class AccessOverview extends Component {
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Manager</label>
                 </span>): null}
                 <button type="button"
-                        className={`btn ${btnClassName}`}
+                        className={`btn ${btnCancelClassName}`}
                         onClick={this.prepareCancelAccess}>{this.state.mode === 'view' ? '🗑' : '🔙'}</button>
+                <button type="button"
+                        className={`btn ${btnImpersonateClassName}`}
+                        onClick={this.prepareImpersonateAccess}>{this.state.mode === 'view' ? '🕵️' : '🔙'}</button>
             </span>
             {this.state.mode === 'cancel' && !this.state.processing ? this.renderCancelOptions() : null}
             {this.state.mode === 'impersonate' && !this.state.processing ? this.renderImpersonationOptions() : null}
