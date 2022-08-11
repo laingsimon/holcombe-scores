@@ -1,4 +1,7 @@
 import React, {Component} from 'react';
+import {Http} from '../../api/http';
+import {Settings} from '../../api/settings';
+import {Access} from '../../api/access';
 import {Alert} from '../Alert';
 import { Link } from 'react-router-dom';
 
@@ -15,6 +18,8 @@ import { Link } from 'react-router-dom';
 export class MyAccess extends Component {
     constructor(props) {
         super(props);
+        const http = new Http(new Settings());
+        this.accessApi = new Access(http);
         this.state = {
             navigating: false
         };
