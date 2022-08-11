@@ -184,7 +184,7 @@ export class AccessOverview extends Component {
                 await this.props.onAccessImpersonated(this.userId);
             }
 
-            alert(`Impersonation successful: ${JSON.stringify(result.outcome)}`);
+            alert('Impersonation successful');
         } else {
             alert(`Could not impersonate access: ${Functions.getResultMessages(result)}`);
             this.setState({
