@@ -81,7 +81,7 @@ namespace HolcombeScores.Api.Services
         {
             RemoveImpersonationCookies();
 
-            var impersonatedAccess = await GetImpersonatedByAccess();
+            var impersonatedAccess = (await GetImpersonatedByAccess()) ?? (await GetAccessInternal(permitRevoked: true));
             return _myAccessDtoAdapter.Adapt(impersonatedAccess, null);
         }
 
