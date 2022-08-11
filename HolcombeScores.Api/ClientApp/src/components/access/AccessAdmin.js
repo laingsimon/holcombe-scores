@@ -87,7 +87,8 @@ export class AccessAdmin extends Component {
             await this.props.reloadAll();
 
             this.setState({
-                unimpersonating: false
+                unimpersonating: false,
+                allAccess: await this.getAllAccess(true),
             });
         } catch (e) {
             this.setState({
