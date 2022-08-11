@@ -43,6 +43,7 @@ export class AccessOverview extends Component {
         this.reasonChanged = this.reasonChanged.bind(this);
         this.prepareImpersonateAccess = this.prepareImpersonateAccess.bind(this);
         this.adminPassCodeChanged = this.adminPassCodeChanged.bind(this);
+        this.impersonate = this.impersonate.bind(this);
     }
 
     // events
