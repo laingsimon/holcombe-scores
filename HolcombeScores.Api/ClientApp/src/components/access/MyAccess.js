@@ -21,7 +21,8 @@ export class MyAccess extends Component {
         const http = new Http(new Settings());
         this.accessApi = new Access(http);
         this.state = {
-            navigating: false
+            navigating: false,
+            unimpersonating: false
         };
         this.beforeNavigate = this.beforeNavigate.bind(this);
         this.unimpersonate = this.unimpersonate.bind(this);
@@ -32,9 +33,17 @@ export class MyAccess extends Component {
             return;
         }
 
+        this.setState({
+            unimpersonating: true
+        });
+
         const myAccess = await this.accessApi.unimpersonate();
         await this.props.reloadAll();
-        alert(JSON.stringify(myAccess));
+
+        this.setState({
+            unimpersonating: false
+        });
+        window.alert(JSON.stringify(myAccess));
     }
 
     async beforeNavigate(event) {
@@ -67,6 +76,7 @@ export class MyAccess extends Component {
                 View Games
             </Link>
             {this.props.isImpersonated ? (<button className="btn btn-secondary" onClick={this.unimpersonate}>
+                {this.state.unimpersonating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                 Unimpersonate
             </button>) : null}
         </div>);
