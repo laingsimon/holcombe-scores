@@ -70,9 +70,10 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<MyAccessDto>("Access not found");
             }
             
-            SetImpersonatedByCookies(existingAccess.Token, existingAccess.UserId);
-
             var adminAccess = await GetAccessInternal(permitRevoked: true);
+            SetImpersonatedByCookies(adminAccess.Token, adminAccess.UserId);
+            SetCookies(existingAccess.Token, existingAccess.UserId);
+
             var myAccess = _myAccessDtoAdapter.Adapt(existingAccess, null, adminAccess);
             return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
         }
@@ -80,6 +81,9 @@ namespace HolcombeScores.Api.Services
         public async Task<MyAccessDto> Unimpersonate()
         {
             RemoveImpersonationCookies();
+
+            var adminAccess = await GetImpersonatedByAccess();
+            SetCookies(adminAccess.Token, adminAccess.UserId);
 
             var impersonatedAccess = (await GetImpersonatedByAccess()) ?? (await GetAccessInternal(permitRevoked: true));
             return _myAccessDtoAdapter.Adapt(impersonatedAccess, null);
