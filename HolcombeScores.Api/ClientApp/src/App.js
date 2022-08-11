@@ -146,6 +146,7 @@ export default class App extends Component {
         const access = await this.accessApi.getMyAccess();
         subProps.access = access.access;
         subProps.request = access.request;
+        subProps.isImpersonated = access.access && access.access.impersonatedBy !== null;
 
         this.setState({
             subProps: subProps,
