@@ -39,6 +39,7 @@ export class AccessOverview extends Component {
         this.changeTeam = this.changeTeam.bind(this);
         this.prepareCancelAccess = this.prepareCancelAccess.bind(this);
         this.reasonChanged = this.reasonChanged.bind(this);
+        this.prepareImpersonateAccess = this.prepareImpersonateAccess.bind(this);
     }
 
     // events
@@ -102,6 +103,29 @@ export class AccessOverview extends Component {
 
         this.setState({
             mode: 'cancel'
+        });
+    }
+
+    async prepareImpersonateAccess() {
+        if (this.state.mode === 'impersonate') {
+            this.setState({
+                mode: 'view'
+            });
+            return;
+        }
+
+        if (this.self) {
+            alert('You cannot impersonate your self');
+            return;
+        }
+
+        if (!this.myAccess.admin) {
+            alert('Only admins can impersonate other acceses');
+            return;
+        }
+
+        this.setState({
+            mode: 'impersonate'
         });
     }
 
