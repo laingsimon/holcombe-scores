@@ -146,7 +146,7 @@ export default class App extends Component {
         const access = await this.accessApi.getMyAccess();
         subProps.access = access.access;
         subProps.request = access.request;
-        subProps.isImpersonated = access.access && access.access.impersonatedBy !== null;
+        subProps.isImpersonated = access.access && access.access.impersonatedBy;
 
         this.setState({
             subProps: subProps,
@@ -161,7 +161,7 @@ export default class App extends Component {
             subProps: {
                 access: access ? access.access : null,
                 request: access ? access.request : null,
-                isImpersonated: access && access.impersonatedBy !== null,
+                isImpersonated: access && access.impersonatedBy,
                 teams: teams,
                 reloadAccess: this.reloadAccess,
                 reloadTeams: this.reloadTeams,
