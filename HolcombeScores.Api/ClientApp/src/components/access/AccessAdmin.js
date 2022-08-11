@@ -36,9 +36,14 @@ export class AccessAdmin extends Component {
         this.getCache = this.getCache.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
         this.requestChanged = this.requestChanged.bind(this);
+        this.accessImpersonated = this.accessImpersonated.bind(this);
     }
 
     //event handlers
+    async accessImpersonated() {
+        await this.props.reloadAll();
+    }
+
     async accessChanged() {
         this.setState({
             allAccess: await this.getAllAccess(true),
@@ -154,7 +159,7 @@ export class AccessAdmin extends Component {
 
     renderAccessOverview(access) {
         return (<AccessOverview key={access.userId} onAccessChanged={this.accessChanged} onAccessRevoked={this.accessChanged} access={access} teams={this.state.teams}
-                        myAccess={this.props.access} />);
+                        myAccess={this.props.access} onAccessImpersonated={this.accessImpersonated} />);
     }
 
     renderRequests() {
