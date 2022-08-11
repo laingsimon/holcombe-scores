@@ -37,13 +37,21 @@ export class MyAccess extends Component {
             unimpersonating: true
         });
 
-        const myAccess = await this.accessApi.unimpersonate();
-        await this.props.reloadAll();
+        try {
+            const myAccess = await this.accessApi.unimpersonate();
+            await this.props.reloadAll();
 
-        this.setState({
-            unimpersonating: false
-        });
-        window.alert(JSON.stringify(myAccess));
+            this.setState({
+                unimpersonating: false
+            });
+            window.alert(JSON.stringify(myAccess));
+        } catch (e) {
+            this.setState({
+                unimpersonating: false
+            });
+
+            alert(e);
+        }
     }
 
     async beforeNavigate(event) {
