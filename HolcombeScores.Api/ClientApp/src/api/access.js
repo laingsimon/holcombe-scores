@@ -3,8 +3,19 @@ class Access {
         this.http = http;
     }
 
-    async logout() {
+    logout() {
        return this.http.post(`/api/Access/Logout`, {});
+    }
+
+    impersonate(userId, adminPassCode) {
+       return this.http.post(`/api/Access/Impersonate`, {
+         userId: userId,
+         adminPassCode: adminPassCode
+       });
+    }
+
+    unimpersonate() {
+       return this.http.post(`/api/Access/Unimpersonate`, {});
     }
 
     getAllAccess(bypassCache) {
