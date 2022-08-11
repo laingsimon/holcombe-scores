@@ -161,7 +161,7 @@ export default class App extends Component {
             subProps: {
                 access: access ? access.access : null,
                 request: access ? access.request : null,
-                isImpersonated: access && access.impersonatedBy,
+                isImpersonated: access.access && access.access.impersonatedBy,
                 teams: teams,
                 reloadAccess: this.reloadAccess,
                 reloadTeams: this.reloadTeams,
