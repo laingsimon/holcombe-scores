@@ -14,6 +14,7 @@ import {Functions} from '../../functions';
 * Events:
 * - onAccessChanged(userId)
 * - onAccessRevoked(userId)
+* - onAccessImpersonated(userId)
 */
 export class AccessOverview extends Component {
     constructor(props) {
@@ -25,7 +26,8 @@ export class AccessOverview extends Component {
             processing: false,
             access: this.props.access,
             mode: 'view',
-            reason: ''
+            reason: '',
+            adminPassCode: ''
         };
 
         this.teams = this.props.teams;
@@ -40,6 +42,7 @@ export class AccessOverview extends Component {
         this.prepareCancelAccess = this.prepareCancelAccess.bind(this);
         this.reasonChanged = this.reasonChanged.bind(this);
         this.prepareImpersonateAccess = this.prepareImpersonateAccess.bind(this);
+        this.adminPassCodeChanged = this.adminPassCodeChanged.bind(this);
     }
 
     // events
@@ -53,6 +56,12 @@ export class AccessOverview extends Component {
     reasonChanged(event) {
         this.setState({
             reason: event.target.value
+        });
+    }
+
+    adminPassCodeChanged(event) {
+        this.setState({
+            adminPassCode: event.target.value
         });
     }
 
@@ -149,6 +158,32 @@ export class AccessOverview extends Component {
             }
         } else {
             alert(`Could not revoke access: ${Functions.getResultMessages(result)}`);
+            this.setState({
+                processing: false
+            });
+        }
+    }
+
+    async impersonate() {
+        if (!window.confirm('Are you sure you want to impersonate this user?')) {
+            return;
+        }
+
+        this.setState({
+            processing: true
+        });
+
+        const result = await this.accessApi.impersonate(this.userId, this.state.adminPassCode);
+        if (result.success) {
+            this.setState({
+                processing: false
+            });
+
+            if (this.props.onAccessImpersonated) {
+                await this.props.onAccessImpersonated(this.userId);
+            }
+        } else {
+            alert(`Could not impersonate access: ${Functions.getResultMessages(result)}`);
             this.setState({
                 processing: false
             });
@@ -271,6 +306,7 @@ export class AccessOverview extends Component {
                         onClick={this.prepareCancelAccess}>{this.state.mode === 'view' ? '🗑' : '🔙'}</button>
             </span>
             {this.state.mode === 'cancel' && !this.state.processing ? this.renderCancelOptions() : null}
+            {this.state.mode === 'impersonate' && !this.state.processing ? this.renderImpersonationOptions() : null}
         </div>);
     }
 
@@ -286,6 +322,22 @@ export class AccessOverview extends Component {
                 <button type="button"
                         className={`btn ${this.state.processing || this.self ? 'btn-light' : 'btn-danger'}`}
                         onClick={this.cancelAccess}>Cancel Access</button>
+            </div>
+        </div>);
+    }
+
+    renderImpersonationOptions() {
+        return (<div>
+            <hr />
+            <div className="input-group mb-3">
+                <div className="input-group-prepend">
+                    <span className="input-group-text" id="basic-addon3">Admin PassCode</span>
+                </div>
+                <input type="password" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                       name="adminPassCode" value={this.state.adminPassCode} onChange={this.adminPassCodeChanged}/>
+                <button type="button"
+                        className={`btn ${this.state.processing || this.self ? 'btn-light' : 'btn-secondary'}`}
+                        onClick={this.impersonate}>Impersonate</button>
             </div>
         </div>);
     }
