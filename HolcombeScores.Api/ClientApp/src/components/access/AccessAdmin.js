@@ -31,12 +31,14 @@ export class AccessAdmin extends Component {
             processing: [],
             cache: null,
             cacheAt: null,
+            unimpersonating: false,
         };
         this.changeMode = this.changeMode.bind(this);
         this.getCache = this.getCache.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
         this.requestChanged = this.requestChanged.bind(this);
         this.accessImpersonated = this.accessImpersonated.bind(this);
+        this.unimpersonate = this.unimpersonate.bind(this);
     }
 
     //event handlers
@@ -66,6 +68,31 @@ export class AccessAdmin extends Component {
             mode: mode,
         });
         window.history.replaceState(null, event.target.textContent, url);
+    }
+
+    async unimpersonate() {
+        if (!window.confirm('Are you sure you want to unimpersonate?')) {
+            return;
+        }
+
+        this.setState({
+            unimpersonating: true
+        });
+
+        try {
+            await this.accessApi.unimpersonate();
+            await this.props.reloadAll();
+
+            this.setState({
+                unimpersonating: false
+            });
+        } catch (e) {
+            this.setState({
+                unimpersonating: false
+            });
+
+            alert(e);
+        }
     }
 
     async componentDidMount() {
@@ -154,6 +181,10 @@ export class AccessAdmin extends Component {
             <div className="list-group">
                 {this.state.allAccess.filter(a => a.revoked).map(access => this.renderAccessOverview(access))}
             </div>
+            {this.props.isImpersonated ? (<button className="btn btn-secondary" onClick={this.unimpersonate}>
+                {this.state.unimpersonating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                Unimpersonate
+            </button>) : null}
         </div>);
     }
 
