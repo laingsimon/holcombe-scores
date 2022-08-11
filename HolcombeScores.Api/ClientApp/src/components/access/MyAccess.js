@@ -38,7 +38,7 @@ export class MyAccess extends Component {
         });
 
         try {
-            const myAccess = await this.accessApi.unimpersonate();
+            await this.accessApi.unimpersonate();
             await this.props.reloadAll();
 
             this.setState({
