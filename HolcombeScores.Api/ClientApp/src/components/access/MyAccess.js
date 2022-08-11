@@ -61,10 +61,13 @@ export class MyAccess extends Component {
         return (<div>
             Hello <strong>{this.props.access.name}</strong>, you have access to <strong><span><strong>{team.name}</strong> (Coach {team.coach})</span></strong>
             <br/>
-            <Link onClick={this.beforeNavigate} to={`/team/${team.id}/view`} className="btn btn-primary">
+            <Link onClick={this.beforeNavigate} to={`/team/${team.id}/view`} className="btn btn-primary margin-right">
                 {this.state.navigating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                 View Games
             </Link>
+            {this.props.isImpersonated ? (<Button className="btn btn-secondary" onClick={this.unimpersonate}>
+                Unimpersonate
+            </Button>) : null}
         </div>);
     }
 
