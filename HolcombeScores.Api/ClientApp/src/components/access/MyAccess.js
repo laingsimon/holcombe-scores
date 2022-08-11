@@ -32,8 +32,9 @@ export class MyAccess extends Component {
             return;
         }
 
-        await this.accessApi.unimpersonate();
+        const myAccess = await this.accessApi.unimpersonate();
         await this.props.reloadAll();
+        alert(JSON.stringify(myAccess));
     }
 
     async beforeNavigate(event) {
