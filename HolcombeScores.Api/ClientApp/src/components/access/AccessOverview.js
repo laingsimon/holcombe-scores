@@ -285,14 +285,14 @@ export class AccessOverview extends Component {
     render() {
         const btnCancelClassName = this.state.processing || this.self
             ? 'btn-light'
-            : this.state.mode === 'view'
-                ? 'btn-danger'
-                : 'btn-warning';
+            : this.state.mode === 'cancel'
+                ? 'btn-warning'
+                : 'btn-danger';
         const btnImpersonateClassName = this.state.processing || this.self
             ? 'btn-light'
-            : this.state.mode === 'view'
-                ? 'btn-danger'
-                : 'btn-warning';
+            : this.state.mode === 'impersonate'
+                ? 'btn-warning'
+                : 'btn-danger';
 
         return (<div key={this.userId} className="list-group-item list-group-item-action flex-column align-items-start">
             <span>
