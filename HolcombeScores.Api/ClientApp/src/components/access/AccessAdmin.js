@@ -44,6 +44,9 @@ export class AccessAdmin extends Component {
     //event handlers
     async accessImpersonated() {
         await this.props.reloadAll();
+        this.setState({
+            allAccess: await this.getAllAccess(true),
+        }); 
     }
 
     async accessChanged() {
