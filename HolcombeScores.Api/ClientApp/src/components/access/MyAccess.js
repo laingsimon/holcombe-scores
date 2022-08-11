@@ -19,6 +19,16 @@ export class MyAccess extends Component {
             navigating: false
         };
         this.beforeNavigate = this.beforeNavigate.bind(this);
+        this.unimpersonate = this.unimpersonate.bind(this);
+    }
+
+    async unimpersonate() {
+        if (!window.confirm('Are you sure you want to unimpersonate?')) {
+            return;
+        }
+
+        await this.accessApi.unimpersonate();
+        await this.props.reloadAll();
     }
 
     async beforeNavigate(event) {
