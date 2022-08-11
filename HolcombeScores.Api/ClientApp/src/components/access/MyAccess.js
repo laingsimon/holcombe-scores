@@ -44,7 +44,6 @@ export class MyAccess extends Component {
             this.setState({
                 unimpersonating: false
             });
-            window.alert(JSON.stringify(myAccess));
         } catch (e) {
             this.setState({
                 unimpersonating: false
