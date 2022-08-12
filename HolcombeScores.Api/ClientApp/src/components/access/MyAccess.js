@@ -1,4 +1,7 @@
 import React, {Component} from 'react';
+import {Http} from '../../api/http';
+import {Settings} from '../../api/settings';
+import {Access} from '../../api/access';
 import {Alert} from '../Alert';
 import { Link } from 'react-router-dom';
 
@@ -15,10 +18,39 @@ import { Link } from 'react-router-dom';
 export class MyAccess extends Component {
     constructor(props) {
         super(props);
+        const http = new Http(new Settings());
+        this.accessApi = new Access(http);
         this.state = {
-            navigating: false
+            navigating: false,
+            unimpersonating: false
         };
         this.beforeNavigate = this.beforeNavigate.bind(this);
+        this.unimpersonate = this.unimpersonate.bind(this);
+    }
+
+    async unimpersonate() {
+        if (!window.confirm('Are you sure you want to unimpersonate?')) {
+            return;
+        }
+
+        this.setState({
+            unimpersonating: true
+        });
+
+        try {
+            await this.accessApi.unimpersonate();
+            await this.props.reloadAll();
+
+            this.setState({
+                unimpersonating: false
+            });
+        } catch (e) {
+            this.setState({
+                unimpersonating: false
+            });
+
+            alert(e);
+        }
     }
 
     async beforeNavigate(event) {
@@ -46,10 +78,14 @@ export class MyAccess extends Component {
         return (<div>
             Hello <strong>{this.props.access.name}</strong>, you have access to <strong><span><strong>{team.name}</strong> (Coach {team.coach})</span></strong>
             <br/>
-            <Link onClick={this.beforeNavigate} to={`/team/${team.id}/view`} className="btn btn-primary">
+            <Link onClick={this.beforeNavigate} to={`/team/${team.id}/view`} className="btn btn-primary margin-right">
                 {this.state.navigating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                 View Games
             </Link>
+            {this.props.isImpersonated ? (<button className="btn btn-secondary" onClick={this.unimpersonate}>
+                {this.state.unimpersonating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                Unimpersonate
+            </button>) : null}
         </div>);
     }
 

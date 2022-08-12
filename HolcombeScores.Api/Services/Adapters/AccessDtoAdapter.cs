@@ -25,7 +25,7 @@ namespace HolcombeScores.Api.Services.Adapters
             };
         }
 
-        public AccessDto Adapt(Access access)
+        public AccessDto Adapt(Access access, Access impersonatedBy = null)
         {
             if (access == null)
             {
@@ -42,6 +42,9 @@ namespace HolcombeScores.Api.Services.Adapters
                 UserId = access.UserId,
                 RevokedReason = access.RevokedReason,
                 Manager = access.Manager,
+                ImpersonatedBy = impersonatedBy == null 
+                    ? null
+                    : Adapt(impersonatedBy),
             };
         }
     }

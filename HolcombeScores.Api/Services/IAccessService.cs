@@ -23,5 +23,7 @@ namespace HolcombeScores.Api.Services
         Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated);
         Task<bool> IsManagerOrAdmin();
         Task<ActionResultDto<string>> Logout();
+        Task<ActionResultDto<MyAccessDto>> Impersonate(ImpersonationDto impersonation);
+        Task<MyAccessDto> Unimpersonate();
     }
 }

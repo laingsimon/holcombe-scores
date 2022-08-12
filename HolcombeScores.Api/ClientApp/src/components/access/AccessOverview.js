@@ -14,6 +14,7 @@ import {Functions} from '../../functions';
 * Events:
 * - onAccessChanged(userId)
 * - onAccessRevoked(userId)
+* - onAccessImpersonated(userId)
 */
 export class AccessOverview extends Component {
     constructor(props) {
@@ -25,7 +26,8 @@ export class AccessOverview extends Component {
             processing: false,
             access: this.props.access,
             mode: 'view',
-            reason: ''
+            reason: '',
+            adminPassCode: ''
         };
 
         this.teams = this.props.teams;
@@ -39,6 +41,9 @@ export class AccessOverview extends Component {
         this.changeTeam = this.changeTeam.bind(this);
         this.prepareCancelAccess = this.prepareCancelAccess.bind(this);
         this.reasonChanged = this.reasonChanged.bind(this);
+        this.prepareImpersonateAccess = this.prepareImpersonateAccess.bind(this);
+        this.adminPassCodeChanged = this.adminPassCodeChanged.bind(this);
+        this.impersonate = this.impersonate.bind(this);
     }
 
     // events
@@ -52,6 +57,12 @@ export class AccessOverview extends Component {
     reasonChanged(event) {
         this.setState({
             reason: event.target.value
+        });
+    }
+
+    adminPassCodeChanged(event) {
+        this.setState({
+            adminPassCode: event.target.value
         });
     }
 
@@ -105,28 +116,86 @@ export class AccessOverview extends Component {
         });
     }
 
+    async prepareImpersonateAccess() {
+        if (this.state.mode === 'impersonate') {
+            this.setState({
+                mode: 'view'
+            });
+            return;
+        }
+
+        if (this.self) {
+            alert('You cannot impersonate your self');
+            return;
+        }
+
+        if (!this.myAccess.admin) {
+            alert('Only admins can impersonate other acceses');
+            return;
+        }
+
+        this.setState({
+            mode: 'impersonate'
+        });
+    }
+
     async cancelAccess() {
         if (!window.confirm('Are you sure you want to REVOKE this access')) {
             return;
         }
 
         this.setState({
-            processing: true
+            processing: true,
+            cancelling: true
         });
 
         const result = await this.accessApi.revokeAccess(this.userId, this.state.access.teamId, this.state.reason);
         if (result.success) {
-            this.setState({
-                processing: false
-            });
-
             if (this.props.onAccessRevoked) {
                 await this.props.onAccessRevoked(this.userId);
             }
+
+            this.setState({
+                processing: false,
+                cancelling: false
+            });
         } else {
             alert(`Could not revoke access: ${Functions.getResultMessages(result)}`);
             this.setState({
-                processing: false
+                processing: false,
+                cancelling: false
+            });
+        }
+    }
+
+    async impersonate() {
+        if (!window.confirm('Are you sure you want to impersonate this user?')) {
+            return;
+        }
+
+        this.setState({
+            processing: true,
+            impersonating: true
+        });
+
+        const result = await this.accessApi.impersonate(this.userId, this.state.adminPassCode);
+        if (result.success) {
+            if (this.props.onAccessImpersonated) {
+                await this.props.onAccessImpersonated(this.userId);
+            }
+
+            this.setState({
+                processing: false,
+                adminPassCode: '',
+                mode: 'view',
+                impersonating: false
+            });
+        } else {
+            alert(`Could not impersonate access: ${Functions.getResultMessages(result)}`);
+            this.setState({
+                processing: false,
+                adminPassCode: '',
+                impersonating: false
             });
         }
     }
@@ -218,11 +287,16 @@ export class AccessOverview extends Component {
 
     // renderers
     render() {
-        const btnClassName = this.state.processing || this.self
+        const btnCancelClassName = this.state.processing || this.self
             ? 'btn-light'
-            : this.state.mode === 'view'
-                ? 'btn-danger'
-                : 'btn-warning';
+            : this.state.mode === 'cancel'
+                ? 'btn-warning'
+                : 'btn-danger';
+        const btnImpersonateClassName = this.state.processing || this.self
+            ? 'btn-light'
+            : this.state.mode === 'impersonate'
+                ? 'btn-warning'
+                : 'btn-danger';
 
         return (<div key={this.userId} className="list-group-item list-group-item-action flex-column align-items-start">
             <span>
@@ -243,11 +317,21 @@ export class AccessOverview extends Component {
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Manager</label>
                 </span>): null}
                 <button type="button"
-                        className={`btn ${btnClassName}`}
-                        onClick={this.prepareCancelAccess}>{this.state.mode === 'view' ? '🗑' : '🔙'}</button>
+                        className={`btn ${btnCancelClassName}`}
+                        onClick={this.prepareCancelAccess}>{this.renderBackButton('cancel', '🗑', this.state.cancelling)}</button>
+                {this.props.isImpersonated ? null : (<button type="button"
+                        className={`btn ${btnImpersonateClassName}`}
+                        onClick={this.prepareImpersonateAccess}>{this.renderBackButton('impersonate', '🕵️', this.state.impersonating)}</button>)}
             </span>
             {this.state.mode === 'cancel' && !this.state.processing ? this.renderCancelOptions() : null}
+            {this.state.mode === 'impersonate' && !this.state.processing ? this.renderImpersonationOptions() : null}
         </div>);
+    }
+
+    renderBackButton(buttonMode, icon, processing) {
+        return this.state.mode === buttonMode
+            ? processing ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : '🔙' 
+            : icon;
     }
 
     renderCancelOptions() {
@@ -262,6 +346,22 @@ export class AccessOverview extends Component {
                 <button type="button"
                         className={`btn ${this.state.processing || this.self ? 'btn-light' : 'btn-danger'}`}
                         onClick={this.cancelAccess}>Cancel Access</button>
+            </div>
+        </div>);
+    }
+
+    renderImpersonationOptions() {
+        return (<div>
+            <hr />
+            <div className="input-group mb-3">
+                <div className="input-group-prepend">
+                    <span className="input-group-text" id="basic-addon3">Admin PassCode</span>
+                </div>
+                <input type="password" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                       name="adminPassCode" value={this.state.adminPassCode} onChange={this.adminPassCodeChanged}/>
+                <button type="button"
+                        className={`btn ${this.state.processing || this.self ? 'btn-light' : 'btn-secondary'}`}
+                        onClick={this.impersonate}>Impersonate</button>
             </div>
         </div>);
     }
