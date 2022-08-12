@@ -65,21 +65,21 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotAnAdmin<MyAccessDto>();
             }
 
-            var existingAccess = await _accessRepository.GetAccess(impersonation.UserId);
-            if (existingAccess == null)
+            var impersonatingAccess = await _accessRepository.GetAccess(impersonation.UserId);
+            if (impersonatingAccess == null)
             {
                 return _serviceHelper.NotFound<MyAccessDto>("Access not found");
             }
 
-            if (existingAccess.Revoked)
+            if (impersonatingAccess.Revoked != null)
             {
                 return _serviceHelper.NotPermitted<MyAccessDto>("Access to this user has been revoked");
             }
             
-            var impersonatingAccess = await GetAccessInternal(permitRevoked: true);
-            SetImpersonatingCookies(existingAccess.Token, existingAccess.UserId);
+            var impersonatedByAccess = await GetAccessInternal(permitRevoked: true);
+            SetImpersonatingCookies(impersonatingAccess.Token, impersonatingAccess.UserId);
 
-            var myAccess = _myAccessDtoAdapter.Adapt(existingAccess, null, adminAccess);
+            var myAccess = _myAccessDtoAdapter.Adapt(impersonatingAccess, null, impersonatedByAccess);
             return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
         }
 
