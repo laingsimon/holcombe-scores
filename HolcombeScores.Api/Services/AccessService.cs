@@ -9,8 +9,8 @@ namespace HolcombeScores.Api.Services
     {
         private const string TokenCookieName = "HS_Token";
         private const string UserIdCookieName = "HS_User";
-        private const string ImpersonatedByTokenCookieName = "HS_ImpersonatedByToken";
-        private const string ImpersonatedByUserIdCookieName = "HS_ImpersonatedByUserId";
+        private const string ImpersonatingTokenCookieName = "HS_ImpersonatingToken";
+        private const string ImpersonatingUserIdCookieName = "HS_ImpersonatingUserId";
 
         private readonly IAccessRepository _accessRepository;
         private readonly IAccessRequestedDtoAdapter _accessRequestedDtoAdapter;
@@ -47,9 +47,10 @@ namespace HolcombeScores.Api.Services
         public async Task<MyAccessDto> GetMyAccess()
         {
             var access = await GetAccessInternal(permitRevoked: true);
+            var impersonatedByAccess = await GetImpersonatedByAccess();
             var accessRequest = await GetAccessRequestInternal();
 
-            return _myAccessDtoAdapter.Adapt(access, accessRequest, await GetImpersonatedByAccess());
+            return _myAccessDtoAdapter.Adapt(access, accessRequest, impersonatedByAccess);
         }
 
         public async Task<ActionResultDto<MyAccessDto>> Impersonate(ImpersonationDto impersonation)
@@ -69,10 +70,14 @@ namespace HolcombeScores.Api.Services
             {
                 return _serviceHelper.NotFound<MyAccessDto>("Access not found");
             }
+
+            if (existingAccess.Revoked)
+            {
+                return _serviceHelper.NotPermitted<MyAccessDto>("Access to this user has been revoked");
+            }
             
-            var adminAccess = await GetAccessInternal(permitRevoked: true);
-            SetImpersonatedByCookies(adminAccess.Token, adminAccess.UserId);
-            SetCookies(existingAccess.Token, existingAccess.UserId);
+            var impersonatingAccess = await GetAccessInternal(permitRevoked: true);
+            SetImpersonatingCookies(existingAccess.Token, existingAccess.UserId);
 
             var myAccess = _myAccessDtoAdapter.Adapt(existingAccess, null, adminAccess);
             return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
@@ -82,11 +87,8 @@ namespace HolcombeScores.Api.Services
         {
             RemoveImpersonationCookies();
 
-            var adminAccess = await GetImpersonatedByAccess();
-            SetCookies(adminAccess.Token, adminAccess.UserId);
-
-            var impersonatedAccess = (await GetImpersonatedByAccess()) ?? (await GetAccessInternal(permitRevoked: true));
-            return _myAccessDtoAdapter.Adapt(impersonatedAccess, null);
+            var originalAccess = await GetAccessInternal();
+            return _myAccessDtoAdapter.Adapt(originalAccess, null);
         }
 
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
@@ -430,11 +432,11 @@ namespace HolcombeScores.Api.Services
             return null;
         }
 
-        private string GetImpersonatedByToken()
+        private string GetImpersonatingToken()
         {
             var request = _httpContextAccessor.HttpContext?.Request;
             var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
-            if (cookies.TryGetValue(ImpersonatedByTokenCookieName, out var token))
+            if (cookies.TryGetValue(ImpersonatingTokenCookieName, out var token))
             {
                 return token;
             }
@@ -456,11 +458,11 @@ namespace HolcombeScores.Api.Services
             return null;
         }
 
-        private Guid? GetImpersonatedByUserId()
+        private Guid? GetImpersonatingUserId()
         {
             var request = _httpContextAccessor.HttpContext?.Request;
             var cookies = request?.Cookies.ToDictionary(c => c.Key, c => c.Value) ?? new Dictionary<string, string>();
-            if (cookies.TryGetValue(ImpersonatedByUserIdCookieName, out var userIdString))
+            if (cookies.TryGetValue(ImpersonatingUserIdCookieName, out var userIdString))
             {
                 return Guid.TryParse(userIdString, out var userId)
                     ? userId
@@ -483,7 +485,7 @@ namespace HolcombeScores.Api.Services
             response?.Cookies.Append(UserIdCookieName, userId.ToString(), options);
         }
 
-        private void SetImpersonatedByCookies(string token, Guid userId)
+        private void SetImpersonatingCookies(string token, Guid userId)
         {
             var response = _httpContextAccessor.HttpContext?.Response;
             var options = new CookieOptions
@@ -492,21 +494,21 @@ namespace HolcombeScores.Api.Services
                 Expires = DateTime.UtcNow.AddHours(1),
                 SameSite = SameSiteMode.None,
             };
-            response?.Cookies.Append(ImpersonatedByTokenCookieName, token, options);
-            response?.Cookies.Append(ImpersonatedByUserIdCookieName, userId.ToString(), options);
+            response?.Cookies.Append(ImpersonatingTokenCookieName, token, options);
+            response?.Cookies.Append(ImpersonatingUserIdCookieName, userId.ToString(), options);
         }
 
         private void RemoveImpersonationCookies()
         {
             var response = _httpContextAccessor.HttpContext?.Response;
-            response?.Cookies.Delete(ImpersonatedByTokenCookieName);
-            response?.Cookies.Delete(ImpersonatedByUserIdCookieName);
+            response?.Cookies.Delete(ImpersonatingTokenCookieName);
+            response?.Cookies.Delete(ImpersonatingUserIdCookieName);
         }
 
         private async Task<Access> GetAccessInternal(bool permitRevoked = false)
         {
-            var token = GetRequestToken();
-            var userId = GetRequestUserId();
+            var token = GetImpersonatingToken() ?? GetRequestToken();
+            var userId = GetImpersonatingUserId() ?? GetRequestUserId();
             if (token == null || userId == null)
             {
                 return null;
@@ -529,8 +531,13 @@ namespace HolcombeScores.Api.Services
 
         private async Task<Access> GetImpersonatedByAccess()
         {
-            var token = GetImpersonatedByToken();
-            var userId = GetImpersonatedByUserId();
+            if (GetImpersonatingToken() == null || GetImpersonatingUserId() == null)
+            {
+                return null;
+            }
+
+            var token = GetRequestToken();
+            var userId = GetRequestUserId();
             if (token == null || userId == null)
             {
                 return null;
@@ -548,8 +555,8 @@ namespace HolcombeScores.Api.Services
 
         private async Task<AccessRequest> GetAccessRequestInternal()
         {
-            var token = GetRequestToken();
-            var userId = GetRequestUserId();
+            var token = GetImpersonatingToken() ?? GetRequestToken();
+            var userId = GetImpersonatingUserId() ?? GetRequestUserId();
             if (token == null || userId == null)
             {
                 return null;
