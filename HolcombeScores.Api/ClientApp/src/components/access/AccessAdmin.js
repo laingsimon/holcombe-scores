@@ -43,9 +43,15 @@ export class AccessAdmin extends Component {
 
     //event handlers
     async accessImpersonated() {
+        this.setState({
+            loading: true
+        });
+
         await this.props.reloadAll();
+
         this.setState({
             allAccess: await this.getAllAccess(true),
+            loading: false
         }); 
     }
 
