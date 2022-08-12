@@ -90,10 +90,16 @@ export class AccessAdmin extends Component {
 
         try {
             await this.accessApi.unimpersonate();
+
+            this.setState({
+                loading: true
+            });
+
             await this.props.reloadAll();
 
             this.setState({
                 unimpersonating: false,
+                loading: false,
                 allAccess: await this.getAllAccess(true),
             });
         } catch (e) {
