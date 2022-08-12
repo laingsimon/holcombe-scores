@@ -145,7 +145,8 @@ export class AccessOverview extends Component {
         }
 
         this.setState({
-            processing: true
+            processing: true,
+            cancelling: true
         });
 
         const result = await this.accessApi.revokeAccess(this.userId, this.state.access.teamId, this.state.reason);
@@ -155,12 +156,14 @@ export class AccessOverview extends Component {
             }
 
             this.setState({
-                processing: false
+                processing: false,
+                cancelling: false
             });
         } else {
             alert(`Could not revoke access: ${Functions.getResultMessages(result)}`);
             this.setState({
-                processing: false
+                processing: false,
+                cancelling: false
             });
         }
     }
@@ -171,7 +174,8 @@ export class AccessOverview extends Component {
         }
 
         this.setState({
-            processing: true
+            processing: true,
+            impersonating: true
         });
 
         const result = await this.accessApi.impersonate(this.userId, this.state.adminPassCode);
@@ -183,7 +187,8 @@ export class AccessOverview extends Component {
             this.setState({
                 processing: false,
                 adminPassCode: '',
-                mode: 'view'
+                mode: 'view',
+                impersonating: false
             });
 
             alert('Impersonation successful');
@@ -191,7 +196,8 @@ export class AccessOverview extends Component {
             alert(`Could not impersonate access: ${Functions.getResultMessages(result)}`);
             this.setState({
                 processing: false,
-                adminPassCode: ''
+                adminPassCode: '',
+                impersonating: false
             });
         }
     }
@@ -314,14 +320,20 @@ export class AccessOverview extends Component {
                 </span>): null}
                 <button type="button"
                         className={`btn ${btnCancelClassName}`}
-                        onClick={this.prepareCancelAccess}>{this.state.mode === 'cancel' ? '🔙' : '🗑'}</button>
+                        onClick={this.prepareCancelAccess}>{this.renderBackButton('cancel', '🗑', this.state.cancelling)}</button>
                 {this.props.isImpersonated ? null : (<button type="button"
                         className={`btn ${btnImpersonateClassName}`}
-                        onClick={this.prepareImpersonateAccess}>{this.state.mode === 'impersonate' ? '🔙' : '🕵️'}</button>)}
+                        onClick={this.prepareImpersonateAccess}>{this.renderBackButton('impersonate', '🕵️', this.state.impersonating)}</button>)}
             </span>
             {this.state.mode === 'cancel' && !this.state.processing ? this.renderCancelOptions() : null}
             {this.state.mode === 'impersonate' && !this.state.processing ? this.renderImpersonationOptions() : null}
         </div>);
+    }
+
+    renderBackButton(buttonMode, icon, processing) {
+        return this.state.mode === buttonMode
+            ? processing ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : '🔙' 
+            : icon;
     }
 
     renderCancelOptions() {
