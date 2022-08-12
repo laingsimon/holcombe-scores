@@ -26,6 +26,14 @@ export class About extends Component {
                 <li><a href="https://www.holcombeyfc.com/">Holcombe Youth Football Club</a></li>
                 <li><a href="https://laingsimon.github.io/blog/">Simon Laing</a></li>
             </ul>
+            <h4>Licensing</h4>
+            <p>This product is licensed free for use by players and supporters, functionality may be changed, removed or introduced without warning. It has been made possible by  a number of technologies and contributions of other parties, notably, but not limited to:</p>
+            <ul>
+                <li><a href="https://reactjs.org/">React</a></li>
+                <li><a href="https://swagger.io/">Swagger</a></li>
+                <li><a href="https://getbootstrap.com/">Bootstrap</a></li>
+                <li><a href="https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-6.0">asp.net (Core) and Azure</a></li>
+            </ul>
         </div>);
     }
 }
