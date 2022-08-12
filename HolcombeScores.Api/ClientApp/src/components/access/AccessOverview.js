@@ -190,8 +190,6 @@ export class AccessOverview extends Component {
                 mode: 'view',
                 impersonating: false
             });
-
-            alert('Impersonation successful');
         } else {
             alert(`Could not impersonate access: ${Functions.getResultMessages(result)}`);
             this.setState({
