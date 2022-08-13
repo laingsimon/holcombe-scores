@@ -24,7 +24,6 @@ export class Teams extends Component {
         this.accessApi = new Access(http);
         this.history = props.history;
         this.state = {
-            loading: true,
             error: null,
             mode: props.match.params.mode || 'view',
             teamCreated: null
@@ -54,14 +53,12 @@ export class Teams extends Component {
 
     componentDidMount() {
         try {
-            if (this.props.access) {
-                this.setState({loading: false});
-            } else {
-                this.setState({loading: false, error: 'You need to request access first'});
+            if (!this.props.access) {
+                this.setState({ error: 'You need to request access first' });
             }
         } catch (e) {
             console.error(e);
-            this.setState({loading: false, error: e.message});
+            this.setState({ error: e.message });
         }
     }
 
@@ -80,13 +77,6 @@ export class Teams extends Component {
     }
 
     render() {
-        if (this.state.loading) {
-            return (<div className="d-flex justify-content-center">
-                <div className="spinner-border spinner-football" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>);
-        }
         if (this.state.error) {
             return (<Alert errors={[this.state.error]}/>);
         }
