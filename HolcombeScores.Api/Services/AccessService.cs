@@ -75,12 +75,12 @@ namespace HolcombeScores.Api.Services
             {
                 return _serviceHelper.NotPermitted<MyAccessDto>("Access to this user has been revoked");
             }
-            
+
             var impersonatedByAccess = await GetAccessInternal(permitRevoked: true);
             SetImpersonatingCookies(impersonatingAccess.Token, impersonatingAccess.UserId);
 
             var myAccess = _myAccessDtoAdapter.Adapt(impersonatingAccess, null, impersonatedByAccess);
-            return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
+            return _serviceHelper.Success("Impersonation complete", myAccess);
         }
 
         public async Task<MyAccessDto> Unimpersonate()
@@ -414,8 +414,8 @@ namespace HolcombeScores.Api.Services
         public Task<ActionResultDto<string>> Logout()
         {
             var response = _httpContextAccessor.HttpContext?.Response;
-            response.Cookies.Delete(TokenCookieName);
-            response.Cookies.Delete(UserIdCookieName);
+            response?.Cookies.Delete(TokenCookieName);
+            response?.Cookies.Delete(UserIdCookieName);
 
             return Task.FromResult(_serviceHelper.Success("Logged out", "Cookies removed, access can be recovered"));
         }

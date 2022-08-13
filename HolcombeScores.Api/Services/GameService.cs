@@ -41,11 +41,6 @@ namespace HolcombeScores.Api.Services
                 yield break;
             }
 
-            if (teamId == null && !access.Admin)
-            {
-                teamId = access.TeamId;
-            }
-
             await foreach (var game in _gameRepository.GetAll(teamId))
             {
                 var gamePlayers = await _gameRepository.GetPlayers(game.Id);
@@ -92,8 +87,6 @@ namespace HolcombeScores.Api.Services
 
             try
             {
-                // TODO: Add Validation
-
                 var game = _gameDetailsDtoAdapter.AdaptToGame(gameDetailsDto);
                 game.Id = Guid.NewGuid();
                 var missingPlayers = new List<Guid>();
@@ -141,8 +134,6 @@ namespace HolcombeScores.Api.Services
 
             try
             {
-                // TODO: Add Validation
-
                 var update = _gameDetailsDtoAdapter.AdaptToGame(gameDetailsDto);
 
                 var game = await _gameRepository.Get(update.Id);

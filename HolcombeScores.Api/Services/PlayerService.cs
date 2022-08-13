@@ -48,12 +48,6 @@ namespace HolcombeScores.Api.Services
                 yield break;
             }
 
-            if (!access.Admin && access.TeamId != teamId)
-            {
-                // asking for players from another team, and not an admin
-                yield break;
-            }
-
             await foreach (var player in _playerRepository.GetAll(teamId))
             {
                 yield return _playerDtoAdapter.Adapt(player);

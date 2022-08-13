@@ -42,7 +42,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 UserId = access.UserId,
                 RevokedReason = access.RevokedReason,
                 Manager = access.Manager,
-                ImpersonatedBy = impersonatedBy == null 
+                ImpersonatedBy = impersonatedBy == null
                     ? null
                     : Adapt(impersonatedBy),
             };
