@@ -154,7 +154,7 @@ namespace HolcombeScores.Api.Services
                 yield break;
             }
 
-            await foreach (var access in _accessRepository.GetAllAccess(myAccess.Admin ? null : myAccess.TeamId))
+            await foreach (var access in _accessRepository.GetAllAccess(myAccess.Admin ? null : myAccess.Teams))
             {
                 yield return _accessDtoAdapter.Adapt(access);
             }
@@ -194,7 +194,7 @@ namespace HolcombeScores.Api.Services
         public async Task<bool> CanAccessTeam(Guid teamId)
         {
             var access = await GetAccess();
-            return (access.Admin || access.TeamId == teamId) && access.Revoked == null;
+            return (access.Admin || (access.Teams != null && access.Teams.Contains(teamId))) && access.Revoked == null;
         }
 
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto)
@@ -246,7 +246,7 @@ namespace HolcombeScores.Api.Services
                     Name = accessRequest.Name,
                     Revoked = null,
                     RevokedReason = null,
-                    TeamId = response.TeamId,
+                    Teams = new[] { response.TeamId },
                     UserId = response.UserId,
                     Token = accessRequest.Token,
                 };
@@ -272,7 +272,7 @@ namespace HolcombeScores.Api.Services
                 yield break;
             }
 
-            await foreach (var item in _accessRepository.GetAllAccessRequests(myAccess.Admin ? null : myAccess.TeamId))
+            await foreach (var item in _accessRepository.GetAllAccessRequests(myAccess.Admin ? null : myAccess.Teams))
             {
                 yield return _accessRequestDtoAdapter.Adapt(item);
             }
@@ -292,7 +292,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<AccessDto>("Access not found");
             }
 
-            if (myAccess.Manager && access.TeamId != myAccess.TeamId)
+            if (myAccess.Manager && !access.Teams.Any(id => myAccess.Teams.Contains(id)))
             {
                 return _serviceHelper.NotPermitted<AccessDto>("Only admins can delete access for another team");
             }
@@ -315,7 +315,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<AccessRequestDto>("Access request not found");
             }
 
-            if (myAccess.Manager && accessRequest.TeamId != myAccess.TeamId)
+            if (myAccess.Manager && !myAccess.Teams.Contains(accessRequest.TeamId))
             {
                 return _serviceHelper.NotPermitted<AccessRequestDto>("Only admins can delete requests for another team");
             }
@@ -343,7 +343,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.Success("Access already revoked", _accessDtoAdapter.Adapt(access));
             }
 
-            if (myAccess.Manager && access.TeamId != myAccess.TeamId)
+            if (myAccess.Manager && !access.Teams.Any(id => myAccess.Teams.Contains(id)))
             {
                 return _serviceHelper.NotPermitted<AccessDto>("Only admins can revoke requests for another team");
             }
@@ -382,7 +382,7 @@ namespace HolcombeScores.Api.Services
                     return _serviceHelper.NotFound<AccessDto>($"Access not found for user ${updated.UserId}");
                 }
 
-                if (!isAdmin && accessToUpdate.TeamId != myAccess.TeamId)
+                if (!isAdmin && !accessToUpdate.Teams.Any(id => myAccess.Teams.Contains(id)))
                 {
                     return _serviceHelper.NotPermitted<AccessDto>("Only a admins can change access details for another team");
                 }
@@ -396,7 +396,7 @@ namespace HolcombeScores.Api.Services
             if (isManager || isAdmin)
             {
                 accessToUpdate.Manager = updated.Manager;
-                accessToUpdate.TeamId = updated.TeamId;
+                accessToUpdate.Teams = updated.Teams ?? accessToUpdate.Teams;
             }
 
             if (isAdmin)
@@ -601,7 +601,7 @@ namespace HolcombeScores.Api.Services
                Name = accessRequest.Name,
                Revoked = null,
                RevokedReason = null,
-               TeamId = accessRequest.TeamId,
+               Teams = new[] { accessRequest.TeamId },
                UserId = accessRequest.UserId,
                Token = newToken,
             };

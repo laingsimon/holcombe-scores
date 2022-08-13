@@ -5,7 +5,7 @@ namespace HolcombeScores.Api.Services
     public interface IGameService
     {
         Task<ActionResultDto<GameDto>> CreateGame(GameDetailsDto gameDetailsDto);
-        IAsyncEnumerable<GameDto> GetAllGames(Guid? teamId);
+        IAsyncEnumerable<GameDto> GetAllGames(Guid teamId);
         Task<GameDto> GetGame(Guid id);
         Task<ActionResultDto<GameDto>> DeleteGame(Guid id);
         Task<ActionResultDto<GameDto>> DeleteGamePlayer(Guid gameId, Guid playerId);

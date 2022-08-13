@@ -15,17 +15,31 @@ namespace HolcombeScores.Api.Repositories
             _accessRequestTableClient = new TypedTableClient<AccessRequest>(tableServiceClientFactory.CreateTableClient("AccessRequest"));
         }
 
-        public IAsyncEnumerable<Access> GetAllAccess(Guid? teamId = null)
+        public IAsyncEnumerable<Access> GetAllAccess(Guid[] teamIds = null)
         {
-            return teamId.HasValue
-                ? _accessTableClient.QueryAsync(r => r.TeamId == teamId.Value)
-                : _accessTableClient.QueryAsync();
+            return teamIds != null
+                ? UpgradeTeams(_accessTableClient.QueryAsync(a => a.Teams.Any(teamIds.Contains)))
+                : UpgradeTeams(_accessTableClient.QueryAsync());
         }
 
-        public IAsyncEnumerable<AccessRequest> GetAllAccessRequests(Guid? teamId = null)
+        // TODO: Remove this
+        private async IAsyncEnumerable<Access> UpgradeTeams(IAsyncEnumerable<Access> accessList)
         {
-            return teamId.HasValue
-                ? _accessRequestTableClient.QueryAsync(r => r.TeamId == teamId.Value)
+            await foreach (var access in accessList)
+            {
+                if (access.Teams == null)
+                {
+                    access.Teams = new[] { access.TeamId };
+                    await _accessTableClient.UpdateEntityAsync(access, ETag.All);
+                }
+                yield return access;
+            }
+        }
+
+        public IAsyncEnumerable<AccessRequest> GetAllAccessRequests(Guid[] teamIds = null)
+        {
+            return teamIds != null
+                ? _accessRequestTableClient.QueryAsync(ar => teamIds.Contains(ar.TeamId))
                 : _accessRequestTableClient.QueryAsync();
         }
 
@@ -63,7 +77,7 @@ namespace HolcombeScores.Api.Repositories
         public async Task AddAccess(Access access)
         {
             access.Timestamp = DateTimeOffset.UtcNow;
-            access.PartitionKey = access.TeamId.ToString();
+            access.PartitionKey = access.Teams.First().ToString(); // NOTE: there must be a team.
             access.RowKey = access.UserId.ToString();
             access.ETag = ETag.All;
 

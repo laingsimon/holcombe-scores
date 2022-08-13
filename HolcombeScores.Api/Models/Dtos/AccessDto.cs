@@ -5,7 +5,7 @@ namespace HolcombeScores.Api.Models.Dtos
     /// </summary>
     public class AccessDto
     {
-        public Guid TeamId { get; set; }
+        public Guid[] Teams { get; set; }
         public DateTime Granted { get; set; }
         public DateTime? Revoked { get; set; }
         public Guid UserId { get; set; }

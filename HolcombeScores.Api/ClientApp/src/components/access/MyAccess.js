@@ -39,6 +39,7 @@ export class MyAccess extends Component {
 
         try {
             await this.accessApi.unimpersonate();
+            // noinspection JSUnresolvedFunction
             await this.props.reloadAll();
 
             this.setState({
@@ -54,6 +55,9 @@ export class MyAccess extends Component {
     }
 
     async beforeNavigate(event) {
+        const href = event.target.getAttribute('href');
+        const teamId = href.match(/\/team\/(.+?)\/view/)[1];
+
         event.preventDefault();
         this.setState({
             navigating: true
@@ -62,26 +66,27 @@ export class MyAccess extends Component {
         const reloadTeam = false;
         const reloadPlayers = true;
         const reloadGames = true;
-        await this.props.reloadTeam(this.props.access.teamId, reloadTeam, reloadPlayers, reloadGames);
+        // noinspection JSUnresolvedFunction
+        await this.props.reloadTeam(teamId, reloadTeam, reloadPlayers, reloadGames);
 
         this.setState({
             navigating: false
         });
 
-        this.props.history.push(event.target.getAttribute('href'));
+        this.props.history.push(href);
     }
 
     // renderers
     renderAccess() {
-        let team = this.props.teams.filter(t => t.id === this.props.access.teamId)[0];
+        let teams = this.props.teams.filter(t => this.props.access.teams.filter(tid => t.id === tid).length > 0);
         // access granted
         return (<div>
-            Hello <strong>{this.props.access.name}</strong>, you have access to <strong><span><strong>{team.name}</strong> (Coach {team.coach})</span></strong>
+            Hello <strong>{this.props.access.name}</strong>
             <br/>
-            <Link onClick={this.beforeNavigate} to={`/team/${team.id}/view`} className="btn btn-primary margin-right">
+            {teams.map(team => (<Link key={team.id} onClick={this.beforeNavigate} to={`/team/${team.id}/view`} className="btn btn-primary margin-right">
                 {this.state.navigating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
-                View Games
-            </Link>
+                View {team.name} Games
+            </Link>))}
             {this.props.isImpersonated ? (<button className="btn btn-secondary" onClick={this.unimpersonate}>
                 {this.state.unimpersonating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                 Unimpersonate

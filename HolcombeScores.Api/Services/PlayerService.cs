@@ -26,7 +26,7 @@ namespace HolcombeScores.Api.Services
             _serviceHelper = serviceHelper;
         }
 
-        public async IAsyncEnumerable<PlayerDto> GetAllPlayers()
+        public async IAsyncEnumerable<PlayerDto> GetAllPlayers(Guid teamId)
         {
             var access = await _accessService.GetAccess();
             if (access == null || access.Revoked != null)
@@ -34,7 +34,7 @@ namespace HolcombeScores.Api.Services
                 yield break;
             }
 
-            await foreach (var player in _playerRepository.GetAll(access.Admin ? null : access.TeamId))
+            await foreach (var player in _playerRepository.GetAll(teamId))
             {
                 yield return _playerDtoAdapter.Adapt(player);
             }

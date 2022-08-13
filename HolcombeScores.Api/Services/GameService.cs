@@ -33,7 +33,7 @@ namespace HolcombeScores.Api.Services
             _serviceHelper = serviceHelper;
         }
 
-        public async IAsyncEnumerable<GameDto> GetAllGames(Guid? teamId)
+        public async IAsyncEnumerable<GameDto> GetAllGames(Guid teamId)
         {
             var access = await _accessService.GetAccess();
             if (access == null || access.Revoked != null)

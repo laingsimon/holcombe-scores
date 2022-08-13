@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using Azure;
 using Azure.Data.Tables;
 
@@ -5,7 +6,10 @@ namespace HolcombeScores.Api.Models.AzureTables
 {
     public class Access : ITableEntity
     {
+        [Obsolete("Use teams instead")]
         public Guid TeamId { get; set; }
+        [IgnoreDataMember]
+        public Guid[] Teams { get; set; }
         public DateTime Granted { get; set; }
         public DateTime? Revoked { get; set; }
         public Guid UserId { get; set; }
@@ -14,6 +18,16 @@ namespace HolcombeScores.Api.Models.AzureTables
         public string Name { get; set; }
         public string RevokedReason { get; set; }
         public string Token { get; set; }
+
+        [DataMember(Name = "Teams")]
+        public string TeamsList
+        {
+            get => string.Join(",", Teams ?? Array.Empty<Guid>());
+            set =>
+                Teams = string.IsNullOrEmpty(value)
+                    ? Array.Empty<Guid>()
+                    : value.Split(",").Select(Guid.Parse).ToArray();
+        }
 
         /// <summary>
         /// TeamId
