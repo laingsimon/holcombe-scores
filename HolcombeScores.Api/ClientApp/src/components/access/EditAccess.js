@@ -113,6 +113,11 @@ export class EditAccess extends Component {
                     <input readOnly={this.state.updating || this.state.deleting || this.state.loggingOut} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name"
                            value={this.state.proposed.name} onChange={this.accessChanged}/>
                 </div>
+                <h4>Selected teams</h4>
+                <ul className="list-group">
+                    {this.renderTeams(this.props.teams)}
+                </ul>
+                <hr />
                 <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>
                     {this.state.updating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Update details
@@ -130,5 +135,34 @@ export class EditAccess extends Component {
             console.error(e);
             return (<Alert errors={[`Error rendering component: ${e.message}`]}/>);
         }
+    }
+
+    renderTeams(teams) {
+        let setSelectedTeam = function (event) {
+            let item = event.target;
+            let id = item.getAttribute('data-id');
+            let wasSelected = this.state.proposed.teams.filter(tid => tid === id).length > 0;
+            let newTeams = this.state.proposed.teams.filter(tid => tid !== id);
+            if (!wasSelected) {
+                newTeams.push(id);
+            }
+
+            const proposed = Object.assign({}, this.state.proposed);
+            proposed.teams = newTeams;
+
+            this.setState({
+                proposed: proposed
+            });
+        }.bind(this);
+
+        return teams.map(team => {
+            let selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
+            let wasSelected = this.props.access.teams.filter(tid => tid === team.id).length > 0;
+            return (<li key={team.id} className={`list-group-item ${selected ? ' active' : ''}`} data-id={team.id}
+                        onClick={setSelectedTeam}>
+                {team.name}&nbsp;
+                {wasSelected ? (<span className="badge rounded-pill bg-success">Approved</span>) : null}
+            </li>)
+        });
     }
 }
