@@ -11,10 +11,8 @@ class Game {
         return this.http.get(`/api/Games/${teamId}`);
     }
 
-    getGame(id, bypassCache) {
-        return bypassCache
-            ? this.http.getNoCache(`/api/Game/${id}`)
-            : this.http.get(`/api/Game/${id}`);
+    getGame(id) {
+        return this.http.get(`/api/Game/${id}`);
     }
 
     deleteGame(id) {

@@ -29,12 +29,9 @@ export class AccessAdmin extends Component {
             requests: null,
             allAccess: null,
             processing: [],
-            cache: null,
-            cacheAt: null,
             unimpersonating: false,
         };
         this.changeMode = this.changeMode.bind(this);
-        this.getCache = this.getCache.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
         this.requestChanged = this.requestChanged.bind(this);
         this.accessImpersonated = this.accessImpersonated.bind(this);
@@ -52,7 +49,7 @@ export class AccessAdmin extends Component {
         this.setState({
             allAccess: await this.getAllAccess(true),
             loading: false
-        }); 
+        });
     }
 
     async accessChanged() {
@@ -113,12 +110,6 @@ export class AccessAdmin extends Component {
 
     async componentDidMount() {
         await this.requestData();
-        this.intervalHandle = window.setInterval(this.getCache, 1000);
-        this.getCache();
-    }
-
-    componentWillUnmount() {
-        window.clearInterval(this.intervalHandle);
     }
 
     // renderers
@@ -130,9 +121,6 @@ export class AccessAdmin extends Component {
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/admin/access`} onClick={this.changeMode}>Access</a>
             </li>
-            {this.props.access.admin && Http.cacheEnabled ? (<li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'cache' ? ' active' : ''}`} href={`/admin/cache`} onClick={this.changeMode}>Cache</a>
-            </li>) : null}
         </ul>);
     }
 
@@ -163,26 +151,8 @@ export class AccessAdmin extends Component {
         if (this.state.mode === 'access') {
             return this.renderAccess();
         }
-        if (this.state.mode === 'cache') {
-            return this.renderCache();
-        }
 
         return (<div>Unknown mode: {this.state.mode}</div>);
-    }
-
-    renderCache() {
-        return (<div>
-            {this.renderNav()}
-            <br />
-            <h5>Cache as at: {this.state.cacheAt ? this.state.cacheAt.toLocaleTimeString() : 'not retrieved'}</h5>
-            <div className="list-group">
-                {this.state.cache ? this.state.cache.map(item => {
-                    return (<div key={item.key} className="list-group-item list-group-item-action flex-column align-items-start">
-                        {item.key}: Reads: {item.reads}
-                    </div>)
-                }) : (<div>No cache</div>)}
-            </div>
-        </div>);
     }
 
     renderAccess() {
@@ -229,24 +199,6 @@ export class AccessAdmin extends Component {
     }
 
     //api
-    getCache() {
-        if (this.state.mode !== 'cache' && this.state.cache !== null) {
-            return;
-        }
-
-        const cacheCopy = Object.assign({}, Http.cache);
-        const orderedCache = [];
-        Object.keys(cacheCopy).forEach(key => {
-            orderedCache.push(Object.assign({key: key}, cacheCopy[key]));
-        });
-        orderedCache.sort((a, b) => a.reads - b.reads);
-
-        this.setState({
-            cache: orderedCache,
-            cacheAt: new Date()
-        });
-    }
-
     async getAccessRequests() {
         const requests = await this.accessApi.getAllAccessRequests();
         requests.sort((a, b) => Date.parse(b.requested) - Date.parse(a.requested));
@@ -254,8 +206,8 @@ export class AccessAdmin extends Component {
         return requests;
     }
 
-    async getAllAccess(bypassCache) {
-        const allAccess = await this.accessApi.getAllAccess(bypassCache);
+    async getAllAccess() {
+        const allAccess = await this.accessApi.getAllAccess();
         allAccess.sort((a, b) => a.name - b.name);
 
         return allAccess;
