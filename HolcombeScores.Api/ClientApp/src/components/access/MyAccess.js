@@ -81,8 +81,7 @@ export class MyAccess extends Component {
         let teams = this.props.teams.filter(t => this.props.access.teams.filter(tid => t.id === tid).length > 0);
         // access granted
         return (<div>
-            Hello <strong>{this.props.access.name}</strong>
-            <br/>
+            <p>Hello <strong>{this.props.access.name}</strong>, click on the button/s below to view the games, or click 'Update' above to change your details</p>
             {teams.map(team => (<Link key={team.id} onClick={this.beforeNavigate} to={`/team/${team.id}/view`} className="btn btn-primary margin-right">
                 {this.state.navigating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                 View {team.name} Games
