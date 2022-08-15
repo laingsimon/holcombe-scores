@@ -22,8 +22,12 @@ class Access {
         return this.http.get(`/api/Access`);
     }
 
-    deleteAccess(userId) {
-        return this.http.delete(`/api/Access/${userId}`);
+    deleteAccess(userId, teamId) {
+        if (teamId) {
+            return this.http.delete(`/api/Access/${userId}/${teamId}`);
+        } else {
+            return this.http.delete(`/api/Access/${userId}`);
+        }
     }
 
     updateAccess(teamId, userId, name, admin, manager) {
@@ -64,8 +68,8 @@ class Access {
         return this.http.post(`/api/Access/Request`, access);
     }
 
-    deleteAccessRequest(userId) {
-        return this.http.delete(`/api/Access/Request/${userId}`);
+    deleteAccessRequest(userId, teamId) {
+        return this.http.delete(`/api/Access/Request/${userId}/${teamId}`);
     }
 
     getAllAccessRequests() {

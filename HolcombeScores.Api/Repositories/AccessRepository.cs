@@ -1,6 +1,7 @@
 using Azure;
 using Azure.Data.Tables;
 using HolcombeScores.Api.Models.AzureTables;
+using HolcombeScores.Api.Services;
 
 namespace HolcombeScores.Api.Repositories
 {
@@ -29,7 +30,9 @@ namespace HolcombeScores.Api.Repositories
             {
                 if (access.Teams == null)
                 {
+#pragma warning disable CS0618
                     access.Teams = new[] { access.TeamId };
+#pragma warning restore CS0618
                     await _accessTableClient.UpdateEntityAsync(access, ETag.All);
                 }
                 yield return access;
@@ -43,14 +46,19 @@ namespace HolcombeScores.Api.Repositories
                 : _accessRequestTableClient.QueryAsync();
         }
 
-        public async Task<AccessRequest> GetAccessRequest(string token, Guid userId)
+        public async Task<AccessRequest[]> GetAccessRequests(string token, Guid userId)
         {
-            return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.Token == token && a.UserId == userId);
+            return (await _accessRequestTableClient.QueryAsync(a => a.Token == token && a.UserId == userId).ToEnumerable()).ToArray();
         }
 
-        public async Task<AccessRequest> GetAccessRequest(Guid userId)
+        public async Task<AccessRequest[]> GetAccessRequests(Guid userId)
         {
-            return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.UserId == userId);
+            return (await _accessRequestTableClient.QueryAsync(a => a.UserId == userId).ToEnumerable()).ToArray();
+        }
+
+        public async Task<AccessRequest> GetAccessRequest(Guid userId, Guid teamId)
+        {
+            return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.TeamId == teamId && a.UserId == userId);
         }
 
         public async Task<Access> GetAccess(string token, Guid userId)
@@ -104,6 +112,13 @@ namespace HolcombeScores.Api.Repositories
             {
                 await _accessTableClient.DeleteEntityAsync(access.PartitionKey, access.RowKey, ETag.All);
             }
+        }
+
+        public async Task RemoveAccess(Guid userId, Guid teamId)
+        {
+            var access = await GetAccess(userId);
+            access.Teams = access.Teams.Except(new[] { teamId }).ToArray();
+            await _accessTableClient.UpdateEntityAsync(access, ETag.All);
         }
 
         public async Task UpdateAccessToken(string currentToken, string newToken)

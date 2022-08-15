@@ -48,9 +48,9 @@ namespace HolcombeScores.Api.Services
         {
             var access = await GetAccessInternal(permitRevoked: true);
             var impersonatedByAccess = await GetImpersonatedByAccess();
-            var accessRequest = await GetAccessRequestInternal();
+            var accessRequests = await GetAccessRequestsInternal();
 
-            return _myAccessDtoAdapter.Adapt(access, accessRequest, impersonatedByAccess);
+            return _myAccessDtoAdapter.Adapt(access, accessRequests, impersonatedByAccess);
         }
 
         public async Task<ActionResultDto<MyAccessDto>> Impersonate(ImpersonationDto impersonation)
@@ -199,7 +199,8 @@ namespace HolcombeScores.Api.Services
 
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto)
         {
-            var existingAccessRequest = await GetAccessRequestInternal();
+            var existingAccessRequests = await GetAccessRequestsInternal();
+            var existingAccessRequest = existingAccessRequests.SingleOrDefault(r => r.TeamId == accessRequestDto.TeamId);
             if (existingAccessRequest != null)
             {
                 // access already requested
@@ -224,7 +225,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
 
-            var accessRequest = await _accessRepository.GetAccessRequest(response.UserId);
+            var accessRequest = await _accessRepository.GetAccessRequest(response.UserId, response.TeamId);
             if (accessRequest == null)
             {
                 return _serviceHelper.NotFound<AccessDto>("Access request not found");
@@ -278,7 +279,7 @@ namespace HolcombeScores.Api.Services
             }
         }
 
-        public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId)
+        public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId, Guid? teamId)
         {
             var myAccess = await GetAccessInternal();
             if (!myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId)
@@ -297,11 +298,19 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<AccessDto>("Only admins can delete access for another team");
             }
 
-            await _accessRepository.RemoveAccess(access.UserId);
-            return _serviceHelper.Success("Access removed", _accessDtoAdapter.Adapt(access));
+            if (teamId == null)
+            {
+                await _accessRepository.RemoveAccess(access.UserId);
+            }
+            else
+            {
+                await _accessRepository.RemoveAccess(access.UserId, teamId.Value);
+            }
+
+            return _serviceHelper.Success("Access removed", _accessDtoAdapter.Adapt(await _accessRepository.GetAccess(userId)));
         }
 
-        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId)
+        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId, Guid teamId)
         {
             var myAccess = await GetAccessInternal();
             if (!myAccess.Admin && !myAccess.Manager)
@@ -309,13 +318,13 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotAnAdmin<AccessRequestDto>();
             }
 
-            var accessRequest = await _accessRepository.GetAccessRequest(userId);
+            var accessRequest = await _accessRepository.GetAccessRequest(userId, teamId);
             if (accessRequest == null)
             {
                 return _serviceHelper.NotFound<AccessRequestDto>("Access request not found");
             }
 
-            if (myAccess.Manager && !myAccess.Teams.Contains(accessRequest.TeamId))
+            if (myAccess.Manager && !myAccess.Teams.Contains(teamId))
             {
                 return _serviceHelper.NotPermitted<AccessRequestDto>("Only admins can delete requests for another team");
             }
@@ -553,7 +562,7 @@ namespace HolcombeScores.Api.Services
             return access;
         }
 
-        private async Task<AccessRequest> GetAccessRequestInternal()
+        private async Task<AccessRequest[]> GetAccessRequestsInternal()
         {
             var token = GetImpersonatingToken() ?? GetRequestToken();
             var userId = GetImpersonatingUserId() ?? GetRequestUserId();
@@ -562,7 +571,7 @@ namespace HolcombeScores.Api.Services
                 return null;
             }
 
-            return await _accessRepository.GetAccessRequest(token, userId.Value);
+            return await _accessRepository.GetAccessRequests(token, userId.Value);
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)

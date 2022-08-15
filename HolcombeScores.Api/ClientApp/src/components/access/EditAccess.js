@@ -3,6 +3,7 @@ import {Settings} from '../../api/settings';
 import {Http} from '../../api/http';
 import {Access} from '../../api/access';
 import {Alert} from '../Alert';
+import { Link } from 'react-router-dom';
 
 /*
 * Props:
@@ -113,23 +114,23 @@ export class EditAccess extends Component {
                     <input readOnly={this.state.updating || this.state.deleting || this.state.loggingOut} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3" name="name"
                            value={this.state.proposed.name} onChange={this.accessChanged}/>
                 </div>
-                <h4>Selected teams</h4>
+                <h4>Requested teams</h4>
                 <ul className="list-group">
                     {this.renderTeams(this.props.teams)}
                 </ul>
                 <hr />
-                <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>
+                {this.props.access ? (<button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>
                     {this.state.updating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Update details
-                </button>
-                <button type="button" className="btn btn-danger margin-right" onClick={this.removeAccess}>
+                </button>) : null}
+                {this.props.access ? (<button type="button" className="btn btn-danger margin-right" onClick={this.removeAccess}>
                     {this.state.deleting ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Remove access
-                </button>
-                <button type="button" className="btn btn-warning" onClick={this.logout}>
+                </button>) : null}
+                {this.props.access ? (<button type="button" className="btn btn-warning" onClick={this.logout}>
                     {this.state.loggingOut ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Logout
-                </button>
+                </button>) : null}
             </div>)
         } catch (e) {
             console.error(e);
@@ -140,6 +141,14 @@ export class EditAccess extends Component {
     renderTeams(teams) {
         let setSelectedTeam = function (event) {
             let item = event.target;
+            while (item && item.tagName !== 'LI') {
+                item = item.parentElement;
+            }
+
+            if (!item) {
+                return;
+            }
+
             let id = item.getAttribute('data-id');
             let wasSelected = this.state.proposed.teams.filter(tid => tid === id).length > 0;
             let newTeams = this.state.proposed.teams.filter(tid => tid !== id);
@@ -157,12 +166,65 @@ export class EditAccess extends Component {
 
         return teams.map(team => {
             let selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
-            let wasSelected = this.props.access.teams.filter(tid => tid === team.id).length > 0;
-            return (<li key={team.id} className={`list-group-item ${selected ? ' active' : ''}`} data-id={team.id}
+            return (<li key={team.id} className={`list-group-item flex-column align-items-start ${this.accessColour(team.id, selected)} : ''}`} data-id={team.id}
                         onClick={setSelectedTeam}>
-                {team.name}&nbsp;
-                {wasSelected ? (<span className="badge rounded-pill bg-success">Approved</span>) : null}
+                <div className="d-flex justify-content-between">
+                    {team.name}
+                    {selected && this.props.access.teams.filter(tid => tid === team.id).length > 0 ? (<Link className="btn btn-primary" to={`/team/${team.id}`}>View games...</Link>) : null}
+                    <div className="d-flex align-items-center">{this.accessLabel(team.id, selected)}</div>
+                </div>
             </li>)
         });
+    }
+
+    accessColour(teamId, selected) {
+        if (!selected) {
+            return '';
+        }
+
+        if (this.props.access) {
+            if (this.props.access.teams.filter(tid => tid === teamId).length > 0) {
+                return 'list-group-item-success';
+            }
+
+            const matchingRequests = this.props.requests && this.props.requests.filter(tid => tid === teamId);
+            const request = matchingRequests.length ? matchingRequests[0] : null;
+            if (request != null) {
+                if (request.rejected) {
+                    return 'list-group-item-danger';
+                }
+
+                return 'list-group-item-warning';
+            }
+        }
+
+        return 'list-group-item-primary';
+    }
+
+    accessLabel(teamId, selected) {
+        if (!selected) {
+            if (this.props.access.teams.filter(tid => tid === teamId).length > 0) {
+                return (<span className="badge rounded-pill bg-info">To remove</span>);
+            }
+
+            return null;
+        }
+
+        if (this.props.access) {
+            if (this.props.access.teams.filter(tid => tid === teamId).length > 0) {
+                return (<span className="badge rounded-pill bg-success">Approved</span>);
+            }
+
+            const matchingRequests = this.props.requests && this.props.requests.filter(tid => tid === teamId);
+            const request = matchingRequests.length ? matchingRequests[0] : null;
+            if (request != null) {
+                if (request.rejected) {
+                    return (<span className="badge rounded-pill bg-rejected">Rejected: {request.reason}</span>);
+                }
+                return (<span className="badge rounded-pill bg-warning">Requested</span>);
+            }
+        }
+
+        return (<span className="badge rounded-pill bg-info">To request</span>);
     }
 }

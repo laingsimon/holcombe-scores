@@ -23,8 +23,6 @@ export class RequestOverview extends Component {
             mode: 'view',
             reason: ''
         }
-        this.request = props.request;
-        this.teams = props.teams;
         this.respondRequest = this.respondRequest.bind(this);
         this.deleteRequest = this.deleteRequest.bind(this);
         this.prepareRejectRequest = this.prepareRejectRequest.bind(this);
@@ -62,10 +60,10 @@ export class RequestOverview extends Component {
             processing: true
         });
 
-        const result = await this.accessApi.deleteAccessRequest(this.request.userId);
+        const result = await this.accessApi.deleteAccessRequest(this.props.request.userId);
         if (result.success) {
             if (this.props.onRequestDeleted) {
-                await this.props.onRequestDeleted(this.request.userId);
+                await this.props.onRequestDeleted(this.props.request.userId);
             }
         } else {
             alert(`Could not delete request: ${Functions.getResultMessages(result)}`);
@@ -80,7 +78,7 @@ export class RequestOverview extends Component {
     }
 
     async rejectRequest() {
-        if (!window.confirm(`Are you sure you want to reject ${this.request.name}?`)) {
+        if (!window.confirm(`Are you sure you want to reject ${this.props.request.name}?`)) {
             return;
         }
 
@@ -88,8 +86,8 @@ export class RequestOverview extends Component {
     }
 
     render() {
-        const requestedDate = new Date(this.request.requested);
-        const team = this.teams[this.request.teamId];
+        const requestedDate = new Date(this.props.request.requested);
+        const team = this.props.teams[this.props.request.teamId];
         const btnClassName = this.state.processing
             ? 'btn-light'
             : this.state.mode === 'view'
@@ -100,13 +98,13 @@ export class RequestOverview extends Component {
             : (<button type="button" className={`btn ${btnClassName}`} onClick={this.prepareRejectRequest}>❓</button>);
 
         return (<div className="list-group-item list-group-item-action flex-column align-items-start">
-            <span>Name: <strong>{this.request.name}</strong>, Team: {team.name}, Requested: {requestedDate.toLocaleString()}</span>
+            <span>Name: <strong>{this.props.request.name}</strong>, Team: {team.name}, Requested: {requestedDate.toLocaleString()}</span>
             <span className="float-end">
-                {this.state.processing || !this.request.rejected ? null : (<button type="button" className={`btn ${this.state.processing ? 'btn-light' : 'btn-danger'} margin-right`} onClick={this.deleteRequest}>🗑</button>)}
-                {this.request.rejected ? null : respondRequestButton}
+                {this.state.processing || !this.props.request.rejected ? null : (<button type="button" className={`btn ${this.state.processing ? 'btn-light' : 'btn-danger'} margin-right`} onClick={this.deleteRequest}>🗑</button>)}
+                {this.props.request.rejected ? null : respondRequestButton}
             </span>
             {this.state.mode === 'reject' && !this.state.processing ? this.renderRejectOptions() : null}
-            {this.request.rejected && this.request.reason ? (<p>Reason: <strong>{this.request.reason}</strong></p>) : null}
+            {this.props.request.rejected && this.props.request.reason ? (<p>Reason: <strong>{this.props.request.reason}</strong></p>) : null}
         </div>);
     }
 
@@ -136,10 +134,10 @@ export class RequestOverview extends Component {
             processing: true
         });
 
-        const result = await this.accessApi.respondToAccessRequest(this.request.userId, this.request.teamId, reason, allow);
+        const result = await this.accessApi.respondToAccessRequest(this.props.request.userId, this.props.request.teamId, reason, allow);
         if (result.success) {
             if (this.props.onRequestChanged) {
-                await this.props.onRequestChanged(this.request.userId);
+                await this.props.onRequestChanged(this.props.request.userId);
             }
         } else {
             alert(`Could not respond to request: ${Functions.getResultMessages(result)}`);

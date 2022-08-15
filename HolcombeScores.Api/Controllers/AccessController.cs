@@ -23,9 +23,15 @@ namespace HolcombeScores.Api.Controllers
         }
 
         [HttpDelete("/api/Access/{userId}")]
-        public async Task<ActionResultDto<AccessDto>> RequestAccess(Guid userId)
+        public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId)
         {
-            return await _accessService.RemoveAccess(userId);
+            return await _accessService.RemoveAccess(userId, null);
+        }
+
+        [HttpDelete("/api/Access/{userId}/{teamId}")]
+        public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId, Guid teamId)
+        {
+            return await _accessService.RemoveAccess(userId, teamId);
         }
 
         [HttpPatch("/api/Access")]
@@ -59,10 +65,10 @@ namespace HolcombeScores.Api.Controllers
             return await _accessService.RequestAccess(requestDto);
         }
 
-        [HttpDelete("/api/Access/Request/{userId}")]
-        public async Task<ActionResultDto<AccessRequestDto>> RequestAccessRequest(Guid userId)
+        [HttpDelete("/api/Access/Request/{userId}/{teamId}")]
+        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId, Guid teamId)
         {
-            return await _accessService.RemoveAccessRequest(userId);
+            return await _accessService.RemoveAccessRequest(userId, teamId);
         }
 
         [HttpPost("/api/Access/Respond")]

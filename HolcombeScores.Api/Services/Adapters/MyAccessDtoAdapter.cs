@@ -14,12 +14,12 @@ namespace HolcombeScores.Api.Services.Adapters
             _accessRequestDtoAdapter = accessRequestDtoAdapter;
         }
 
-        public MyAccessDto Adapt(Access access, AccessRequest accessRequest, Access impersonatedBy = null)
+        public MyAccessDto Adapt(Access access, IEnumerable<AccessRequest> accessRequests, Access impersonatedBy = null)
         {
             return new MyAccessDto
             {
                 Access = _accessDtoAdapter.Adapt(access, impersonatedBy),
-                Request = _accessRequestDtoAdapter.Adapt(accessRequest),
+                Requests = accessRequests.Select(_accessRequestDtoAdapter.Adapt).ToArray(),
             };
         }
     }
