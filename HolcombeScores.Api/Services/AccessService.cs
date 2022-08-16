@@ -208,8 +208,8 @@ namespace HolcombeScores.Api.Services
             }
 
             var accessRequest = _accessRequestDtoAdapter.Adapt(accessRequestDto);
-            accessRequest.UserId = Guid.NewGuid();
-            accessRequest.Token = Guid.NewGuid().ToString();
+            accessRequest.UserId = GetImpersonatingUserId() ?? GetRequestUserId() ?? Guid.NewGuid();
+            accessRequest.Token = GetImpersonatingToken() ?? GetRequestToken() ?? Guid.NewGuid().ToString();
 
             await _accessRepository.AddAccessRequest(accessRequest);
 
