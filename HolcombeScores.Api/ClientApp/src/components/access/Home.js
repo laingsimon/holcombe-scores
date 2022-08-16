@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import {Alert} from '../Alert';
 import {EditAccess} from './EditAccess';
-import {RequestAccess} from './RequestAccess';
 import {RecoverAccess} from './RecoverAccess';
 
 /*
@@ -109,11 +108,7 @@ export class Home extends Component {
             if (this.state.error) {
                 component = this.renderError(this.state.error);
             } else if (this.state.mode === 'access' || (this.state.mode === 'recover' && this.props.access)) {
-                if (this.props.access || this.props.requests.length) {
-                    component = (<EditAccess {...this.props} onAccessDeleted={this.accessDeleted} onLoggedOut={this.loggedOut} onAccessChanged={this.accessChanged} />);
-                } else {
-                    component = (<RequestAccess {...this.props} onRequestCreated={this.requestCreated}/>);
-                }
+                component = (<EditAccess {...this.props} onAccessRequested={this.requestCreated} onAccessDeleted={this.accessDeleted} onLoggedOut={this.loggedOut} onAccessChanged={this.accessChanged} />);
             } else if (this.state.mode === 'recover') {
                 component = (<RecoverAccess {...this.props} onRecoverySuccess={this.accessRecovered} />);
             }

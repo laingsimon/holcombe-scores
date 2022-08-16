@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 * Events:
 * - onAccessDeleted(userId)
 * - onAccessChanged(access)
+* - onAccessRequested()
 * */
 // noinspection JSUnresolvedVariable
 export class EditAccess extends Component {
@@ -20,7 +21,7 @@ export class EditAccess extends Component {
         super(props);
         this.state = {
             loading: false,
-            proposed: Object.assign({}, this.props.access)
+            proposed: Object.assign({ name: '' }, this.props.access, { teams: this.getProposedTeamIds(this.props.access, this.props.requests) })
         };
         this.updateAccess = this.updateAccess.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
@@ -28,6 +29,18 @@ export class EditAccess extends Component {
         this.logout = this.logout.bind(this);
         let http = new Http(new Settings());
         this.accessApi = new Access(http);
+    }
+
+    getProposedTeamIds(access, requests) {
+        const teamIds = access ? access.teams : [];
+
+        if (requests) {
+            for (const request of requests) {
+                teamIds.push(request.teamId);
+            }
+        }
+
+        return teamIds;
     }
 
     //event handlers
@@ -80,17 +93,88 @@ export class EditAccess extends Component {
 
         this.setState({updating: true});
 
-        const result = await this.accessApi.updateAccess(accessUpdate.teamId, accessUpdate.userId, accessUpdate.name, accessUpdate.admin, accessUpdate.manager);
+        if (this.props.access) {
+            // update access
+            const result = await this.accessApi.updateAccess(accessUpdate.teamId, accessUpdate.userId, accessUpdate.name, accessUpdate.admin, accessUpdate.manager);
 
-        if (result.success) {
-            if (this.props.onAccessChanged) {
-                await this.props.onAccessChanged(accessUpdate);
+            if (result.success) {
+
+                const success = await this.updateAccessRequests();
+
+                if (success) {
+                    if (this.props.onAccessChanged) {
+                        this.props.onAccessChanged(accessUpdate);
+                    }
+                } else {
+                    alert('Error updating access requests for one or more teams');
+                }
+
+                this.setState({updating: false});
+            } else {
+                this.setState({updating: false});
+                alert('Could not update your access');
             }
-            this.setState({updating: false});
         } else {
+            const success = await this.createAccessRequests();
+
+            if (success) {
+                if (this.props.onAccessRequested) {
+                    await this.props.onAccessRequested();
+                }
+            } else {
+                alert('Error requesting access for one or more teams');
+            }
+
             this.setState({updating: false});
-            alert('Could not update your access');
         }
+    }
+
+    async updateAccessRequests() {
+        let success = true;
+
+        for (const team of this.props.teams) {
+            const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
+            const matchingRequests = this.props.requests && this.props.requests.filter(tid => tid === team.id);
+            const wasSelected = matchingRequests.length ? matchingRequests[0] : null;
+            let result = null;
+
+            if (selected) {
+                if (!wasSelected) {
+                    // create request access
+                    result = await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
+                }
+            } else {
+                if (wasSelected) {
+                    // delete access request
+                    result = await this.accessApi.deleteAccessRequest(this.props.acess.userId, team.id);
+                }
+            }
+
+            if (result && !result.success) {
+                console.error(`Error updating access request: ${team.id}/${team.name}`, result);
+                success = false;
+            }
+        }
+
+        return success;
+    }
+
+    async createAccessRequests() {
+        let success = true;
+
+        for (const team of this.props.teams) {
+            const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
+            if (selected) {
+                const result = await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
+
+                if (!result.success) {
+                    console.error(`Error creating access request: ${team.id}/${team.name}`, result);
+                    success = false;
+                }
+            }
+        }
+
+        return success;
     }
 
     accessChanged(event) {
@@ -119,10 +203,10 @@ export class EditAccess extends Component {
                     {this.renderTeams(this.props.teams)}
                 </ul>
                 <hr />
-                {this.props.access ? (<button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>
+                <button type="button" className="btn btn-primary margin-right" onClick={this.updateAccess}>
                     {this.state.updating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
-                    Update details
-                </button>) : null}
+                    {this.props.access ? 'Update details' : 'Request access'}
+                </button>
                 {this.props.access ? (<button type="button" className="btn btn-danger margin-right" onClick={this.removeAccess}>
                     {this.state.deleting ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Remove access
@@ -139,7 +223,7 @@ export class EditAccess extends Component {
     }
 
     renderTeams(teams) {
-        let setSelectedTeam = function (event) {
+        const setSelectedTeam = function (event) {
             let item = event.target;
             while (item && item.tagName !== 'LI') {
                 item = item.parentElement;
@@ -165,12 +249,12 @@ export class EditAccess extends Component {
         }.bind(this);
 
         return teams.map(team => {
-            let selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
+            const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
             return (<li key={team.id} className={`list-group-item flex-column align-items-start ${this.accessColour(team.id, selected)} : ''}`} data-id={team.id}
                         onClick={setSelectedTeam}>
                 <div className="d-flex justify-content-between">
                     {team.name}
-                    {selected && this.props.access.teams.filter(tid => tid === team.id).length > 0 ? (<Link className="btn btn-primary" to={`/team/${team.id}`}>View games...</Link>) : null}
+                    {selected && this.props.access && this.props.access.teams.filter(tid => tid === team.id).length > 0 ? (<Link className="btn btn-primary" to={`/team/${team.id}`}>View games...</Link>) : null}
                     <div className="d-flex align-items-center">{this.accessLabel(team.id, selected)}</div>
                 </div>
             </li>)
@@ -182,12 +266,12 @@ export class EditAccess extends Component {
             return '';
         }
 
-        if (this.props.access) {
-            if (this.props.access.teams.filter(tid => tid === teamId).length > 0) {
-                return 'list-group-item-success';
-            }
+        if (this.props.access && this.props.access.teams.filter(tid => tid === teamId).length > 0) {
+            return 'list-group-item-success';
+        }
 
-            const matchingRequests = this.props.requests && this.props.requests.filter(tid => tid === teamId);
+        if (this.props.requests) {
+            const matchingRequests = this.props.requests.filter(r => r.teamId === teamId);
             const request = matchingRequests.length ? matchingRequests[0] : null;
             if (request != null) {
                 if (request.rejected) {
@@ -203,19 +287,22 @@ export class EditAccess extends Component {
 
     accessLabel(teamId, selected) {
         if (!selected) {
-            if (this.props.access.teams.filter(tid => tid === teamId).length > 0) {
+            if (this.props.access && this.props.access.teams.filter(tid => tid === teamId).length > 0) {
+                return (<span className="badge rounded-pill bg-info">To remove</span>);
+            }
+            if (this.props.requests && this.props.requests.filter(r => r.teamId === teamId).length > 0) {
                 return (<span className="badge rounded-pill bg-info">To remove</span>);
             }
 
             return null;
         }
 
-        if (this.props.access) {
-            if (this.props.access.teams.filter(tid => tid === teamId).length > 0) {
-                return (<span className="badge rounded-pill bg-success">Approved</span>);
-            }
+        if (this.props.access && this.props.access.teams.filter(tid => tid === teamId).length > 0) {
+            return (<span className="badge rounded-pill bg-success">Approved</span>);
+        }
 
-            const matchingRequests = this.props.requests && this.props.requests.filter(tid => tid === teamId);
+        if (this.props.requests) {
+            const matchingRequests = this.props.requests.filter(r => r.teamId === teamId);
             const request = matchingRequests.length ? matchingRequests[0] : null;
             if (request != null) {
                 if (request.rejected) {
