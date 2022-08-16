@@ -32,7 +32,7 @@ export class EditAccess extends Component {
     }
 
     getProposedTeamIds(access, requests) {
-        const teamIds = access ? access.teams : [];
+        const teamIds = access ? access.teams.filter(_ => true) : [];
 
         if (requests) {
             for (const request of requests) {
@@ -98,7 +98,6 @@ export class EditAccess extends Component {
             const result = await this.accessApi.updateAccess(accessUpdate.teamId, accessUpdate.userId, accessUpdate.name, accessUpdate.admin, accessUpdate.manager);
 
             if (result.success) {
-
                 const success = await this.updateAccessRequests();
 
                 if (success) {
@@ -134,24 +133,23 @@ export class EditAccess extends Component {
 
         for (const team of this.props.teams) {
             const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
-            const matchingRequests = this.props.requests && this.props.requests.filter(tid => tid === team.id);
+            const matchingRequests = this.props.requests && this.props.requests.filter(r => r.teamId === team.id);
             const wasSelected = matchingRequests.length ? matchingRequests[0] : null;
-            let result = null;
 
-            if (selected) {
-                if (!wasSelected) {
-                    // create request access
-                    result = await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
+            try {
+                if (selected) {
+                    if (!wasSelected) {
+                        // create request access
+                        await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
+                    }
+                } else {
+                    if (wasSelected) {
+                        // delete access request
+                        await this.accessApi.deleteAccessRequest(this.props.access.userId, team.id);
+                    }
                 }
-            } else {
-                if (wasSelected) {
-                    // delete access request
-                    result = await this.accessApi.deleteAccessRequest(this.props.acess.userId, team.id);
-                }
-            }
-
-            if (result && !result.success) {
-                console.error(`Error updating access request: ${team.id}/${team.name}`, result);
+            } catch (e) {
+                console.error(`Error updating access request: ${team.id}/${team.name}`, e);
                 success = false;
             }
         }
@@ -165,10 +163,10 @@ export class EditAccess extends Component {
         for (const team of this.props.teams) {
             const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
             if (selected) {
-                const result = await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
-
-                if (!result.success) {
-                    console.error(`Error creating access request: ${team.id}/${team.name}`, result);
+                try {
+                    await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
+                } catch (e) {
+                    console.error(`Error creating access request: ${team.id}/${team.name}`, e);
                     success = false;
                 }
             }
@@ -178,6 +176,10 @@ export class EditAccess extends Component {
     }
 
     accessChanged(event) {
+        if (this.state.updating) {
+            return;
+        }
+
         const name = event.target.getAttribute('name');
         const value = event.target.value;
         const proposed = Object.assign({}, this.state.proposed);
@@ -224,6 +226,10 @@ export class EditAccess extends Component {
 
     renderTeams(teams) {
         const setSelectedTeam = function (event) {
+            if (this.state.updating) {
+                return;
+            }
+
             let item = event.target;
             while (item && item.tagName !== 'LI') {
                 item = item.parentElement;
@@ -291,7 +297,7 @@ export class EditAccess extends Component {
                 return (<span className="badge rounded-pill bg-info">To remove</span>);
             }
             if (this.props.requests && this.props.requests.filter(r => r.teamId === teamId).length > 0) {
-                return (<span className="badge rounded-pill bg-info">To remove</span>);
+                return (<span className="badge rounded-pill bg-info">To cancel request</span>);
             }
 
             return null;
