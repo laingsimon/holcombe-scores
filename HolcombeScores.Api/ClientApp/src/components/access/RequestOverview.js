@@ -141,9 +141,10 @@ export class RequestOverview extends Component {
             }
         } else {
             alert(`Could not respond to request: ${Functions.getResultMessages(result)}`);
-            this.setState({
-                processing: false
-            });
         }
+
+        this.setState({
+            processing: false
+        });
     }
 }

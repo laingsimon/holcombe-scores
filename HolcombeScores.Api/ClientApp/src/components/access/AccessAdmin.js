@@ -195,7 +195,7 @@ export class AccessAdmin extends Component {
     }
 
     renderRequest(request) {
-        return (<RequestOverview key={request.userId} request={request} teams={this.state.teams} onRequestChanged={this.requestChanged} onRequestDeleted={this.requestChanged} />);
+        return (<RequestOverview key={request.userId + ':' + request.teamId} request={request} teams={this.state.teams} onRequestChanged={this.requestChanged} onRequestDeleted={this.requestChanged} />);
     }
 
     //api
