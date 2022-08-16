@@ -51,14 +51,23 @@ namespace HolcombeScores.Api.Repositories
             return (await _accessRequestTableClient.QueryAsync(a => a.Token == token && a.UserId == userId).ToEnumerable()).ToArray();
         }
 
-        public async Task<AccessRequest[]> GetAccessRequests(Guid userId)
-        {
-            return (await _accessRequestTableClient.QueryAsync(a => a.UserId == userId).ToEnumerable()).ToArray();
-        }
-
         public async Task<AccessRequest> GetAccessRequest(Guid userId, Guid teamId)
         {
             return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.TeamId == teamId && a.UserId == userId);
+        }
+
+        public async Task<Access> GetAccess(Guid userId, Guid teamId)
+        {
+            var accessForUser = _accessTableClient.QueryAsync(a => a.UserId == userId);
+            await foreach (var access in accessForUser)
+            {
+                if (access.Teams.Contains(teamId))
+                {
+                    return access;
+                }
+            }
+
+            return null;
         }
 
         public async Task<Access> GetAccess(string token, Guid userId)

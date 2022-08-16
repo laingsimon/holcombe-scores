@@ -231,7 +231,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<AccessDto>("Access request not found");
             }
 
-            var existingAccess = await _accessRepository.GetAccess(response.UserId);
+            var existingAccess = await _accessRepository.GetAccess(response.UserId, response.TeamId);
             if (existingAccess != null)
             {
                 return _serviceHelper.Success("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
