@@ -237,6 +237,7 @@ namespace HolcombeScores.Api.Services
             var existingAccess = await _accessRepository.GetAccess(response.UserId, response.TeamId);
             if (existingAccess != null)
             {
+                await _accessRepository.RemoveAccessRequest(accessRequest.UserId, accessRequest.TeamId);
                 return _serviceHelper.Success("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
             }
 
@@ -257,7 +258,7 @@ namespace HolcombeScores.Api.Services
                 await _accessRepository.AddAccess(newAccess);
 
                 // clean up the access request
-                await _accessRepository.RemoveAccessRequest(response.UserId);
+                await _accessRepository.RemoveAccessRequest(response.UserId, response.TeamId);
 
                 return _serviceHelper.Success("Access granted", _accessDtoAdapter.Adapt(newAccess));
             }
@@ -332,7 +333,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<AccessRequestDto>("Only admins can delete requests for another team");
             }
 
-            await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
+            await _accessRepository.RemoveAccessRequest(accessRequest.UserId, teamId);
             return _serviceHelper.Success("Access request removed", _accessRequestDtoAdapter.Adapt(accessRequest));
         }
 
@@ -620,7 +621,7 @@ namespace HolcombeScores.Api.Services
             await _accessRepository.AddAccess(newAccess);
 
             // clean up the access request
-            await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
+            await _accessRepository.RemoveAccessRequest(accessRequest.UserId, accessRequest.TeamId);
 
             return _serviceHelper.Success("Access request recovered", _accessDtoAdapter.Adapt(newAccess));
         }

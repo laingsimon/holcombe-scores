@@ -13,7 +13,7 @@ namespace HolcombeScores.Api.Repositories
         Task<Access> GetAccess(Guid userId);
         Task AddAccessRequest(AccessRequest accessRequest);
         Task AddAccess(Access access);
-        Task RemoveAccessRequest(Guid userId);
+        Task RemoveAccessRequest(Guid userId, Guid teamId);
         Task UpdateAccess(Access access);
         Task RemoveAccess(Guid userId);
         Task RemoveAccess(Guid userId, Guid teamId);

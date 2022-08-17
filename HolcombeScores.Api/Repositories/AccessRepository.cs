@@ -100,9 +100,9 @@ namespace HolcombeScores.Api.Repositories
             await _accessTableClient.AddEntityAsync(access);
         }
 
-        public async Task RemoveAccessRequest(Guid userId)
+        public async Task RemoveAccessRequest(Guid userId, Guid teamId)
         {
-            var accessRequest = await _accessRequestTableClient.SingleOrDefaultAsync(a => a.UserId == userId);
+            var accessRequest = await _accessRequestTableClient.SingleOrDefaultAsync(a => a.UserId == userId && a.TeamId == teamId);
             if (accessRequest != null)
             {
                 await _accessRequestTableClient.DeleteEntityAsync(accessRequest.PartitionKey, accessRequest.RowKey);
