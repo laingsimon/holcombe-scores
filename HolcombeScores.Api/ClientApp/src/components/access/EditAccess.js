@@ -139,7 +139,7 @@ export class EditAccess extends Component {
 
             try {
                 if (selected) {
-                    if (!wasRequested) {
+                    if (!wasRequested && !wasApproved) {
                         // create request access
                         await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
                     }
@@ -317,7 +317,7 @@ export class EditAccess extends Component {
             const request = matchingRequests.length ? matchingRequests[0] : null;
             if (request != null) {
                 if (request.rejected) {
-                    return (<span className="badge rounded-pill bg-rejected">Rejected: {request.reason}</span>);
+                    return (<span className="badge rounded-pill bg-danger">{request.reason ? `Rejected: ${request.reason}` : 'Rejected'}</span>);
                 }
                 return (<span className="badge rounded-pill bg-warning">Requested</span>);
             }
