@@ -86,7 +86,7 @@ export class Home extends Component {
                 <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/home/access`}
                    onClick={this.changeMode}>Access</a>
             </li>
-            {this.props.access ? null : (<li className="nav-item">
+            {this.props.access || this.props.requests ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'recover' ? ' active' : ''}`} href={`/home/recover`}
                    onClick={this.changeMode}>Recover</a>
             </li>)}
