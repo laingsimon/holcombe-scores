@@ -71,6 +71,12 @@ namespace HolcombeScores.Api.Controllers
             return await _accessService.RemoveAccessRequest(userId, teamId);
         }
 
+        [HttpDelete("/api/Access/Request/{teamId}")]
+        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid teamId)
+        {
+            return await _accessService.RemoveAccessRequest(null, teamId);
+        }
+
         [HttpPost("/api/Access/Respond")]
         public async Task<ActionResultDto<AccessDto>> Respond(AccessResponseDto response)
         {

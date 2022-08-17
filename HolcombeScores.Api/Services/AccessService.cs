@@ -329,21 +329,21 @@ namespace HolcombeScores.Api.Services
             return _serviceHelper.Success("Access removed", _accessDtoAdapter.Adapt(await _accessRepository.GetAccess(userId)));
         }
 
-        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId, Guid teamId)
+        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid? userId, Guid teamId)
         {
             var myAccess = await GetAccessInternal();
-            if (!myAccess.Admin && !myAccess.Manager)
+            if (myAccess != null && !myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId)
             {
                 return _serviceHelper.NotAnAdmin<AccessRequestDto>();
             }
 
-            var accessRequest = await _accessRepository.GetAccessRequest(userId, teamId);
+            var accessRequest = await _accessRepository.GetAccessRequest(GetImpersonatingUserId() ?? GetRequestUserId() ?? Guid.Empty, teamId);
             if (accessRequest == null)
             {
                 return _serviceHelper.NotFound<AccessRequestDto>("Access request not found");
             }
 
-            if (myAccess.Manager && !myAccess.Teams.Contains(teamId))
+            if (myAccess?.Manager == true && !myAccess.Teams.Contains(teamId))
             {
                 return _serviceHelper.NotPermitted<AccessRequestDto>("Only admins can delete requests for another team");
             }

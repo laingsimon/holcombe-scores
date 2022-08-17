@@ -177,13 +177,20 @@ export class EditAccess extends Component {
 
         for (const team of this.props.teams) {
             const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
-            if (selected) {
-                try {
+            const matchingRequests = this.props.requests && this.props.requests.filter(r => r.teamId === team.id);
+            const wasRequested = matchingRequests.length;
+
+            try {
+                if (selected) {
                     await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
-                } catch (e) {
-                    console.error(`Error creating access request: ${team.id}/${team.name}`, e);
-                    success = false;
+                } else {
+                    if (wasRequested) {
+                        await this.accessApi.deleteAccessRequest(null, team.id);
+                    }
                 }
+            } catch (e) {
+                console.error(`Error creating/removing access request: ${team.id}/${team.name}`, e);
+                success = false;
             }
         }
 

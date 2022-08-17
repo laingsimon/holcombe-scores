@@ -69,7 +69,11 @@ class Access {
     }
 
     deleteAccessRequest(userId, teamId) {
-        return this.http.delete(`/api/Access/Request/${userId}/${teamId}`);
+        if (userId) {
+            return this.http.delete(`/api/Access/Request/${userId}/${teamId}`);
+        } else {
+            return this.http.delete(`/api/Access/Request/${teamId}`);
+        }
     }
 
     getAllAccessRequests() {
