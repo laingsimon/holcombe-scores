@@ -1,7 +1,6 @@
 using Azure;
 using Azure.Data.Tables;
 using HolcombeScores.Api.Models.AzureTables;
-using HolcombeScores.Api.Services;
 
 namespace HolcombeScores.Api.Repositories
 {
@@ -46,9 +45,9 @@ namespace HolcombeScores.Api.Repositories
                 : _accessRequestTableClient.QueryAsync();
         }
 
-        public async Task<AccessRequest[]> GetAccessRequests(Guid userId)
+        public IAsyncEnumerable<AccessRequest> GetAccessRequests(Guid userId)
         {
-            return (await _accessRequestTableClient.QueryAsync(a => a.UserId == userId).ToEnumerable()).ToArray();
+            return _accessRequestTableClient.QueryAsync(a => a.UserId == userId);
         }
 
         public async Task<AccessRequest> GetAccessRequest(Guid userId, Guid teamId)

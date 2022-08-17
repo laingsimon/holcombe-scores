@@ -5,6 +5,7 @@ namespace HolcombeScores.Api.Services.Adapters
 {
     public interface IMyAccessDtoAdapter
     {
-        MyAccessDto Adapt(Access access, IEnumerable<AccessRequest> accessRequests, Access impersonatedBy = null);
+        Task<MyAccessDto> Adapt(Access access, IAsyncEnumerable<AccessRequest> accessRequests,
+            Access impersonatedBy = null);
     }
 }

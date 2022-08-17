@@ -48,9 +48,9 @@ namespace HolcombeScores.Api.Services
         {
             var access = await GetAccessInternal(permitRevoked: true);
             var impersonatedByAccess = await GetImpersonatedByAccess();
-            var accessRequests = await GetAccessRequestsInternal();
+            var accessRequests = GetAccessRequestsInternal();
 
-            return _myAccessDtoAdapter.Adapt(access, accessRequests, impersonatedByAccess);
+            return await _myAccessDtoAdapter.Adapt(access, accessRequests, impersonatedByAccess);
         }
 
         public async Task<ActionResultDto<MyAccessDto>> Impersonate(ImpersonationDto impersonation)
@@ -79,7 +79,7 @@ namespace HolcombeScores.Api.Services
             var impersonatedByAccess = await GetAccessInternal(permitRevoked: true);
             SetImpersonatingCookies(impersonatingAccess.Token, impersonatingAccess.UserId);
 
-            var myAccess = _myAccessDtoAdapter.Adapt(impersonatingAccess, null, impersonatedByAccess);
+            var myAccess = await _myAccessDtoAdapter.Adapt(impersonatingAccess, null, impersonatedByAccess);
             return _serviceHelper.Success("Impersonation complete", myAccess);
         }
 
@@ -88,7 +88,7 @@ namespace HolcombeScores.Api.Services
             RemoveImpersonationCookies();
 
             var originalAccess = await GetAccessInternal();
-            return _myAccessDtoAdapter.Adapt(originalAccess, null);
+            return await _myAccessDtoAdapter.Adapt(originalAccess, null);
         }
 
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
@@ -202,8 +202,8 @@ namespace HolcombeScores.Api.Services
 
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto)
         {
-            var existingAccessRequests = await GetAccessRequestsInternal();
-            var existingAccessRequest = existingAccessRequests.SingleOrDefault(r => r.TeamId == accessRequestDto.TeamId);
+            var existingAccessRequests = GetAccessRequestsInternal();
+            var existingAccessRequest = await existingAccessRequests.SingleOrDefaultAsync(r => r.TeamId == accessRequestDto.TeamId);
             if (existingAccessRequest != null)
             {
                 // access already requested
@@ -565,7 +565,7 @@ namespace HolcombeScores.Api.Services
             return access;
         }
 
-        private async Task<AccessRequest[]> GetAccessRequestsInternal()
+        private IAsyncEnumerable<AccessRequest> GetAccessRequestsInternal()
         {
             var token = GetImpersonatingToken() ?? GetRequestToken();
             var userId = GetImpersonatingUserId() ?? GetRequestUserId();
@@ -574,7 +574,7 @@ namespace HolcombeScores.Api.Services
                 return null;
             }
 
-            return await _accessRepository.GetAccessRequests(userId.Value);
+            return _accessRepository.GetAccessRequests(userId.Value);
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
