@@ -234,33 +234,46 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<AccessDto>("Access request not found");
             }
 
-            var existingAccess = await _accessRepository.GetAccess(response.UserId, response.TeamId);
+            var existingAccess = await _accessRepository.GetAccess(response.UserId);
             if (existingAccess != null)
             {
-                await _accessRepository.RemoveAccessRequest(accessRequest.UserId, accessRequest.TeamId);
-                return _serviceHelper.Success("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
+                if (existingAccess.Teams.Contains(accessRequest.TeamId))
+                {
+                    await _accessRepository.RemoveAccessRequest(accessRequest.UserId, accessRequest.TeamId);
+                    return _serviceHelper.Success("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
+                }
             }
 
             if (response.Allow)
             {
-                var newAccess = new Access
+                if (existingAccess == null)
                 {
-                    Admin = false,
-                    Manager = false,
-                    Granted = DateTime.UtcNow,
-                    Name = accessRequest.Name,
-                    Revoked = null,
-                    RevokedReason = null,
-                    Teams = new[] { response.TeamId },
-                    UserId = response.UserId,
-                    Token = accessRequest.Token,
-                };
-                await _accessRepository.AddAccess(newAccess);
+                    var newAccess = new Access
+                    {
+                        Admin = false,
+                        Manager = false,
+                        Granted = DateTime.UtcNow,
+                        Name = accessRequest.Name,
+                        Revoked = null,
+                        RevokedReason = null,
+                        Teams = new[] { response.TeamId },
+                        UserId = response.UserId,
+                        Token = accessRequest.Token,
+                    };
+                    await _accessRepository.AddAccess(newAccess);
+                    existingAccess = newAccess;
+                }
+                else
+                {
+                    // add team to existing access
+                    existingAccess.Teams = existingAccess.Teams.Concat(new[] { accessRequest.TeamId }).ToArray();
+                    await _accessRepository.UpdateAccess(existingAccess);
+                }
 
                 // clean up the access request
                 await _accessRepository.RemoveAccessRequest(response.UserId, response.TeamId);
 
-                return _serviceHelper.Success("Access granted", _accessDtoAdapter.Adapt(newAccess));
+                return _serviceHelper.Success("Access granted", _accessDtoAdapter.Adapt(existingAccess));
             }
 
             accessRequest.Reason = response.Reason;
