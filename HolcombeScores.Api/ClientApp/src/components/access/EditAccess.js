@@ -21,7 +21,7 @@ export class EditAccess extends Component {
         super(props);
         this.state = {
             loading: false,
-            proposed: Object.assign({ name: '' }, this.props.access, { teams: this.getProposedTeamIds(this.props.access, this.props.requests) })
+            proposed: Object.assign({ name: this.getFirstName(this.props.requests) }, this.props.access, { teams: this.getProposedTeamIds(this.props.access, this.props.requests) })
         };
         this.updateAccess = this.updateAccess.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
@@ -29,6 +29,16 @@ export class EditAccess extends Component {
         this.logout = this.logout.bind(this);
         let http = new Http(new Settings());
         this.accessApi = new Access(http);
+    }
+
+    getFirstName(requests) {
+        if (requests) {
+            for (const request of requests) {
+                return request.name;
+            }
+        }
+
+        return '';
     }
 
     getProposedTeamIds(access, requests) {
