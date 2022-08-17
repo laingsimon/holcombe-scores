@@ -6,7 +6,7 @@ namespace HolcombeScores.Api.Repositories
     {
         IAsyncEnumerable<Access> GetAllAccess(Guid[] teamId = null);
         IAsyncEnumerable<AccessRequest> GetAllAccessRequests(Guid[] teamId = null);
-        Task<AccessRequest[]> GetAccessRequests(string token, Guid userId);
+        Task<AccessRequest[]> GetAccessRequests(Guid userId);
         Task<AccessRequest> GetAccessRequest(Guid userId, Guid teamId);
         Task<Access> GetAccess(Guid userId, Guid teamId);
         Task<Access> GetAccess(string token, Guid userId);

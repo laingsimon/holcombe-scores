@@ -46,9 +46,9 @@ namespace HolcombeScores.Api.Repositories
                 : _accessRequestTableClient.QueryAsync();
         }
 
-        public async Task<AccessRequest[]> GetAccessRequests(string token, Guid userId)
+        public async Task<AccessRequest[]> GetAccessRequests(Guid userId)
         {
-            return (await _accessRequestTableClient.QueryAsync(a => a.Token == token && a.UserId == userId).ToEnumerable()).ToArray();
+            return (await _accessRequestTableClient.QueryAsync(a => a.UserId == userId).ToEnumerable()).ToArray();
         }
 
         public async Task<AccessRequest> GetAccessRequest(Guid userId, Guid teamId)

@@ -574,7 +574,7 @@ namespace HolcombeScores.Api.Services
                 return null;
             }
 
-            return await _accessRepository.GetAccessRequests(token, userId.Value);
+            return await _accessRepository.GetAccessRequests(userId.Value);
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
