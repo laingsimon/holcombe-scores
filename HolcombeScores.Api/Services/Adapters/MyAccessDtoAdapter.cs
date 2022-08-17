@@ -19,7 +19,9 @@ namespace HolcombeScores.Api.Services.Adapters
             return new MyAccessDto
             {
                 Access = _accessDtoAdapter.Adapt(access, impersonatedBy),
-                Requests = await accessRequests.SelectAsync(_accessRequestDtoAdapter.Adapt).ToArrayAsync(),
+                Requests = accessRequests != null
+                    ? await accessRequests.SelectAsync(_accessRequestDtoAdapter.Adapt).ToArrayAsync()
+                    : null,
             };
         }
     }

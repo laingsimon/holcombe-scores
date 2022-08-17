@@ -203,7 +203,9 @@ namespace HolcombeScores.Api.Services
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto)
         {
             var existingAccessRequests = GetAccessRequestsInternal();
-            var existingAccessRequest = await existingAccessRequests.SingleOrDefaultAsync(r => r.TeamId == accessRequestDto.TeamId);
+            var existingAccessRequest = existingAccessRequests != null
+                ? await existingAccessRequests.SingleOrDefaultAsync(r => r.TeamId == accessRequestDto.TeamId)
+                : null;
             if (existingAccessRequest != null)
             {
                 // access already requested
