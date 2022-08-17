@@ -134,7 +134,7 @@ export class EditAccess extends Component {
         for (const team of this.props.teams) {
             const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
             const matchingRequests = this.props.requests && this.props.requests.filter(r => r.teamId === team.id);
-            const wasSelected = matchingRequests.length ? matchingRequests[0] : null;
+            const wasSelected = matchingRequests.length || this.props.access.teams.filter(id => id === team.id).length;
 
             try {
                 if (selected) {
