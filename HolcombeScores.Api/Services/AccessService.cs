@@ -94,26 +94,29 @@ namespace HolcombeScores.Api.Services
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
         {
             var userId = GetRequestUserId();
+            var identifiedUsers = new HashSet<Guid>();
 
             await foreach (var access in _accessRepository.GetAllAccess())
             {
-                if (userId != null && access.UserId != userId)
+                if ((userId != null && access.UserId != userId) || identifiedUsers.Contains(access.UserId))
                 {
                     // if the userId cookie was set, then only show the users access requests
                     continue;
                 }
 
+                identifiedUsers.Add(access.UserId);
                 yield return _recoverAccessDtoAdapter.Adapt(access);
             }
 
             await foreach (var accessRequest in _accessRepository.GetAllAccessRequests())
             {
-                if (userId != null && accessRequest.UserId != userId)
+                if ((userId != null && accessRequest.UserId != userId) || identifiedUsers.Contains(accessRequest.UserId))
                 {
                     // if the userId cookie was set, then only show the users access
                     continue;
                 }
 
+                identifiedUsers.Add(accessRequest.UserId);
                 yield return _recoverAccessDtoAdapter.Adapt(accessRequest);
             }
         }
