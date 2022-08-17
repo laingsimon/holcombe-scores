@@ -134,16 +134,21 @@ export class EditAccess extends Component {
         for (const team of this.props.teams) {
             const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
             const matchingRequests = this.props.requests && this.props.requests.filter(r => r.teamId === team.id);
-            const wasSelected = matchingRequests.length || this.props.access.teams.filter(id => id === team.id).length;
+            const wasApproved = this.props.access.teams.filter(id => id === team.id).length;
+            const wasRequested = matchingRequests.length;
 
             try {
                 if (selected) {
-                    if (!wasSelected) {
+                    if (!wasRequested) {
                         // create request access
                         await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
                     }
                 } else {
-                    if (wasSelected) {
+                    if (wasApproved) {
+                        // delete access
+                        await this.accessApi.deleteAccess(this.props.access.userId, team.id);
+                    }
+                    if (wasRequested) {
                         // delete access request
                         await this.accessApi.deleteAccessRequest(this.props.access.userId, team.id);
                     }
