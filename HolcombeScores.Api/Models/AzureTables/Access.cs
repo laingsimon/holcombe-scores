@@ -6,8 +6,6 @@ namespace HolcombeScores.Api.Models.AzureTables
 {
     public class Access : ITableEntity
     {
-        [Obsolete("Use teams instead")]
-        public Guid TeamId { get; set; }
         [IgnoreDataMember]
         public Guid[] Teams { get; set; }
         public DateTime Granted { get; set; }
@@ -20,6 +18,7 @@ namespace HolcombeScores.Api.Models.AzureTables
         public string Token { get; set; }
 
         [DataMember(Name = "Teams")]
+        [Obsolete("Don't use this property directly, use " + nameof(TeamsList) + " instead")]
         public string TeamsList
         {
             get => string.Join(",", Teams ?? Array.Empty<Guid>());

@@ -18,24 +18,8 @@ namespace HolcombeScores.Api.Repositories
         public IAsyncEnumerable<Access> GetAllAccess(Guid[] teamIds = null)
         {
             return teamIds != null
-                ? UpgradeTeams(_accessTableClient.QueryAsync(a => a.Teams.Any(teamIds.Contains)))
-                : UpgradeTeams(_accessTableClient.QueryAsync());
-        }
-
-        // TODO: Remove this
-        private async IAsyncEnumerable<Access> UpgradeTeams(IAsyncEnumerable<Access> accessList)
-        {
-            await foreach (var access in accessList)
-            {
-                if (access.Teams == null)
-                {
-#pragma warning disable CS0618
-                    access.Teams = new[] { access.TeamId };
-#pragma warning restore CS0618
-                    await _accessTableClient.UpdateEntityAsync(access, ETag.All);
-                }
-                yield return access;
-            }
+                ? _accessTableClient.QueryAsync(a => a.Teams.Any(teamIds.Contains))
+                : _accessTableClient.QueryAsync();
         }
 
         public IAsyncEnumerable<AccessRequest> GetAllAccessRequests(Guid[] teamIds = null)
