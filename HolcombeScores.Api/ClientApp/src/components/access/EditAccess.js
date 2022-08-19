@@ -19,9 +19,11 @@ import { Link } from 'react-router-dom';
 export class EditAccess extends Component {
     constructor(props) {
         super(props);
+
+        const templateProposed = { name: this.getFirstName(this.props.requests) };
+        const proposedTeams = { teams: this.getProposedTeamIds(this.props.access, this.props.requests) };
         this.state = {
-            loading: false,
-            proposed: Object.assign({ name: this.getFirstName(this.props.requests) }, this.props.access, { teams: this.getProposedTeamIds(this.props.access, this.props.requests) })
+            proposed: Object.assign(templateProposed, this.props.access, proposedTeams)
         };
         this.updateAccess = this.updateAccess.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
@@ -93,6 +95,10 @@ export class EditAccess extends Component {
     }
 
     async updateAccess() {
+        if (this.state.updating) {
+            return;
+        }
+
         if (!this.state.proposed.name) {
             alert('You need to enter a name');
             return;
@@ -177,7 +183,7 @@ export class EditAccess extends Component {
 
         for (const team of this.props.teams) {
             const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
-            const matchingRequests = this.props.requests && this.props.requests.filter(r => r.teamId === team.id);
+            const matchingRequests = this.props.requests ? this.props.requests.filter(r => r.teamId === team.id) : [];
             const wasRequested = matchingRequests.length;
 
             try {
