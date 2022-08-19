@@ -3,7 +3,7 @@ import {Settings} from '../../api/settings';
 import {Http} from '../../api/http';
 import {Access} from '../../api/access';
 import {Alert} from '../Alert';
-import { Link } from 'react-router-dom';
+import {TeamAccessRequest} from './TeamAccessRequest';
 
 /*
 * Props:
@@ -29,15 +29,14 @@ export class EditAccess extends Component {
         this.accessChanged = this.accessChanged.bind(this);
         this.removeAccess = this.removeAccess.bind(this);
         this.logout = this.logout.bind(this);
+        this.setSelectedTeam = this.setSelectedTeam.bind(this);
         let http = new Http(new Settings());
         this.accessApi = new Access(http);
     }
 
     getFirstName(requests) {
-        if (requests) {
-            for (const request of requests) {
-                return request.name;
-            }
+        if (requests && requests.length > 0) {
+            return requests[0].name;
         }
 
         return '';
@@ -56,6 +55,24 @@ export class EditAccess extends Component {
     }
 
     //event handlers
+    setSelectedTeam(id, nowSelected) {
+        if (this.state.updating) {
+            return;
+        }
+
+        let newTeams = this.state.proposed.teams.filter(tid => tid !== id);
+        if (nowSelected) {
+            newTeams.push(id);
+        }
+
+        const proposed = Object.assign({}, this.state.proposed);
+        proposed.teams = newTeams;
+
+        this.setState({
+            proposed: proposed
+        });
+    }
+
     async logout() {
         if (!window.confirm('Are you sure you want to logout?')) {
             return;
@@ -253,99 +270,18 @@ export class EditAccess extends Component {
     }
 
     renderTeams(teams) {
-        const setSelectedTeam = function (event) {
-            if (this.state.updating) {
-                return;
-            }
-
-            let item = event.target;
-            while (item && item.tagName !== 'LI') {
-                item = item.parentElement;
-            }
-
-            if (!item) {
-                return;
-            }
-
-            let id = item.getAttribute('data-id');
-            let wasSelected = this.state.proposed.teams.filter(tid => tid === id).length > 0;
-            let newTeams = this.state.proposed.teams.filter(tid => tid !== id);
-            if (!wasSelected) {
-                newTeams.push(id);
-            }
-
-            const proposed = Object.assign({}, this.state.proposed);
-            proposed.teams = newTeams;
-
-            this.setState({
-                proposed: proposed
-            });
-        }.bind(this);
-
         return teams.map(team => {
             const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
-            return (<li key={team.id} className={`list-group-item flex-column align-items-start ${this.accessColour(team.id, selected)} : ''}`} data-id={team.id}
-                        onClick={setSelectedTeam}>
-                <div className="d-flex justify-content-between">
-                    {team.name}
-                    {selected && this.props.access && this.props.access.teams.filter(tid => tid === team.id).length > 0 ? (<Link className="btn btn-primary" to={`/team/${team.id}`}>View games...</Link>) : null}
-                    <div className="d-flex align-items-center">{this.accessLabel(team.id, selected)}</div>
-                </div>
-            </li>)
+            const approved = this.props.access && this.props.access.teams.filter(tid => tid === team.id).length > 0;
+            const matchingRequests = this.props.requests.filter(r => r.teamId === team.id);
+            const request = matchingRequests.length ? matchingRequests[0] : null;
+            const requested = request != null;
+            const rejected = request != null && request.rejected;
+            const rejectedReason = request != null && request.rejected ? request.reason : null;
+
+            return (<TeamAccessRequest key={team.id} team={team} onSelected={this.setSelectedTeam} selected={selected}
+                                       approved={approved} requested={requested} rejected={rejected}
+                                       rejectedReason={rejectedReason} />);
         });
-    }
-
-    accessColour(teamId, selected) {
-        if (!selected) {
-            return '';
-        }
-
-        if (this.props.access && this.props.access.teams.filter(tid => tid === teamId).length > 0) {
-            return 'list-group-item-success';
-        }
-
-        if (this.props.requests) {
-            const matchingRequests = this.props.requests.filter(r => r.teamId === teamId);
-            const request = matchingRequests.length ? matchingRequests[0] : null;
-            if (request != null) {
-                if (request.rejected) {
-                    return 'list-group-item-danger';
-                }
-
-                return 'list-group-item-warning';
-            }
-        }
-
-        return 'list-group-item-primary';
-    }
-
-    accessLabel(teamId, selected) {
-        if (!selected) {
-            if (this.props.access && this.props.access.teams.filter(tid => tid === teamId).length > 0) {
-                return (<span className="badge rounded-pill bg-info">To remove</span>);
-            }
-            if (this.props.requests && this.props.requests.filter(r => r.teamId === teamId).length > 0) {
-                return (<span className="badge rounded-pill bg-info">To cancel request</span>);
-            }
-
-            return null;
-        }
-
-        if (this.props.access && this.props.access.teams.filter(tid => tid === teamId).length > 0) {
-            return (<span className="badge rounded-pill bg-success">Approved</span>);
-        }
-
-        if (this.props.requests) {
-            const matchingRequests = this.props.requests.filter(r => r.teamId === teamId);
-            const request = matchingRequests.length ? matchingRequests[0] : null;
-            if (request != null) {
-                if (request.rejected) {
-                    return (<span className="badge rounded-pill bg-danger">{request.reason ? `Rejected: ${request.reason}` : 'Rejected'}</span>);
-                }
-                return (<span className="badge rounded-pill bg-warning">Requested</span>);
-            }
-        }
-
-        return (<span className="badge rounded-pill bg-info">To request</span>);
     }
 }
