@@ -8,6 +8,7 @@ import {TeamAccessRequest} from './TeamAccessRequest';
 /*
 * Props:
 * - access
+* - requests
 * - updateAccess()
 *
 * Events:
