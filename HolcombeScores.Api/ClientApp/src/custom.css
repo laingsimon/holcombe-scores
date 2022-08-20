@@ -95,7 +95,3 @@ body > div#root > div {
 .separate-with-comma > :not(:first-child):before {
   content: ", ";
 }
-
-.badge a {
-  text-decoration: none;
-}
