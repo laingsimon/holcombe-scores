@@ -31,9 +31,8 @@ export class TeamDetails extends Component {
         this.accessApi = new Access(http);
         this.teamId = props.match.params.teamId;
         this.history = props.history;
-        const isAdmin = this.props.access.admin;
         this.state = {
-            error: !isAdmin && this.teamId !== this.props.access.teamId ? 'No access to team' : null,
+            error: null,
             mode: props.match.params.mode || 'view',
             teamDeleted: null,
         };
