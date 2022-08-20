@@ -18,7 +18,9 @@ namespace HolcombeScores.Api.Models.AzureTables
         public string Token { get; set; }
 
         [DataMember(Name = "Teams")]
+#pragma warning disable CS0618
         [Obsolete("Don't use this property directly, use " + nameof(TeamsList) + " instead")]
+#pragma warning restore CS0618
         public string TeamsList
         {
             get => string.Join(",", Teams ?? Array.Empty<Guid>());
