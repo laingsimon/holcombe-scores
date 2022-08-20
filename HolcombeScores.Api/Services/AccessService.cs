@@ -337,7 +337,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotAnAdmin<AccessRequestDto>();
             }
 
-            var accessRequest = await _accessRepository.GetAccessRequest(GetImpersonatingUserId() ?? GetRequestUserId() ?? Guid.Empty, teamId);
+            var accessRequest = await _accessRepository.GetAccessRequest(userId ?? GetImpersonatingUserId() ?? GetRequestUserId() ?? Guid.Empty, teamId);
             if (accessRequest == null)
             {
                 return _serviceHelper.NotFound<AccessRequestDto>("Access request not found");
