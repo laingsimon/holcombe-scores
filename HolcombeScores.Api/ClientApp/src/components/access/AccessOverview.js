@@ -38,7 +38,6 @@ export class AccessOverview extends Component {
         this.cancelAccess = this.cancelAccess.bind(this);
         this.adminChanged = this.adminChanged.bind(this);
         this.managerChanged = this.managerChanged.bind(this);
-        this.changeTeam = this.changeTeam.bind(this);
         this.prepareCancelAccess = this.prepareCancelAccess.bind(this);
         this.reasonChanged = this.reasonChanged.bind(this);
         this.prepareImpersonateAccess = this.prepareImpersonateAccess.bind(this);
@@ -260,31 +259,6 @@ export class AccessOverview extends Component {
         }
     }
 
-    async changeTeam(event) {
-        const teamId = event.target.value;
-
-        const access = Object.assign({}, this.state.access);
-        access.teamId = teamId;
-        this.setState({
-            processing: true,
-            access: access
-        });
-
-        const result = await this.accessApi.updateAccess(teamId, this.userId, this.state.access.name, this.state.access.admin, this.state.access.manager);
-        if (result.success) {
-            this.setState({
-                processing: false
-            });
-
-            await this.accessChanged();
-        } else {
-            alert(`Could not change team: ${Functions.getResultMessages(result)}`);
-            this.setState({
-                processing: false
-            });
-        }
-    }
-
     // renderers
     render() {
         const btnCancelClassName = this.state.processing || this.self
@@ -300,10 +274,7 @@ export class AccessOverview extends Component {
 
         return (<div key={this.userId} className="list-group-item list-group-item-action flex-column align-items-start">
             <span>
-                <strong>{this.state.access.name}</strong>,
-                Team: {this.props.access.revoked ? this.teams[this.props.access.teamId].name : (<select value={this.state.access.teamId} onChange={this.changeTeam}>
-                {Object.keys(this.teams).map(teamId => <option value={teamId} key={teamId}>{this.teams[teamId].name}</option>)}
-                </select>)}
+                <strong>{this.state.access.name}</strong> Teams: {this.renderTeams(this.state.access.teams)}
             </span>
             <span className="float-end">
                 {this.myAccess.admin && !this.props.access.revoked ? (<span className="form-check form-switch form-check-inline margin-right">
@@ -328,9 +299,19 @@ export class AccessOverview extends Component {
         </div>);
     }
 
+    renderTeams(teamIds) {
+        return (<span className="separate-with-comma">
+            {teamIds.map(teamId => {
+                return (<span key={teamId}>
+                    {this.props.teams[teamId].name}
+                </span>);
+            })}
+        </span>);
+    }
+
     renderBackButton(buttonMode, icon, processing) {
         return this.state.mode === buttonMode
-            ? processing ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : '🔙' 
+            ? processing ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>) : '🔙'
             : icon;
     }
 

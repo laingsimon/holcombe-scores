@@ -91,3 +91,7 @@ body > div#root > div {
     transform: rotate(360deg);
   }
 }
+
+.separate-with-comma > :not(:first-child):before {
+  content: ", ";
+}

@@ -5,26 +5,6 @@ namespace HolcombeScores.Api.Services.Adapters
 {
     public class AccessDtoAdapter : IAccessDtoAdapter
     {
-        public Access Adapt(AccessDto access)
-        {
-            if (access == null)
-            {
-                return null;
-            }
-
-            return new Access
-            {
-                Admin = access.Admin,
-                Granted = access.Granted,
-                Name = access.Name,
-                Revoked = access.Revoked,
-                TeamId = access.TeamId,
-                UserId = access.UserId,
-                RevokedReason = access.RevokedReason,
-                Manager = access.Manager,
-            };
-        }
-
         public AccessDto Adapt(Access access, Access impersonatedBy = null)
         {
             if (access == null)
@@ -38,11 +18,11 @@ namespace HolcombeScores.Api.Services.Adapters
                 Granted = access.Granted,
                 Name = access.Name,
                 Revoked = access.Revoked,
-                TeamId = access.TeamId,
+                Teams = access.Teams,
                 UserId = access.UserId,
                 RevokedReason = access.RevokedReason,
                 Manager = access.Manager,
-                ImpersonatedBy = impersonatedBy == null 
+                ImpersonatedBy = impersonatedBy == null
                     ? null
                     : Adapt(impersonatedBy),
             };

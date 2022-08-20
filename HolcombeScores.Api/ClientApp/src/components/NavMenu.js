@@ -3,6 +3,14 @@ import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLi
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
 
+/*
+* Props:
+* - access
+* - teams
+*
+* Events:
+* -none-
+* */
 export class NavMenu extends Component {
   constructor (props) {
     super(props);
@@ -39,10 +47,8 @@ export class NavMenu extends Component {
                 <NavItem>
                   <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to="/home/access">🏟️ Home</NavLink>
                 </NavItem>
-                {this.props.access ? (<NavItem>
-                  <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to={`/team/${this.props.access.teamId}/view`}>⛹ Team</NavLink>
-                </NavItem>) : null}
-                {this.props.access && (this.props.access.admin) ? (<NavItem>
+                {this.props.access ? this.renderTeamsNavs(this.props.access, this.props.teams) : null}
+                {this.props.access && (this.props.access.admin || this.props.access.teams.length > 1) ? (<NavItem>
                   <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to="/teams/view">🎽 Teams</NavLink>
                 </NavItem>) : null}
                 {this.props.access && (this.props.access.admin || this.props.access.manager) ? (<NavItem>
@@ -57,5 +63,15 @@ export class NavMenu extends Component {
         </Navbar>
       </header>
     );
+  }
+
+  renderTeamsNavs(access, teams) {
+    return access.teams.map(teamId => {
+      const team = teams.filter(t => t.id === teamId)[0];
+
+      return (<NavItem key={teamId}>
+        <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to={`/team/${teamId}/view`}>⛹ {team.name}</NavLink>
+      </NavItem>)
+    });
   }
 }

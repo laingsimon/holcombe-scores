@@ -14,12 +14,6 @@ namespace HolcombeScores.Api.Controllers
             _gameService = gameService;
         }
 
-        [HttpGet("/api/Games")]
-        public IAsyncEnumerable<GameDto> List()
-        {
-            return _gameService.GetAllGames(null);
-        }
-
         [HttpGet("/api/Games/{teamId}")]
         public IAsyncEnumerable<GameDto> List(Guid teamId)
         {

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HolcombeScores.Api.Models.Dtos;
 
 namespace HolcombeScores.Api.Services
@@ -18,8 +15,8 @@ namespace HolcombeScores.Api.Services
         IAsyncEnumerable<AccessDto> GetAllAccess();
         IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery();
         Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto);
-        Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId);
-        Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId);
+        Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId, Guid? teamId);
+        Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid teamId, Guid? userId);
         Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated);
         Task<bool> IsManagerOrAdmin();
         Task<ActionResultDto<string>> Logout();

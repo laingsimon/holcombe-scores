@@ -15,28 +15,42 @@ namespace HolcombeScores.Api.Repositories
             _accessRequestTableClient = new TypedTableClient<AccessRequest>(tableServiceClientFactory.CreateTableClient("AccessRequest"));
         }
 
-        public IAsyncEnumerable<Access> GetAllAccess(Guid? teamId = null)
+        public IAsyncEnumerable<Access> GetAllAccess(Guid[] teamIds = null)
         {
-            return teamId.HasValue
-                ? _accessTableClient.QueryAsync(r => r.TeamId == teamId.Value)
+            return teamIds != null
+                ? _accessTableClient.QueryAsync(a => a.Teams.Any(teamIds.Contains))
                 : _accessTableClient.QueryAsync();
         }
 
-        public IAsyncEnumerable<AccessRequest> GetAllAccessRequests(Guid? teamId = null)
+        public IAsyncEnumerable<AccessRequest> GetAllAccessRequests(Guid[] teamIds = null)
         {
-            return teamId.HasValue
-                ? _accessRequestTableClient.QueryAsync(r => r.TeamId == teamId.Value)
+            return teamIds != null
+                ? _accessRequestTableClient.QueryAsync(ar => teamIds.Contains(ar.TeamId))
                 : _accessRequestTableClient.QueryAsync();
         }
 
-        public async Task<AccessRequest> GetAccessRequest(string token, Guid userId)
+        public IAsyncEnumerable<AccessRequest> GetAccessRequests(Guid userId)
         {
-            return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.Token == token && a.UserId == userId);
+            return _accessRequestTableClient.QueryAsync(a => a.UserId == userId);
         }
 
-        public async Task<AccessRequest> GetAccessRequest(Guid userId)
+        public async Task<AccessRequest> GetAccessRequest(Guid userId, Guid teamId)
         {
-            return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.UserId == userId);
+            return await _accessRequestTableClient.SingleOrDefaultAsync(a => a.TeamId == teamId && a.UserId == userId);
+        }
+
+        public async Task<Access> GetAccess(Guid userId, Guid teamId)
+        {
+            var accessForUser = _accessTableClient.QueryAsync(a => a.UserId == userId);
+            await foreach (var access in accessForUser)
+            {
+                if (access.Teams.Contains(teamId))
+                {
+                    return access;
+                }
+            }
+
+            return null;
         }
 
         public async Task<Access> GetAccess(string token, Guid userId)
@@ -63,16 +77,16 @@ namespace HolcombeScores.Api.Repositories
         public async Task AddAccess(Access access)
         {
             access.Timestamp = DateTimeOffset.UtcNow;
-            access.PartitionKey = access.TeamId.ToString();
+            access.PartitionKey = access.Teams.First().ToString(); // NOTE: there must be a team.
             access.RowKey = access.UserId.ToString();
             access.ETag = ETag.All;
 
             await _accessTableClient.AddEntityAsync(access);
         }
 
-        public async Task RemoveAccessRequest(Guid userId)
+        public async Task RemoveAccessRequest(Guid userId, Guid teamId)
         {
-            var accessRequest = await _accessRequestTableClient.SingleOrDefaultAsync(a => a.UserId == userId);
+            var accessRequest = await _accessRequestTableClient.SingleOrDefaultAsync(a => a.UserId == userId && a.TeamId == teamId);
             if (accessRequest != null)
             {
                 await _accessRequestTableClient.DeleteEntityAsync(accessRequest.PartitionKey, accessRequest.RowKey);
@@ -90,6 +104,13 @@ namespace HolcombeScores.Api.Repositories
             {
                 await _accessTableClient.DeleteEntityAsync(access.PartitionKey, access.RowKey, ETag.All);
             }
+        }
+
+        public async Task RemoveAccess(Guid userId, Guid teamId)
+        {
+            var access = await GetAccess(userId);
+            access.Teams = access.Teams.Except(new[] { teamId }).ToArray();
+            await _accessTableClient.UpdateEntityAsync(access, ETag.All);
         }
 
         public async Task UpdateAccessToken(string currentToken, string newToken)

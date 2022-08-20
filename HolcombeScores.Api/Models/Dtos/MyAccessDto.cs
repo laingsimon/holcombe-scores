@@ -6,6 +6,6 @@ namespace HolcombeScores.Api.Models.Dtos
     public class MyAccessDto
     {
         public AccessDto Access { get; set; }
-        public AccessRequestDto Request { get; set; }
+        public AccessRequestDto[] Requests { get; set; }
     }
 }

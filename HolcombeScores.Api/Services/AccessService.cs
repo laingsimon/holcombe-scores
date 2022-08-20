@@ -48,9 +48,9 @@ namespace HolcombeScores.Api.Services
         {
             var access = await GetAccessInternal(permitRevoked: true);
             var impersonatedByAccess = await GetImpersonatedByAccess();
-            var accessRequest = await GetAccessRequestInternal();
+            var accessRequests = GetAccessRequestsInternal();
 
-            return _myAccessDtoAdapter.Adapt(access, accessRequest, impersonatedByAccess);
+            return await _myAccessDtoAdapter.Adapt(access, accessRequests, impersonatedByAccess);
         }
 
         public async Task<ActionResultDto<MyAccessDto>> Impersonate(ImpersonationDto impersonation)
@@ -75,12 +75,12 @@ namespace HolcombeScores.Api.Services
             {
                 return _serviceHelper.NotPermitted<MyAccessDto>("Access to this user has been revoked");
             }
-            
+
             var impersonatedByAccess = await GetAccessInternal(permitRevoked: true);
             SetImpersonatingCookies(impersonatingAccess.Token, impersonatingAccess.UserId);
 
-            var myAccess = _myAccessDtoAdapter.Adapt(impersonatingAccess, null, impersonatedByAccess);
-            return _serviceHelper.Success<MyAccessDto>("Impersonation complete", myAccess);
+            var myAccess = await _myAccessDtoAdapter.Adapt(impersonatingAccess, null, impersonatedByAccess);
+            return _serviceHelper.Success("Impersonation complete", myAccess);
         }
 
         public async Task<MyAccessDto> Unimpersonate()
@@ -88,32 +88,35 @@ namespace HolcombeScores.Api.Services
             RemoveImpersonationCookies();
 
             var originalAccess = await GetAccessInternal();
-            return _myAccessDtoAdapter.Adapt(originalAccess, null);
+            return await _myAccessDtoAdapter.Adapt(originalAccess, null);
         }
 
         public async IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery()
         {
             var userId = GetRequestUserId();
+            var identifiedUsers = new HashSet<Guid>();
 
             await foreach (var access in _accessRepository.GetAllAccess())
             {
-                if (userId != null && access.UserId != userId)
+                if ((userId != null && access.UserId != userId) || identifiedUsers.Contains(access.UserId))
                 {
                     // if the userId cookie was set, then only show the users access requests
                     continue;
                 }
 
+                identifiedUsers.Add(access.UserId);
                 yield return _recoverAccessDtoAdapter.Adapt(access);
             }
 
             await foreach (var accessRequest in _accessRepository.GetAllAccessRequests())
             {
-                if (userId != null && accessRequest.UserId != userId)
+                if ((userId != null && accessRequest.UserId != userId) || identifiedUsers.Contains(accessRequest.UserId))
                 {
                     // if the userId cookie was set, then only show the users access
                     continue;
                 }
 
+                identifiedUsers.Add(accessRequest.UserId);
                 yield return _recoverAccessDtoAdapter.Adapt(accessRequest);
             }
         }
@@ -154,7 +157,7 @@ namespace HolcombeScores.Api.Services
                 yield break;
             }
 
-            await foreach (var access in _accessRepository.GetAllAccess(myAccess.Admin ? null : myAccess.TeamId))
+            await foreach (var access in _accessRepository.GetAllAccess(myAccess.Admin ? null : myAccess.Teams))
             {
                 yield return _accessDtoAdapter.Adapt(access);
             }
@@ -194,12 +197,15 @@ namespace HolcombeScores.Api.Services
         public async Task<bool> CanAccessTeam(Guid teamId)
         {
             var access = await GetAccess();
-            return (access.Admin || access.TeamId == teamId) && access.Revoked == null;
+            return (access.Admin || (access.Teams != null && access.Teams.Contains(teamId))) && access.Revoked == null;
         }
 
         public async Task<AccessRequestedDto> RequestAccess(AccessRequestDto accessRequestDto)
         {
-            var existingAccessRequest = await GetAccessRequestInternal();
+            var existingAccessRequests = GetAccessRequestsInternal();
+            var existingAccessRequest = existingAccessRequests != null
+                ? await existingAccessRequests.SingleOrDefaultAsync(r => r.TeamId == accessRequestDto.TeamId)
+                : null;
             if (existingAccessRequest != null)
             {
                 // access already requested
@@ -207,8 +213,8 @@ namespace HolcombeScores.Api.Services
             }
 
             var accessRequest = _accessRequestDtoAdapter.Adapt(accessRequestDto);
-            accessRequest.UserId = Guid.NewGuid();
-            accessRequest.Token = Guid.NewGuid().ToString();
+            accessRequest.UserId = GetImpersonatingUserId() ?? GetRequestUserId() ?? Guid.NewGuid();
+            accessRequest.Token = GetImpersonatingToken() ?? GetRequestToken() ?? Guid.NewGuid().ToString();
 
             await _accessRepository.AddAccessRequest(accessRequest);
 
@@ -224,7 +230,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
 
-            var accessRequest = await _accessRepository.GetAccessRequest(response.UserId);
+            var accessRequest = await _accessRepository.GetAccessRequest(response.UserId, response.TeamId);
             if (accessRequest == null)
             {
                 return _serviceHelper.NotFound<AccessDto>("Access request not found");
@@ -233,29 +239,43 @@ namespace HolcombeScores.Api.Services
             var existingAccess = await _accessRepository.GetAccess(response.UserId);
             if (existingAccess != null)
             {
-                return _serviceHelper.Success("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
+                if (existingAccess.Teams.Contains(accessRequest.TeamId))
+                {
+                    await _accessRepository.RemoveAccessRequest(accessRequest.UserId, accessRequest.TeamId);
+                    return _serviceHelper.Success("Access already exists", _accessDtoAdapter.Adapt(existingAccess));
+                }
             }
 
             if (response.Allow)
             {
-                var newAccess = new Access
+                if (existingAccess == null)
                 {
-                    Admin = false,
-                    Manager = false,
-                    Granted = DateTime.UtcNow,
-                    Name = accessRequest.Name,
-                    Revoked = null,
-                    RevokedReason = null,
-                    TeamId = response.TeamId,
-                    UserId = response.UserId,
-                    Token = accessRequest.Token,
-                };
-                await _accessRepository.AddAccess(newAccess);
+                    var newAccess = new Access
+                    {
+                        Admin = false,
+                        Manager = false,
+                        Granted = DateTime.UtcNow,
+                        Name = accessRequest.Name,
+                        Revoked = null,
+                        RevokedReason = null,
+                        Teams = new[] { response.TeamId },
+                        UserId = response.UserId,
+                        Token = accessRequest.Token,
+                    };
+                    await _accessRepository.AddAccess(newAccess);
+                    existingAccess = newAccess;
+                }
+                else
+                {
+                    // add team to existing access
+                    existingAccess.Teams = existingAccess.Teams.Concat(new[] { accessRequest.TeamId }).ToArray();
+                    await _accessRepository.UpdateAccess(existingAccess);
+                }
 
                 // clean up the access request
-                await _accessRepository.RemoveAccessRequest(response.UserId);
+                await _accessRepository.RemoveAccessRequest(response.UserId, response.TeamId);
 
-                return _serviceHelper.Success("Access granted", _accessDtoAdapter.Adapt(newAccess));
+                return _serviceHelper.Success("Access granted", _accessDtoAdapter.Adapt(existingAccess));
             }
 
             accessRequest.Reason = response.Reason;
@@ -272,13 +292,13 @@ namespace HolcombeScores.Api.Services
                 yield break;
             }
 
-            await foreach (var item in _accessRepository.GetAllAccessRequests(myAccess.Admin ? null : myAccess.TeamId))
+            await foreach (var item in _accessRepository.GetAllAccessRequests(myAccess.Admin ? null : myAccess.Teams))
             {
                 yield return _accessRequestDtoAdapter.Adapt(item);
             }
         }
 
-        public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId)
+        public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId, Guid? teamId)
         {
             var myAccess = await GetAccessInternal();
             if (!myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId)
@@ -292,35 +312,43 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotFound<AccessDto>("Access not found");
             }
 
-            if (myAccess.Manager && access.TeamId != myAccess.TeamId)
+            if (myAccess.Manager && !access.Teams.Any(id => myAccess.Teams.Contains(id)))
             {
                 return _serviceHelper.NotPermitted<AccessDto>("Only admins can delete access for another team");
             }
 
-            await _accessRepository.RemoveAccess(access.UserId);
-            return _serviceHelper.Success("Access removed", _accessDtoAdapter.Adapt(access));
+            if (teamId == null)
+            {
+                await _accessRepository.RemoveAccess(access.UserId);
+            }
+            else
+            {
+                await _accessRepository.RemoveAccess(access.UserId, teamId.Value);
+            }
+
+            return _serviceHelper.Success("Access removed", _accessDtoAdapter.Adapt(await _accessRepository.GetAccess(userId)));
         }
 
-        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid userId)
+        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid teamId, Guid? userId)
         {
             var myAccess = await GetAccessInternal();
-            if (!myAccess.Admin && !myAccess.Manager)
+            if (myAccess != null && !myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId)
             {
                 return _serviceHelper.NotAnAdmin<AccessRequestDto>();
             }
 
-            var accessRequest = await _accessRepository.GetAccessRequest(userId);
+            var accessRequest = await _accessRepository.GetAccessRequest(userId ?? GetImpersonatingUserId() ?? GetRequestUserId() ?? Guid.Empty, teamId);
             if (accessRequest == null)
             {
                 return _serviceHelper.NotFound<AccessRequestDto>("Access request not found");
             }
 
-            if (myAccess.Manager && accessRequest.TeamId != myAccess.TeamId)
+            if (myAccess?.Manager == true && !myAccess.Teams.Contains(teamId))
             {
                 return _serviceHelper.NotPermitted<AccessRequestDto>("Only admins can delete requests for another team");
             }
 
-            await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
+            await _accessRepository.RemoveAccessRequest(accessRequest.UserId, teamId);
             return _serviceHelper.Success("Access request removed", _accessRequestDtoAdapter.Adapt(accessRequest));
         }
 
@@ -343,7 +371,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.Success("Access already revoked", _accessDtoAdapter.Adapt(access));
             }
 
-            if (myAccess.Manager && access.TeamId != myAccess.TeamId)
+            if (myAccess.Manager && !access.Teams.Any(id => myAccess.Teams.Contains(id)))
             {
                 return _serviceHelper.NotPermitted<AccessDto>("Only admins can revoke requests for another team");
             }
@@ -382,7 +410,7 @@ namespace HolcombeScores.Api.Services
                     return _serviceHelper.NotFound<AccessDto>($"Access not found for user ${updated.UserId}");
                 }
 
-                if (!isAdmin && accessToUpdate.TeamId != myAccess.TeamId)
+                if (!isAdmin && !accessToUpdate.Teams.Any(id => myAccess.Teams.Contains(id)))
                 {
                     return _serviceHelper.NotPermitted<AccessDto>("Only a admins can change access details for another team");
                 }
@@ -396,7 +424,7 @@ namespace HolcombeScores.Api.Services
             if (isManager || isAdmin)
             {
                 accessToUpdate.Manager = updated.Manager;
-                accessToUpdate.TeamId = updated.TeamId;
+                accessToUpdate.Teams = updated.Teams ?? accessToUpdate.Teams;
             }
 
             if (isAdmin)
@@ -414,8 +442,8 @@ namespace HolcombeScores.Api.Services
         public Task<ActionResultDto<string>> Logout()
         {
             var response = _httpContextAccessor.HttpContext?.Response;
-            response.Cookies.Delete(TokenCookieName);
-            response.Cookies.Delete(UserIdCookieName);
+            response?.Cookies.Delete(TokenCookieName);
+            response?.Cookies.Delete(UserIdCookieName);
 
             return Task.FromResult(_serviceHelper.Success("Logged out", "Cookies removed, access can be recovered"));
         }
@@ -553,7 +581,7 @@ namespace HolcombeScores.Api.Services
             return access;
         }
 
-        private async Task<AccessRequest> GetAccessRequestInternal()
+        private IAsyncEnumerable<AccessRequest> GetAccessRequestsInternal()
         {
             var token = GetImpersonatingToken() ?? GetRequestToken();
             var userId = GetImpersonatingUserId() ?? GetRequestUserId();
@@ -562,7 +590,7 @@ namespace HolcombeScores.Api.Services
                 return null;
             }
 
-            return await _accessRepository.GetAccessRequest(token, userId.Value);
+            return _accessRepository.GetAccessRequests(userId.Value);
         }
 
         private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
@@ -601,14 +629,14 @@ namespace HolcombeScores.Api.Services
                Name = accessRequest.Name,
                Revoked = null,
                RevokedReason = null,
-               TeamId = accessRequest.TeamId,
+               Teams = new[] { accessRequest.TeamId },
                UserId = accessRequest.UserId,
                Token = newToken,
             };
             await _accessRepository.AddAccess(newAccess);
 
             // clean up the access request
-            await _accessRepository.RemoveAccessRequest(accessRequest.UserId);
+            await _accessRepository.RemoveAccessRequest(accessRequest.UserId, accessRequest.TeamId);
 
             return _serviceHelper.Success("Access request recovered", _accessDtoAdapter.Adapt(newAccess));
         }

@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
 import {Alert} from '../Alert';
 import {EditAccess} from './EditAccess';
-import {MyAccess} from './MyAccess';
-import {RequestAccess} from './RequestAccess';
 import {RecoverAccess} from './RecoverAccess';
 
 /*
@@ -10,7 +8,7 @@ import {RecoverAccess} from './RecoverAccess';
 * - reloadAll()
 * - reloadAccess()
 * - access
-* - request
+* - requests
 *
 * Events:
 * -none-
@@ -88,14 +86,10 @@ export class Home extends Component {
                 <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/home/access`}
                    onClick={this.changeMode}>Access</a>
             </li>
-            {this.props.access ? null : (<li className="nav-item">
+            {this.props.access || this.props.requests ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'recover' ? ' active' : ''}`} href={`/home/recover`}
                    onClick={this.changeMode}>Recover</a>
             </li>)}
-            {this.props.access ? (<li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'update' ? ' active' : ''}`} href={`/home/update`}
-                   onClick={this.changeMode}>Update</a>
-            </li>) : null}
         </ul>);
     }
 
@@ -114,15 +108,9 @@ export class Home extends Component {
             if (this.state.error) {
                 component = this.renderError(this.state.error);
             } else if (this.state.mode === 'access' || (this.state.mode === 'recover' && this.props.access)) {
-                if (this.props.access || this.props.request) {
-                    component = (<MyAccess {...this.props} />);
-                } else {
-                    component = (<RequestAccess {...this.props} onRequestCreated={this.requestCreated}/>);
-                }
+                component = (<EditAccess {...this.props} onAccessRequested={this.requestCreated} onAccessDeleted={this.accessDeleted} onLoggedOut={this.loggedOut} onAccessChanged={this.accessChanged} />);
             } else if (this.state.mode === 'recover') {
                 component = (<RecoverAccess {...this.props} onRecoverySuccess={this.accessRecovered} />);
-            } else if (this.state.mode === 'update') {
-                component = (<EditAccess {...this.props} onAccessDeleted={this.accessDeleted} onLoggedOut={this.loggedOut} onAccessChanged={this.accessChanged} />);
             }
 
             return (<div>

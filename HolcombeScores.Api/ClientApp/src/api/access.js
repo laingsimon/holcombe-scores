@@ -18,14 +18,16 @@ class Access {
        return this.http.post(`/api/Access/Unimpersonate`, {});
     }
 
-    getAllAccess(bypassCache) {
-        return bypassCache
-            ? this.http.getNoCache(`/api/Access`)
-            : this.http.get(`/api/Access`);
+    getAllAccess() {
+        return this.http.get(`/api/Access`);
     }
 
-    deleteAccess(userId) {
-        return this.http.delete(`/api/Access/${userId}`);
+    deleteAccess(userId, teamId) {
+        if (teamId) {
+            return this.http.delete(`/api/Access/${userId}/${teamId}`);
+        } else {
+            return this.http.delete(`/api/Access/${userId}`);
+        }
     }
 
     updateAccess(teamId, userId, name, admin, manager) {
@@ -66,8 +68,12 @@ class Access {
         return this.http.post(`/api/Access/Request`, access);
     }
 
-    deleteAccessRequest(userId) {
-        return this.http.delete(`/api/Access/Request/${userId}`);
+    deleteAccessRequest(teamId, userId) {
+        if (userId) {
+            return this.http.delete(`/api/Access/Request/${teamId}/${userId}`);
+        } else {
+            return this.http.delete(`/api/Access/Request/${teamId}`);
+        }
     }
 
     getAllAccessRequests() {
