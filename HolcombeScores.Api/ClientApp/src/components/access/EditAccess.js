@@ -274,7 +274,7 @@ export class EditAccess extends Component {
         return teams.map(team => {
             const selected = this.state.proposed.teams.filter(tid => tid === team.id).length > 0;
             const approved = this.props.access && this.props.access.teams.filter(tid => tid === team.id).length > 0;
-            const matchingRequests = this.props.requests.filter(r => r.teamId === team.id);
+            const matchingRequests = this.props.requests ? this.props.requests.filter(r => r.teamId === team.id) : [];
             const request = matchingRequests.length ? matchingRequests[0] : null;
             const requested = request != null;
             const rejected = request != null && request.rejected;
