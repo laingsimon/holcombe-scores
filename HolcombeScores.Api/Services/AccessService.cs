@@ -329,7 +329,7 @@ namespace HolcombeScores.Api.Services
             return _serviceHelper.Success("Access removed", _accessDtoAdapter.Adapt(await _accessRepository.GetAccess(userId)));
         }
 
-        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid? userId, Guid teamId)
+        public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid teamId, Guid? userId)
         {
             var myAccess = await GetAccessInternal();
             if (myAccess != null && !myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId)

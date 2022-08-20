@@ -68,9 +68,9 @@ class Access {
         return this.http.post(`/api/Access/Request`, access);
     }
 
-    deleteAccessRequest(userId, teamId) {
+    deleteAccessRequest(teamId, userId) {
         if (userId) {
-            return this.http.delete(`/api/Access/Request/${userId}/${teamId}`);
+            return this.http.delete(`/api/Access/Request/${teamId}/${userId}`);
         } else {
             return this.http.delete(`/api/Access/Request/${teamId}`);
         }

@@ -183,7 +183,7 @@ export class EditAccess extends Component {
                     }
                     if (wasRequested) {
                         // delete access request
-                        await this.accessApi.deleteAccessRequest(this.props.access.userId, team.id);
+                        await this.accessApi.deleteAccessRequest(team.id, this.props.access.userId);
                     }
                 }
             } catch (e) {
@@ -208,7 +208,7 @@ export class EditAccess extends Component {
                     await this.accessApi.createAccessRequest(this.state.proposed.name, team.id);
                 } else {
                     if (wasRequested) {
-                        await this.accessApi.deleteAccessRequest(null, team.id);
+                        await this.accessApi.deleteAccessRequest(team.id);
                     }
                 }
             } catch (e) {

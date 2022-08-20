@@ -16,7 +16,7 @@ namespace HolcombeScores.Api.Services
         IAsyncEnumerable<RecoverAccessDto> GetAccessForRecovery();
         Task<ActionResultDto<AccessDto>> RecoverAccess(RecoverAccessDto recoverAccessDto);
         Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId, Guid? teamId);
-        Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid? userId, Guid teamId);
+        Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid teamId, Guid? userId);
         Task<ActionResultDto<AccessDto>> UpdateAccess(AccessDto updated);
         Task<bool> IsManagerOrAdmin();
         Task<ActionResultDto<string>> Logout();

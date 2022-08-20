@@ -60,7 +60,7 @@ export class RequestOverview extends Component {
             processing: true
         });
 
-        const result = await this.accessApi.deleteAccessRequest(this.props.request.userId);
+        const result = await this.accessApi.deleteAccessRequest(this.props.request.teamId, this.props.request.userId);
         if (result.success) {
             if (this.props.onRequestDeleted) {
                 await this.props.onRequestDeleted(this.props.request.userId);
