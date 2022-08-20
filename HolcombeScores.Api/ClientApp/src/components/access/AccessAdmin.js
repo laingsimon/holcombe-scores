@@ -29,7 +29,7 @@ export class AccessAdmin extends Component {
             requests: null,
             allAccess: null,
             processing: [],
-            unimpersonating: false,
+            unimpersonating: false
         };
         this.changeMode = this.changeMode.bind(this);
         this.accessChanged = this.accessChanged.bind(this);

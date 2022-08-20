@@ -10,6 +10,7 @@ import {TeamAccessRequest} from './TeamAccessRequest';
 * - access
 * - requests
 * - updateAccess()
+* - reloadAll()
 *
 * Events:
 * - onAccessDeleted(userId)
@@ -24,13 +25,15 @@ export class EditAccess extends Component {
         const templateProposed = { name: this.getFirstName(this.props.requests) };
         const proposedTeams = { teams: this.getProposedTeamIds(this.props.access, this.props.requests) };
         this.state = {
-            proposed: Object.assign(templateProposed, this.props.access, proposedTeams)
+            proposed: Object.assign(templateProposed, this.props.access, proposedTeams),
+            unimpersonating: false
         };
         this.updateAccess = this.updateAccess.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
         this.removeAccess = this.removeAccess.bind(this);
         this.logout = this.logout.bind(this);
         this.setSelectedTeam = this.setSelectedTeam.bind(this);
+        this.unimpersonate = this.unimpersonate.bind(this);
         let http = new Http(new Settings());
         this.accessApi = new Access(http);
     }
@@ -56,6 +59,32 @@ export class EditAccess extends Component {
     }
 
     //event handlers
+    async unimpersonate() {
+        if (!window.confirm('Are you sure you want to unimpersonate?')) {
+            return;
+        }
+
+        this.setState({
+            unimpersonating: true
+        });
+
+        try {
+            await this.accessApi.unimpersonate();
+
+            await this.props.reloadAll();
+
+            this.setState({
+                unimpersonating: false
+            });
+        } catch (e) {
+            this.setState({
+                unimpersonating: false
+            });
+
+            alert(e);
+        }
+    }
+
     setSelectedTeam(id, nowSelected) {
         if (this.state.updating) {
             return;
@@ -259,9 +288,13 @@ export class EditAccess extends Component {
                     {this.state.deleting ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Remove access
                 </button>) : null}
-                {this.props.access ? (<button type="button" className="btn btn-warning" onClick={this.logout}>
+                {this.props.access ? (<button type="button" className="btn btn-warning margin-right" onClick={this.logout}>
                     {this.state.loggingOut ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Logout
+                </button>) : null}
+                {this.props.isImpersonated ? (<button className="btn btn-secondary margin-right" onClick={this.unimpersonate}>
+                    {this.state.unimpersonating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                    Unimpersonate
                 </button>) : null}
             </div>)
         } catch (e) {
