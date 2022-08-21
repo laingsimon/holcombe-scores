@@ -10,6 +10,8 @@ import { Link } from 'react-router-dom';
 * - approved
 * - rejected
 * - rejectedReason
+* - reloadTeam()
+* - history
 *
 * Events:
 * - onSelected(teamId, selected)
@@ -18,10 +20,33 @@ import { Link } from 'react-router-dom';
 export class TeamAccessRequest extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            navigating: false
+        };
         this.setSelectedTeam = this.setSelectedTeam.bind(this);
+        this.beforeNavigate = this.beforeNavigate.bind(this);
     }
 
     //event handlers
+    async beforeNavigate(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.setState({
+            navigating: true
+        });
+
+        const reloadTeam = true;
+        const reloadPlayers = false;
+        const reloadGames = true;
+        await this.props.reloadTeam(this.props.team.id, reloadTeam, reloadPlayers, reloadGames);
+
+        this.setState({
+            navigating: false
+        });
+
+        this.props.history.push(event.target.getAttribute('href'));
+    }
+
     setSelectedTeam(event) {
         let item = event.target;
         while (item && item.tagName !== 'LI') {
@@ -43,7 +68,12 @@ export class TeamAccessRequest extends Component {
             return (<li className={`list-group-item flex-column align-items-start ${this.accessColour()}`} onClick={this.setSelectedTeam}>
                 <div className="d-flex justify-content-between">
                     {this.props.team.name}
-                    {this.props.selected && this.props.approved ? (<Link className="btn btn-primary" to={`/team/${this.props.team.id}`}>View games...</Link>) : null}
+                    {this.props.selected && this.props.approved
+                        ? (<Link className="btn btn-primary" onClick={this.beforeNavigate} to={`/team/${this.props.team.id}`}>
+                            {this.state.navigating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                            View games...
+                        </Link>)
+                        : null}
                     <div className="d-flex align-items-center">{this.accessLabel()}</div>
                 </div>
             </li>)

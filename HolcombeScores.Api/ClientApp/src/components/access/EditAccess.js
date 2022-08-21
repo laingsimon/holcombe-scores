@@ -315,7 +315,8 @@ export class EditAccess extends Component {
 
             return (<TeamAccessRequest key={team.id} team={team} onSelected={this.setSelectedTeam} selected={selected}
                                        approved={approved} requested={requested} rejected={rejected}
-                                       rejectedReason={rejectedReason} />);
+                                       rejectedReason={rejectedReason} reloadTeam={this.props.reloadTeam}
+                                       history={this.props.history} />);
         });
     }
 }
