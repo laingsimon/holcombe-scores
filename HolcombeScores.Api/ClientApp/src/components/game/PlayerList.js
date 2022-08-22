@@ -43,7 +43,7 @@ export class PlayerList extends Component {
             : null;
 
         return (<li key={player.id} className={`list-group-item ${selected ? ' active' : ''}`} data-player-id={player.id} onClick={this.playerClicked}>
-            {available !== null ? (<span className="margin-right">{available ? '✔' : '⛔'}</span>) : null}
+            {available !== null ? (<span className="margin-right right-aligned-absolute">{available ? '✔' : '⛔'}</span>) : null}
             {player.name} {player.number ? (<span className="badge rounded-pill bg-secondary">{player.number}</span>) : null}
         </li>);
     }

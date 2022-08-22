@@ -102,3 +102,8 @@ body > div#root > div {
 .small-text {
   font-size: smaller;
 }
+
+.right-aligned-absolute {
+  position: absolute;
+  right: 0px;
+}
