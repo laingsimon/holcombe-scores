@@ -1,4 +1,4 @@
-﻿import React, {Component} from 'react';
+import React, {Component} from 'react';
 import {Settings} from '../../api/settings';
 import {Http} from '../../api/http';
 import {Availability} from '../../api/availability';
