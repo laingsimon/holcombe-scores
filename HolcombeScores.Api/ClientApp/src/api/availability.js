@@ -1,4 +1,4 @@
-﻿class Availability {
+class Availability {
     constructor(http) {
         this.http = http;
     }
