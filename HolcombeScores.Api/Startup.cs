@@ -28,6 +28,7 @@ namespace HolcombeScores.Api
             services.AddScoped<IGameDtoAdapter, GameDtoAdapter>();
             services.AddScoped<IAvailabilityDtoAdapter, AvailabilityDtoAdapter>();
             services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+            services.AddScoped<IAvailabilityService, AvailabilityService>();
 
             services.AddSingleton<IServiceHelper, ServiceHelper>();
             services.AddSingleton<IGamePlayerDtoAdapter, GamePlayerDtoAdapter>();
