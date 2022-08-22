@@ -13,7 +13,7 @@ code {
   border-color: #1861ac;
 }
 
-.btn-goal-scorer {
+.btn-large-player-button {
   padding-top: 20px;
   padding-bottom: 20px;
   margin: 10px;
@@ -97,4 +97,13 @@ body > div#root > div {
 
 .separate-with-comma > :not(:first-child):before {
   content: ", ";
+}
+
+.small-text {
+  font-size: smaller;
+}
+
+.right-aligned-absolute {
+  position: absolute;
+  right: 0px;
 }

@@ -69,12 +69,12 @@ export class RecordGoal extends Component {
         const colour = this.props.game.readOnly ? 'btn-light' : 'btn-primary';
         const suffix = !this.props.game.readOnly || hasScored ? 'scored!' : 'played';
 
-        return (<button type="button" className={`btn ${isLatestScorer ? ' btn-outline-warning' : colour} btn-goal-scorer`} onClick={this.recordGoal}>
+        return (<button type="button" className={`btn ${isLatestScorer ? ' btn-outline-warning' : colour} btn-large-player-button`} onClick={this.recordGoal}>
             {this.props.player.name} {suffix}
         </button>);
     }
 
     renderOpponentScoreButton() {
-        return (<button key="opponent" type="button" className={`btn ${this.state.latestScorer ? ' btn-outline-warning' : 'btn-secondary'} btn-goal-scorer`} onClick={this.recordGoal}>{this.props.game.opponent} Scored</button>);
+        return (<button key="opponent" type="button" className={`btn ${this.state.latestScorer ? ' btn-outline-warning' : 'btn-secondary'} btn-large-player-button`} onClick={this.recordGoal}>{this.props.game.opponent} Scored</button>);
     }
 }

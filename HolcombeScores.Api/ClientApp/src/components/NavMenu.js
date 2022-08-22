@@ -16,8 +16,10 @@ export class NavMenu extends Component {
     super(props);
     this.toggleNavbar = this.toggleNavbar.bind(this);
     this.collapseNavbar = this.collapseNavbar.bind(this);
+    this.changeTeam = this.changeTeam.bind(this);
     this.state = {
-      collapsed: true
+      collapsed: true,
+      changingTeam: null
     };
   }
 
@@ -30,6 +32,36 @@ export class NavMenu extends Component {
 
   collapseNavbar () {
     this.setState({
+      collapsed: true
+    });
+  }
+
+  async changeTeam(event) {
+    event.preventDefault();
+
+    if (this.state.changingTeam) {
+      return;
+    }
+
+    const url = event.target.getAttribute('href');
+    const segments = url.split('/')
+    const teamId = segments[segments.length - 2];
+
+    if (!this.props.team || teamId !== this.props.team.id) {
+      this.setState({
+        changingTeam: teamId
+      });
+
+      const reloadTeam = true;
+      const reloadPlayers = true;
+      const reloadGames = true;
+      await this.props.reloadTeam(teamId, reloadTeam, reloadPlayers, reloadGames);
+    }
+
+    window.history.replaceState(null, event.target.textContent, url);
+
+    this.setState({
+      changingTeam: null,
       collapsed: true
     });
   }
@@ -70,7 +102,10 @@ export class NavMenu extends Component {
       const team = teams.filter(t => t.id === teamId)[0];
 
       return (<NavItem key={teamId}>
-        <NavLink onClick={this.collapseNavbar} tag={Link} className="text-dark" to={`/team/${teamId}/view`}>⛹ {team.name}</NavLink>
+        <NavLink onClick={this.changeTeam} tag={Link} className="text-dark" to={`/team/${teamId}/view`}>
+          {this.state.changingTeam === teamId ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : <span className="margin-right" role="status" aria-hidden="true">⛹</span>}
+          {team.name}
+        </NavLink>
       </NavItem>)
     });
   }
