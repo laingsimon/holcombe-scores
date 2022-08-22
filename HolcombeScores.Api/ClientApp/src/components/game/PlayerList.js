@@ -10,6 +10,7 @@ import {Alert} from '../Alert';
 * - players
 * - [teamId]
 * - [readOnly]
+* - [gameAvailability]
 *
 * Events
 * - onPlayerSelected(teamId, playerId, selected)
@@ -37,7 +38,12 @@ export class PlayerList extends Component {
     // renderers
     renderPlayer(player) {
         let selected = Object.keys(this.props.selected || {}).includes(player.id.toString());
+        let available = this.props.gameAvailability
+            ? this.props.gameAvailability.filter(a => a.player.id === player.id)[0].available
+            : null;
+
         return (<li key={player.id} className={`list-group-item ${selected ? ' active' : ''}`} data-player-id={player.id} onClick={this.playerClicked}>
+            {available !== null ? (<span className="margin-right">{available ? '✔' : '⛔'}</span>) : null}
             {player.name} {player.number ? (<span className="badge rounded-pill bg-secondary">{player.number}</span>) : null}
         </li>);
     }

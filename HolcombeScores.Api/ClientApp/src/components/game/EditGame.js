@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 * - [game]
 * - team
 * - teamPlayers
+* - [gameAvailability]
 *
 * Events:
 * - onChanged(gameId, teamId)
@@ -246,7 +247,8 @@ export class EditGame extends Component {
                            name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
                 </div>
                 <PlayerList players={this.props.team.players} selected={this.state.proposed.players}
-                            onPlayerSelected={this.onPlayerSelected} readOnly={this.state.readOnly || this.state.saving || this.state.deleting} />
+                            onPlayerSelected={this.onPlayerSelected} readOnly={this.state.readOnly || this.state.saving || this.state.deleting}
+                            gameAvailability={this.props.gameAvailability} />
                 <hr/>
                 {this.state.readOnly ? null : (<button type="button" className="btn btn-primary margin-right" onClick={this.updateGame}>
                     {this.state.saving ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
