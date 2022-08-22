@@ -123,7 +123,7 @@ export class GameDetails extends Component {
         const editNav = <li className="nav-item">
             <Link className={`nav-link${this.state.mode === 'edit' ? ' active' : ''}`} to={`/game/${this.gameId}/edit`}
                onClick={this.changeMode}>
-                {this.state.gameDeleted ? 'Game deleted' : 'Edit Game'}
+                {this.state.gameDeleted ? 'Game deleted' : 'Edit'}
             </Link>
         </li>;
 
@@ -138,7 +138,7 @@ export class GameDetails extends Component {
             {(this.props.access.admin || this.props.access.manager) && !this.props.game.readOnly ? editNav : null}
             {this.props.game.readOnly || this.state.gameDeleted ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
-                   href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
+                   href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</a>
             </li>)}
             {this.state.gameDeleted ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
