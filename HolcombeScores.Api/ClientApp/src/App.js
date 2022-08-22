@@ -16,6 +16,7 @@ import {Team} from './api/team';
 import {Functions} from './functions';
 import {Game} from './api/game';
 import {Player} from './api/player';
+import {Availability} from "./api/availability";
 
 export default class App extends Component {
     constructor(props) {
@@ -25,6 +26,7 @@ export default class App extends Component {
         this.teamApi = new Team(http);
         this.gameApi = new Game(http);
         this.playerApi = new Player(http);
+        this.availabilityApi = new Availability(http);
         this.state = {
             loading: true,
             subProps: null,
@@ -36,6 +38,7 @@ export default class App extends Component {
         this.reloadTeam = this.reloadTeam.bind(this);
         this.combineProps = this.combineProps.bind(this);
         this.updateGame = this.updateGame.bind(this);
+        this.reloadAvailability = this.reloadAvailability.bind(this);
     }
 
     async componentDidMount() {
@@ -59,6 +62,17 @@ export default class App extends Component {
         });
     }
 
+    async reloadAvailability(teamId, gameId) {
+        const subProps = Object.assign({}, this.state.subProps);
+
+        subProps.gameAvailability = await this.availabilityApi.get(teamId, gameId);
+        subProps.gameAvailability.sort(Functions.playerAvailabilitySortFunction);
+
+        this.setState({
+            subProps: subProps
+        });
+    }
+
     async reloadGame(id) {
         const subProps = Object.assign({}, this.state.subProps);
         subProps.game = await this.gameApi.getGame(id);
@@ -75,6 +89,9 @@ export default class App extends Component {
                     subProps.team.players.sort(Functions.playerSortFunction);
                 }
             }
+
+            subProps.gameAvailability = await this.availabilityApi.get(subProps.game.teamId, id);
+            subProps.gameAvailability.sort(Functions.playerAvailabilitySortFunction);
         } else {
             subProps.game = {
                 id: id,
@@ -168,7 +185,8 @@ export default class App extends Component {
                 reloadTeam: this.reloadTeam,
                 reloadGame: this.reloadGame,
                 reloadAll: this.reloadAll,
-                updateGame: this.updateGame
+                updateGame: this.updateGame,
+                reloadAvailability: this.reloadAvailability
             },
             loading: false
         });

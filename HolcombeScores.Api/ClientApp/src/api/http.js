@@ -15,8 +15,8 @@ class Http {
         return this.send('PATCH', relativeUrl, content);
     }
 
-    delete(relativeUrl) {
-        return this.send('DELETE', relativeUrl, null);
+    delete(relativeUrl, content) {
+        return this.send('DELETE', relativeUrl, content ? content : null);
     }
 
     put(relativeUrl, content) {

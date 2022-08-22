@@ -41,6 +41,10 @@ class Functions {
             : -1;
     }
 
+    static playerAvailabilitySortFunction(availabilityA, availabilityB) {
+        return Functions.playerSortFunction(availabilityA.player, availabilityB.player);
+    }
+
     static gameSortFunction(gameA, gameB) {
         // sort games descending by date
         const aDate = new Date(gameA.date);

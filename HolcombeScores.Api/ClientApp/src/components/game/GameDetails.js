@@ -10,6 +10,7 @@ import {PlayGame} from './PlayGame';
 import {Score} from './Score';
 import {ViewGame} from './ViewGame';
 import { Link } from 'react-router-dom';
+import {EditAvailability} from "./EditAvailability";
 
 // noinspection JSUnresolvedVariable
 /*
@@ -42,9 +43,14 @@ export class GameDetails extends Component {
         this.goalRemoved = this.goalRemoved.bind(this);
         this.gameChanged = this.gameChanged.bind(this);
         this.gameDeleted = this.gameDeleted.bind(this);
+        this.availabilityChanged = this.availabilityChanged.bind(this);
     }
 
     //event handlers
+    async availabilityChanged() {
+        await this.props.reloadAvailability(this.props.game.teamId, this.gameId);
+    }
+
     async goalRemoved(goalId, gameId) {
         await this.props.reloadGame(gameId); // don't set the state to loading
     }
@@ -134,6 +140,10 @@ export class GameDetails extends Component {
                 <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play Game</a>
             </li>)}
+            {this.state.gameDeleted ? null : (<li className="nav-item">
+                <a className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
+                   href={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</a>
+            </li>)}
         </ul>);
     }
 
@@ -173,6 +183,8 @@ export class GameDetails extends Component {
             component = (<EditGame {...this.props} onChanged={this.gameChanged} onDeleted={this.gameDeleted} />);
         } else if (this.state.mode === 'play') {
             component = (<PlayGame {...this.props} onGoalScored={this.goalScored} />);
+        } else if (this.state.mode === 'availability') {
+            component = (<EditAvailability {...this.props} onAvailabilityChanged={this.availabilityChanged} />);
         }
 
         return (<div>
