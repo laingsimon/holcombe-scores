@@ -98,12 +98,12 @@ namespace HolcombeScores.Api.Services
                     await _gameRepository.AddGamePlayer(gamePlayer);
                 }
 
-                if (missingPlayers.Count == gameDetailsDto.PlayerIds.Length)
+                if (missingPlayers.Count > 0 && missingPlayers.Count == gameDetailsDto.PlayerIds.Length)
                 {
                     await _gameRepository.DeleteGame(game.Id);
                 }
 
-                var result = missingPlayers.Count == gameDetailsDto.PlayerIds.Length
+                var result = missingPlayers.Count > 0 && missingPlayers.Count == gameDetailsDto.PlayerIds.Length
                     ? _serviceHelper.NotSuccess<GameDto>("Game not created, no players found")
                     : _serviceHelper.Success("Game created", await GetGame(game.Id));
 
