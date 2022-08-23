@@ -83,11 +83,6 @@ export class EditGame extends Component {
                 ? Object.keys(this.state.proposed.players)
                 : [];
 
-            if (playerIds.length === 0) {
-                alert('You must select some players');
-                return;
-            }
-
             if (!this.state.proposed.opponent) {
                 alert('You must enter the name of the opponent');
                 return;
