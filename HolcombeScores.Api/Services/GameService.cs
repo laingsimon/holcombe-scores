@@ -343,8 +343,13 @@ namespace HolcombeScores.Api.Services
 
         private static bool IsReadOnly(DateTime gameDate, AccessDto access)
         {
+            if (access.Admin) 
+            {
+                return false;
+            }
             var expired = DateTime.UtcNow > gameDate.AddDays(2);
-            return !access.Admin && expired;
+            var notStarted = gameDate > DateTime.UtcNow;
+            return expired || (notStarted && !access.Manager);
         }
     }
 }
