@@ -63,9 +63,14 @@ export class EditPlayerAvailability extends Component {
         const note = this.props.availability.id
             ? (this.props.availability.available ? 'is available' : 'is unavailable')
             : null;
+        const icon = this.props.availability.id
+            ? (this.props.availability.available ? '✔' : '⛔')
+            : null;
 
         return (<button type="button" className={`btn ${className} btn-large-player-button margin-right`} onClick={this.playerClicked}>
-            {this.state.saving ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+            {this.state.saving
+                ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>)
+                : (<span className="margin-right">{icon}</span>)}
             {this.props.availability.player.name}
             {note != null ? <div className="small-text">{note}</div> : null}
         </button>);
