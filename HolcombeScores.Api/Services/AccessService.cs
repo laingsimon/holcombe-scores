@@ -50,7 +50,14 @@ namespace HolcombeScores.Api.Services
             var impersonatedByAccess = await GetImpersonatedByAccess();
             var accessRequests = GetAccessRequestsInternal();
 
-            return await _myAccessDtoAdapter.Adapt(access, accessRequests, impersonatedByAccess);
+            var myAccess = await _myAccessDtoAdapter.Adapt(access, accessRequests, impersonatedByAccess);
+            if ((myAccess.Requests == null || myAccess.Requests.Length == 0) && myAccess.Access == null)
+            {
+                // not logged in, ensure any cookies are removed
+                await Logout();
+            }
+
+            return myAccess;
         }
 
         public async Task<ActionResultDto<MyAccessDto>> Impersonate(ImpersonationDto impersonation)
