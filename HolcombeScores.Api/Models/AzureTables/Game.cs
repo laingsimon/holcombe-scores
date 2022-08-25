@@ -11,6 +11,7 @@ namespace HolcombeScores.Api.Models.AzureTables
         public string Opponent { get; set; }
         public bool PlayingAtHome { get; set; }
         public DateTime Date { get; set; }
+        public bool Training { get; set; }
 
         /// <summary>
         /// TeamId

@@ -136,7 +136,7 @@ export class GameDetails extends Component {
                    href={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</a>
             </li>)}
             {(this.props.access.admin || this.props.access.manager) && !this.props.game.readOnly ? editNav : null}
-            {this.props.game.readOnly || this.state.gameDeleted ? null : (<li className="nav-item">
+            {this.props.game.readOnly || this.state.gameDeleted || this.props.game.training ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</a>
             </li>)}
@@ -203,9 +203,13 @@ export class GameDetails extends Component {
             opponent: this.props.game.goals.filter(g => !g.holcombeGoal).length
         };
 
+        const content = this.props.game.training
+            ? `training at ${this.props.game.playingAtHome ? 'home' : this.props.game.opponent} on ${date.toDateString()}`
+            : `${location} to ${this.props.game.opponent} on ${date.toDateString()}`
+
         return (<h4>
-            {this.props.team.name}: {location} to {this.props.game.opponent} on {date.toDateString()} <Score
-            playingAtHome={this.props.game.playingAtHome} score={score}/>
+            {this.props.team.name}: {content}
+            {this.props.game.training ? null : (<Score playingAtHome={this.props.game.playingAtHome} score={score}/>)}
         </h4>);
     }
 }

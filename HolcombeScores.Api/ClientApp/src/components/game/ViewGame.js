@@ -36,10 +36,10 @@ export class ViewGame extends Component {
 
         return (<div>
             <h6>Start time: {date.toLocaleTimeString()}</h6>
-            <div>
+            {game.training ? null : (<div>
                 <h5>Goals</h5>
                 {this.renderGoals(game, runningScore)}
-            </div>
+            </div>)}
             <div>
                 <h5>Holcombe Players</h5>
                 <ul>

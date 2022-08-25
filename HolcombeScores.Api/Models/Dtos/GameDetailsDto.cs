@@ -10,5 +10,6 @@ namespace HolcombeScores.Api.Models.Dtos
         public string Opponent { get; set; }
         public bool PlayingAtHome { get; set; }
         public Guid[] PlayerIds { get; set; }
+        public bool Training { get; set; }
     }
 }

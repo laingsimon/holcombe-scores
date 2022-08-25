@@ -13,5 +13,6 @@ namespace HolcombeScores.Api.Models.Dtos
         public PlayerDto[] Squad { get; set; }
         public GoalDto[] Goals { get; set; }
         public bool ReadOnly { get; set; }
+        public bool Training { get;set; }
     }
 }

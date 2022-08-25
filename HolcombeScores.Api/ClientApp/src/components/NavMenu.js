@@ -37,13 +37,22 @@ export class NavMenu extends Component {
   }
 
   async changeTeam(event) {
-    event.preventDefault();
-
     if (this.state.changingTeam) {
+      event.preventDefault();
       return;
     }
 
-    const url = event.target.getAttribute('href');
+    let target = event.target;
+    while (target && !target.getAttribute('href')) {
+      target = event.target.parentElement;
+    }
+
+    if (!target) {
+      return;
+    }
+
+    const url = target.getAttribute('href');
+
     const segments = url.split('/')
     const teamId = segments[segments.length - 2];
 
@@ -57,8 +66,6 @@ export class NavMenu extends Component {
       const reloadGames = true;
       await this.props.reloadTeam(teamId, reloadTeam, reloadPlayers, reloadGames);
     }
-
-    window.history.replaceState(null, event.target.textContent, url);
 
     this.setState({
       changingTeam: null,
