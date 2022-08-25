@@ -37,9 +37,8 @@ export class NavMenu extends Component {
   }
 
   async changeTeam(event) {
-    event.preventDefault();
-
     if (this.state.changingTeam) {
+      event.preventDefault();
       return;
     }
 
@@ -67,8 +66,6 @@ export class NavMenu extends Component {
       const reloadGames = true;
       await this.props.reloadTeam(teamId, reloadTeam, reloadPlayers, reloadGames);
     }
-
-    window.history.replaceState(null, event.target.textContent, url);
 
     this.setState({
       changingTeam: null,
