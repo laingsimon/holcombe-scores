@@ -30,7 +30,8 @@ namespace HolcombeScores.Api.Services.Adapters
                 Opponent = game.Opponent,
                 Squad = squad.Select(_gamePlayerAdapter.Adapt).ToArray(),
                 PlayingAtHome = game.PlayingAtHome,
-                ReadOnly = readOnly
+                ReadOnly = readOnly,
+                Training = game.Training,
             };
         }
 
@@ -48,6 +49,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Opponent = game.Opponent,
                 PlayingAtHome = game.PlayingAtHome,
                 TeamId = game.TeamId,
+                Training = game.Training,
             };
         }
     }

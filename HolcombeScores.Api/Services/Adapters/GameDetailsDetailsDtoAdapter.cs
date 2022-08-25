@@ -27,6 +27,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Opponent = gameDetailsDto.Opponent,
                 PlayingAtHome = gameDetailsDto.PlayingAtHome,
                 TeamId = gameDetailsDto.TeamId,
+                Training = gameDetailsDto.Training,
             };
         }
 

@@ -152,13 +152,20 @@ namespace HolcombeScores.Api.Services
                     return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
                 }
 
+                var gameType = update.Training ? "Training" : "Game";
+
                 var updates = new List<string>();
                 if (game.PlayingAtHome != update.PlayingAtHome)
                 {
+                    game.PlayingAtHome = update.PlayingAtHome;
                     updates.Add("PlayingAtHome updated");
                 }
 
-                game.PlayingAtHome = update.PlayingAtHome;
+                if (game.Training != update.Training)
+                {
+                    game.Training = update.Training;
+                    updates.Add("Type updated");
+                }
 
                 if (update.Date != default && game.Date != update.Date)
                 {
@@ -169,7 +176,7 @@ namespace HolcombeScores.Api.Services
                 if (!string.IsNullOrEmpty(update.Opponent) && game.Opponent != update.Opponent)
                 {
                     game.Opponent = update.Opponent;
-                    updates.Add("Opponent updated");
+                    updates.Add(update.Training ? "Location updated" : "Opponent updated");
                 }
 
                 if (update.TeamId != default && game.TeamId != update.TeamId)
@@ -202,20 +209,20 @@ namespace HolcombeScores.Api.Services
                             squad = squad.Where(p => p.Name != player.Name).ToArray();
                             continue;
                         }
-                        updates.Add($"`{player.Name}` removed from game");
+                        updates.Add($"`{player.Name}` removed from {gameType}");
                         await _gameRepository.DeleteGamePlayer(game.Id, player.PlayerId);
                     }
 
                     foreach (var gamePlayer in squad)
                     {
-                        updates.Add($"`{gamePlayer.Name}` added to game");
+                        updates.Add($"`{gamePlayer.Name}` added to {gameType}");
                         await _gameRepository.AddGamePlayer(gamePlayer);
                     }
                 }
 
                 var statement = updates.Any()
-                    ? "Game updated"
-                    : "No changes to game";
+                    ? $"{gameType} updated"
+                    : $"No changes to {gameType.ToLower()}";
 
                 var result = _serviceHelper.Success(statement, await GetGame(game.Id));
 
@@ -259,6 +266,11 @@ namespace HolcombeScores.Api.Services
             if (IsReadOnly(game, await _accessService.GetAccess()))
             {
                 return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
+            }
+
+            if (game.Training)
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Goals cannot be recorded for training");
             }
 
             var goal = _goalDtoAdapter.Adapt(goalDto, game);
