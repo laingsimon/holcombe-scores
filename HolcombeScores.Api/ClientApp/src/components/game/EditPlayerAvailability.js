@@ -62,7 +62,7 @@ export class EditPlayerAvailability extends Component {
             : 'btn-outline-secondary';
         const note = this.props.availability.id
             ? (this.props.availability.available ? 'is available' : 'is unavailable')
-            : null;
+            : 'no response';
         const icon = this.props.availability.id
             ? (this.props.availability.available ? '✔' : '⛔')
             : null;
