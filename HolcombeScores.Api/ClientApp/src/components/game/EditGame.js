@@ -212,26 +212,33 @@ export class EditGame extends Component {
                 return this.renderApiResult(this.state.apiResult);
             }
 
+            const gameType = this.state.proposed.training ? 'training' : 'game';
+
             const deleteButton = this.props.game
                 ? (<button className="btn btn-danger" onClick={this.deleteGame}>
                     {this.state.deleting ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
-                    Delete game
+                    Delete {gameType}
                    </button>)
                 : null;
 
             return (<div>
                 <div className="input-group mb-3">
                     <div className="input-group-prepend">
-                        <span className="input-group-text" id="basic-addon3">Opponent</span>
+                        <span className="input-group-text" id="basic-addon3">{this.state.proposed.training ? 'Location' : 'Opponent'}</span>
                     </div>
-                    <input readOnly={this.state.readOnly || this.state.saving || this.state.deleting} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
-                           name="opponent" value={this.state.proposed.opponent} onChange={this.valueChanged}/>
+                    <input readOnly={this.state.readOnly || this.state.saving || this.state.deleting || (this.state.proposed.training && this.state.proposed.playingAtHome)} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                           name="opponent" value={(this.state.proposed.training && this.state.proposed.playingAtHome) ? 'Home' : this.state.proposed.opponent} onChange={this.valueChanged}/>
                 </div>
                 <div className="input-group mb-3">
-                    <div className="form-check form-switch">
+                    <div className="form-check form-switch margin-right">
                         <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                                name="playingAtHome" checked={this.state.proposed.playingAtHome}  onChange={this.valueChanged}/>
-                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Playing at home</label>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{this.state.proposed.training ? 'Training' : 'Playing'} at home</label>
+                    </div>
+                    <div className="form-check form-switch">
+                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                               name="training" checked={this.state.proposed.training}  onChange={this.valueChanged}/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Training</label>
                     </div>
                 </div>
                 <div className="input-group mb-3">
@@ -247,7 +254,7 @@ export class EditGame extends Component {
                 <hr/>
                 {this.state.readOnly ? null : (<button type="button" className="btn btn-primary margin-right" onClick={this.updateGame}>
                     {this.state.saving ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
-                    {this.props.game ? 'Update game' : 'Create game'}
+                    {this.props.game ? `Update ${gameType}` : `Create ${gameType}`}
                 </button>)}
                 {deleteButton}
                 {this.renderApiResult(this.state.apiResult)}
@@ -279,8 +286,8 @@ export class EditGame extends Component {
             const team = this.props.team;
             const proposed = this.state.proposed;
             const apiFunction = this.props.game
-                ? async () => await this.gameApi.updateGame(game.id, team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds)
-                : async () => await this.gameApi.createGame(team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds);
+                ? async () => await this.gameApi.updateGame(game.id, team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training)
+                : async () => await this.gameApi.createGame(team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training);
 
             const result = await apiFunction();
 
