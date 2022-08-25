@@ -43,7 +43,17 @@ export class NavMenu extends Component {
       return;
     }
 
-    const url = event.target.getAttribute('href');
+    let target = event.target;
+    while (target && !target.getAttribute('href')) {
+      target = event.target.parentElement;
+    }
+
+    if (!target) {
+      return;
+    }
+
+    const url = target.getAttribute('href');
+
     const segments = url.split('/')
     const teamId = segments[segments.length - 2];
 
