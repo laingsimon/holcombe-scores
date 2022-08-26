@@ -136,7 +136,7 @@ export class GameDetails extends Component {
                    href={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</a>
             </li>)}
             {(this.props.access.admin || this.props.access.manager) && !this.props.game.readOnly ? editNav : null}
-            {this.props.game.readOnly || this.state.gameDeleted || this.props.game.training ? null : (<li className="nav-item">
+            {!this.props.game.playable || this.state.gameDeleted || this.props.game.training ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</a>
             </li>)}
@@ -209,6 +209,7 @@ export class GameDetails extends Component {
 
         return (<h4>
             {this.props.team.name}: {content}
+            &nbsp;
             {this.props.game.training ? null : (<Score playingAtHome={this.props.game.playingAtHome} score={score}/>)}
         </h4>);
     }
