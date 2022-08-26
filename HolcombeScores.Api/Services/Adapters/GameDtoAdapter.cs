@@ -14,7 +14,7 @@ namespace HolcombeScores.Api.Services.Adapters
             _gamePlayerAdapter = gamePlayerAdapter;
         }
 
-        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals, bool readOnly)
+        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals, bool readOnly, string recordGoalToken)
         {
             if (game == null)
             {
@@ -32,6 +32,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 PlayingAtHome = game.PlayingAtHome,
                 ReadOnly = readOnly,
                 Training = game.Training,
+                RecordGoalToken = recordGoalToken,
             };
         }
 

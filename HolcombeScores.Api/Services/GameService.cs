@@ -45,7 +45,7 @@ namespace HolcombeScores.Api.Services
             {
                 var gamePlayers = await _gameRepository.GetPlayers(game.Id);
                 var goals = await _gameRepository.GetGoals(game.Id);
-                yield return await _gameDtoAdapter.Adapt(game, gamePlayers, goals, IsReadOnly(game, access));
+                yield return await _gameDtoAdapter.Adapt(game, gamePlayers, goals, IsReadOnly(game, access), GetRecordGoalToken(game, goals));
             }
         }
 
@@ -65,7 +65,7 @@ namespace HolcombeScores.Api.Services
 
             var gamePlayers = await _gameRepository.GetPlayers(game.Id);
             var goals = await _gameRepository.GetGoals(game.Id);
-            return await _gameDtoAdapter.Adapt(game, gamePlayers, goals, IsReadOnly(game, access));
+            return await _gameDtoAdapter.Adapt(game, gamePlayers, goals, IsReadOnly(game, access), GetRecordGoalToken(game, goals));
         }
 
         public async Task<ActionResultDto<GameDto>> CreateGame(GameDetailsDto gameDetailsDto)
@@ -362,6 +362,12 @@ namespace HolcombeScores.Api.Services
             var expired = DateTime.UtcNow > gameDate.AddDays(2);
             var notStarted = gameDate > DateTime.UtcNow;
             return expired || (notStarted && !access.Manager);
+        }
+
+        private static string GetRecordGoalToken(Game game, IEnumerable<Goal> goals)
+        {
+            var lastGoalId = goals.OrderByDescending(g => g.Time).Select(g => g.GoalId.ToString()).FirstOrDefault();
+            return $"{game.Id}:{lastGoalId ?? "<none>"}";
         }
     }
 }
