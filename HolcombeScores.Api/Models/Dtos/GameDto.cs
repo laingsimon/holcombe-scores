@@ -14,6 +14,7 @@ namespace HolcombeScores.Api.Models.Dtos
         public GoalDto[] Goals { get; set; }
         public bool ReadOnly { get; set; }
         public bool Training { get;set; }
+        public bool Playable { get; set; }
 
         /// <summary>
         /// A token that must be passed to POST /api/Game/Goal to record a goal

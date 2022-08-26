@@ -54,7 +54,7 @@ export class PlayGame extends Component {
     }
 
     componentDidMount() {
-        if (!this.props.game.readOnly) {
+        if (this.props.game.gamePlayable) {
             this.setState({
                 refreshHandle: window.setInterval(this.refresh, PlayGame.REFRESH_INTERVAL)
             });

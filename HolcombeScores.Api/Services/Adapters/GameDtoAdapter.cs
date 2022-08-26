@@ -14,7 +14,7 @@ namespace HolcombeScores.Api.Services.Adapters
             _gamePlayerAdapter = gamePlayerAdapter;
         }
 
-        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals, bool readOnly, string recordGoalToken)
+        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals, AdapterContext context)
         {
             if (game == null)
             {
@@ -30,9 +30,10 @@ namespace HolcombeScores.Api.Services.Adapters
                 Opponent = game.Opponent,
                 Squad = squad.Select(_gamePlayerAdapter.Adapt).ToArray(),
                 PlayingAtHome = game.PlayingAtHome,
-                ReadOnly = readOnly,
+                ReadOnly = context.ReadOnly,
+                Playable = context.Playable,
                 Training = game.Training,
-                RecordGoalToken = recordGoalToken,
+                RecordGoalToken = context.RecordGoalToken,
             };
         }
 
@@ -52,6 +53,20 @@ namespace HolcombeScores.Api.Services.Adapters
                 TeamId = game.TeamId,
                 Training = game.Training,
             };
+        }
+
+        public class AdapterContext
+        {
+            public string RecordGoalToken { get; }
+            public bool Playable { get; }
+            public bool ReadOnly { get; }
+
+            public AdapterContext(string recordGoalToken, bool playable, bool readOnly)
+            {
+                RecordGoalToken = recordGoalToken;
+                Playable = playable;
+                ReadOnly = readOnly;
+            }
         }
     }
 }
