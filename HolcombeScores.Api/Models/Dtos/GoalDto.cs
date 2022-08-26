@@ -10,5 +10,6 @@ namespace HolcombeScores.Api.Models.Dtos
         public PlayerDto Player { get; set; }
         public Guid GameId { get; set; }
         public Guid GoalId { get; set; }
+        public string RecordGoalToken { get; set; }
     }
 }

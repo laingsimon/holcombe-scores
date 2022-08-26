@@ -50,7 +50,15 @@ export class RecordGoal extends Component {
         }, 1500);
 
         await this.goalScored();
-        const result = await this.gameApi.recordGoal(this.props.game.id, new Date().toISOString(), !!this.props.player, this.props.player ? this.props.player.id : null);
+        const result = await this.gameApi.recordGoal(
+            this.props.game.id,
+            new Date().toISOString(),
+            !!this.props.player,
+            this.props.player
+                ? this.props.player.id
+                : null,
+            this.props.game.recordGoalToken);
+
         if (!result.success) {
             alert(`Could not record goal: ${Functions.getResultMessages(result)}`);
         }
