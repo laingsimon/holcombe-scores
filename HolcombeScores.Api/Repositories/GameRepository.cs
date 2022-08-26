@@ -44,9 +44,9 @@ namespace HolcombeScores.Api.Repositories
             return await _gamePlayerTableClient.QueryAsync(g => g.GameId == gameId).ToEnumerable();
         }
 
-        public async Task<IEnumerable<Goal>> GetGoals(Guid gameId)
+        public async Task<ICollection<Goal>> GetGoals(Guid gameId)
         {
-            return await _goalTableClient.QueryAsync(g => g.GameId == gameId).ToEnumerable();
+            return await _goalTableClient.QueryAsync(g => g.GameId == gameId).ToListAsync();
         }
 
         public async Task AddGamePlayer(GamePlayer gamePlayer)

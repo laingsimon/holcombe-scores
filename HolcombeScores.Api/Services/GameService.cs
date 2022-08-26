@@ -45,7 +45,11 @@ namespace HolcombeScores.Api.Services
             {
                 var gamePlayers = await _gameRepository.GetPlayers(game.Id);
                 var goals = await _gameRepository.GetGoals(game.Id);
-                yield return await _gameDtoAdapter.Adapt(game, gamePlayers, goals, IsReadOnly(game, access));
+                yield return await _gameDtoAdapter.Adapt(
+                    game,
+                    gamePlayers,
+                    goals,
+                    GetAdapterContext(game, goals, access));
             }
         }
 
@@ -65,7 +69,11 @@ namespace HolcombeScores.Api.Services
 
             var gamePlayers = await _gameRepository.GetPlayers(game.Id);
             var goals = await _gameRepository.GetGoals(game.Id);
-            return await _gameDtoAdapter.Adapt(game, gamePlayers, goals, IsReadOnly(game, access));
+            return await _gameDtoAdapter.Adapt(
+                game,
+                gamePlayers,
+                goals,
+                GetAdapterContext(game, goals, access));
         }
 
         public async Task<ActionResultDto<GameDto>> CreateGame(GameDetailsDto gameDetailsDto)
@@ -273,6 +281,12 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Goals cannot be recorded for training");
             }
 
+            var expectedToken = GetRecordGoalToken(game, await _gameRepository.GetGoals(game.Id));
+            if (goalDto.RecordGoalToken != expectedToken)
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Goal record token is not valid, someone else may have recorded the same goal");
+            }
+
             var goal = _goalDtoAdapter.Adapt(goalDto, game);
             await _gameRepository.AddGoal(goal);
 
@@ -310,7 +324,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can update games");
             }
 
-            if (IsReadOnly(game, await _accessService.GetAccess()))
+            if (IsReadOnly(game.Date, await _accessService.GetAccess()))
             {
                 return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
             }
@@ -333,7 +347,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can remove goals");
             }
 
-            if (IsReadOnly(game, await _accessService.GetAccess()))
+            if (IsReadOnly(game.Date, await _accessService.GetAccess()))
             {
                 return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
             }
@@ -348,20 +362,39 @@ namespace HolcombeScores.Api.Services
             return IsReadOnly(game.Date, access);
         }
 
-        private static bool IsReadOnly(GameDto game, AccessDto access)
-        {
-            return IsReadOnly(game.Date, access);
-        }
-
         private static bool IsReadOnly(DateTime gameDate, AccessDto access)
         {
             if (access.Admin) 
             {
                 return false;
             }
-            var expired = DateTime.UtcNow > gameDate.AddDays(2);
             var notStarted = gameDate > DateTime.UtcNow;
-            return expired || (notStarted && !access.Manager);
+            return !IsGamePlayable(gameDate) || (notStarted && !access.Manager);
+        }
+
+        private static bool IsGamePlayable(Game game)
+        {
+            return !game.Training && IsGamePlayable(game.Date);
+        }
+
+        private static bool IsGamePlayable(DateTime gameDate)
+        {
+            return DateTime.UtcNow < gameDate.AddDays(2)
+                && gameDate > DateTime.UtcNow;
+        }
+
+        private static string GetRecordGoalToken(Game game, IEnumerable<Goal> goals)
+        {
+            var lastGoalId = goals.OrderByDescending(g => g.Time).Select(g => g.GoalId.ToString()).FirstOrDefault();
+            return $"{game.Id}:{lastGoalId ?? "<none>"}";
+        }
+
+        private static GameDtoAdapter.AdapterContext GetAdapterContext(Game game, ICollection<Goal> goals, AccessDto access)
+        {
+            return new GameDtoAdapter.AdapterContext(
+                GetRecordGoalToken(game, goals),
+                IsGamePlayable(game),
+                IsReadOnly(game, access));
         }
     }
 }
