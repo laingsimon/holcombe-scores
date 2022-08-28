@@ -1,6 +1,7 @@
 using Azure;
 using Azure.Data.Tables;
 using HolcombeScores.Api.Models.AzureTables;
+using HolcombeScores.Api.Services;
 
 namespace HolcombeScores.Api.Repositories
 {
@@ -18,14 +19,14 @@ namespace HolcombeScores.Api.Repositories
         public IAsyncEnumerable<Access> GetAllAccess(Guid[] teamIds = null)
         {
             return teamIds != null
-                ? _accessTableClient.QueryAsync(a => a.Teams.Any(teamIds.Contains))
+                ? _accessTableClient.QueryAsync().WhereAsync(a => a.Teams.Any(teamIds.Contains))
                 : _accessTableClient.QueryAsync();
         }
 
         public IAsyncEnumerable<AccessRequest> GetAllAccessRequests(Guid[] teamIds = null)
         {
             return teamIds != null
-                ? _accessRequestTableClient.QueryAsync(ar => teamIds.Contains(ar.TeamId))
+                ? _accessRequestTableClient.QueryAsync().WhereAsync(ar => teamIds.Contains(ar.TeamId))
                 : _accessRequestTableClient.QueryAsync();
         }
 
