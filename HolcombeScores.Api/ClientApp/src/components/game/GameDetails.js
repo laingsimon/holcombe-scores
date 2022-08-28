@@ -140,7 +140,7 @@ export class GameDetails extends Component {
                 <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</a>
             </li>)}
-            {this.state.gameDeleted ? null : (<li className="nav-item">
+            {this.state.gameDeleted || this.props.game.readOnly ? null : (<li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
                    href={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</a>
             </li>)}
