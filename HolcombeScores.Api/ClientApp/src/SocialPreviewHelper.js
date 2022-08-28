@@ -3,22 +3,14 @@ export class SocialPreviewHelper {
         const head = document.getElementsByTagName("head")[0];
         const elements = this.getElements(head);
         this.elements = this.createMissingElements(elements, head);
-        this.setInitialValues();
     }
 
     updateTitle(value) {
-        this.elements.title.innerText = value;
+        this.elements.title.setAttribute('content', value);
     }
 
     updateDescription(value) {
-        this.elements.description.innerText = value;
-    }
-
-    setInitialValues() {
-        this.elements.url.innerText = `https://${document.location.host}/`;
-        this.elements.image.innerText = `https://${document.location.host}/public/1024x1024.png`;
-        this.updateDescription('Record Holcombe games, scores and player availability');
-        this.updateTitle('Holcombe scores app');
+        this.elements.description.setAttribute('content', value);
     }
 
     createMissingElements(elements, head) {
