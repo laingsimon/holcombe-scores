@@ -178,12 +178,32 @@ export class GameDetails extends Component {
         let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
 
         if (this.state.mode === 'view' || this.props.game.readOnly) {
+            if (this.props.game.training) {
+                this.props.updateSocialPreview(`View training`, `Views players`);
+            } else {
+                this.props.updateSocialPreview(`View game against ${this.props.game.opponent}`, `View players and goals`);
+            }
             component = (<ViewGame {...this.props} onGoalRemoved={this.goalRemoved} />);
         } else if (this.state.mode === 'edit') {
+            if (this.props.game.training) {
+                this.props.updateSocialPreview(`Edit training`, `Edit players, location and date`);
+            } else {
+                this.props.updateSocialPreview(`Edit game against ${this.props.game.opponent}`, `Edit players, location and date`);
+            }
             component = (<EditGame {...this.props} onChanged={this.gameChanged} onDeleted={this.gameDeleted} />);
         } else if (this.state.mode === 'play') {
+            if (this.props.game.training) {
+                this.props.updateSocialPreview(`n/a`, `n/a`);
+            } else {
+                this.props.updateSocialPreview(`Record goals in the game against ${this.props.game.opponent}`, `See the score line and update the goals as they're scored`);
+            }
             component = (<PlayGame {...this.props} onGoalScored={this.goalScored} />);
         } else if (this.state.mode === 'availability') {
+            if (this.props.game.training) {
+                this.props.updateSocialPreview(`Record availability for training on ${this.props.game.date}`, `Record the availability of players for this training session`);
+            } else {
+                this.props.updateSocialPreview(`Record availability for game against ${this.props.game.opponent} on ${this.props.game.date}`, `Record the availability of players for this game`);
+            }
             component = (<EditAvailability {...this.props} onAvailabilityChanged={this.availabilityChanged} />);
         }
 

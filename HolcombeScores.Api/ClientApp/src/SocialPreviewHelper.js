@@ -16,7 +16,7 @@ export class SocialPreviewHelper {
 
     setInitialValues() {
         this.elements.url.innerText = `https://${document.location.host}/`;
-        this.elements.image.innerText = '/public/1024x1024.png';
+        this.elements.image.innerText = `https://${document.location.host}/public/1024x1024.png`;
         this.updateDescription('Record Holcombe games, scores and player availability');
         this.updateTitle('Holcombe scores app');
     }
