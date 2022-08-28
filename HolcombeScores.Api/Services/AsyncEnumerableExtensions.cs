@@ -57,6 +57,18 @@ namespace HolcombeScores.Api.Services
             return result;
         }
 
+        public static async IAsyncEnumerable<TIn> WhereAsync<TIn>(this IAsyncEnumerable<TIn> asyncEnumerable,
+            Func<TIn, bool> predicate)
+        {
+            await foreach (var item in asyncEnumerable)
+            {
+                if (predicate(item))
+                {
+                    yield return item;
+                }
+            }
+        }
+
         public static async IAsyncEnumerable<TOut> SelectAsync<TIn, TOut>(this IAsyncEnumerable<TIn> asyncEnumerable,
             Func<TIn, TOut> select)
         {
