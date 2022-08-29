@@ -1,3 +1,5 @@
+import {Settings} from './api/settings';
+
 class Functions {
     static except(selected, remove) {
         let copy = Object.assign({}, selected);
@@ -97,6 +99,14 @@ class Functions {
         }
 
         return messages.join('\n');
+    }
+
+    static getSharingLink() {
+        const href = document.location.href;
+        const indexOfSlashAfterHost = href.indexOf('/', 'https://'.length);
+        const apiHost = new Settings().apiHost;
+
+        return apiHost + '/static' + href.substring(indexOfSlashAfterHost);
     }
 }
 

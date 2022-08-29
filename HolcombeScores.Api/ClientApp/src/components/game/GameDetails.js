@@ -11,6 +11,7 @@ import {Score} from './Score';
 import {ViewGame} from './ViewGame';
 import { Link } from 'react-router-dom';
 import {EditAvailability} from "./EditAvailability";
+import {Functions} from "../../functions";
 
 // noinspection JSUnresolvedVariable
 /*
@@ -132,18 +133,23 @@ export class GameDetails extends Component {
                 <Link className="nav-link" to={`/team/${this.props.team.id}`}>⬅️</Link>
             </li>
             {this.state.gameDeleted ? null : (<li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
-                   href={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</a>
+                <Link className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
+                   to={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</Link>
             </li>)}
             {(this.props.access.admin || this.props.access.manager) && !this.props.game.readOnly ? editNav : null}
             {!this.props.game.playable || this.state.gameDeleted || this.props.game.training ? null : (<li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
-                   href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</a>
+                <Link className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
+                   to={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</Link>
             </li>)}
             {this.state.gameDeleted || this.props.game.readOnly ? null : (<li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
-                   href={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</a>
+                <Link className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
+                   to={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</Link>
             </li>)}
+            <li className="nav-item">
+                <a className="nav-link" href={Functions.getSharingLink()}>
+                    ↗️️ Share
+                </a>
+            </li>
         </ul>);
     }
 
