@@ -17,7 +17,6 @@ import {Functions} from './functions';
 import {Game} from './api/game';
 import {Player} from './api/player';
 import {Availability} from "./api/availability";
-import {SocialPreviewHelper} from './SocialPreviewHelper';
 
 export default class App extends Component {
     constructor(props) {
@@ -40,17 +39,10 @@ export default class App extends Component {
         this.combineProps = this.combineProps.bind(this);
         this.updateGame = this.updateGame.bind(this);
         this.reloadAvailability = this.reloadAvailability.bind(this);
-        this.updateSocialPreview = this.updateSocialPreview.bind(this);
-        this.socialPreviewHelper = new SocialPreviewHelper();
     }
 
     async componentDidMount() {
         await this.reloadAll();
-    }
-
-    updateSocialPreview(title, description) {
-        this.socialPreviewHelper.updateTitle(title);
-        this.socialPreviewHelper.updateDescription(description);
     }
 
     async updateGame(game) {
@@ -194,8 +186,7 @@ export default class App extends Component {
                 reloadGame: this.reloadGame,
                 reloadAll: this.reloadAll,
                 updateGame: this.updateGame,
-                reloadAvailability: this.reloadAvailability,
-                updateSocialPreview: this.updateSocialPreview
+                reloadAvailability: this.reloadAvailability
             },
             loading: false
         });
