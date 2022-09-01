@@ -1,5 +1,3 @@
-import {Settings} from './api/settings';
-
 class Functions {
     static except(selected, remove) {
         let copy = Object.assign({}, selected);
@@ -102,11 +100,7 @@ class Functions {
     }
 
     static getSharingLink() {
-        const href = document.location.href;
-        const indexOfSlashAfterHost = href.indexOf('/', 'https://'.length);
-        const apiHost = new Settings().apiHost;
-
-        return apiHost + href.substring(indexOfSlashAfterHost);
+        return document.location.href;
     }
 }
 
