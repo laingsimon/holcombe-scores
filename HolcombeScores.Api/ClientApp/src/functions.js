@@ -106,7 +106,7 @@ class Functions {
         const indexOfSlashAfterHost = href.indexOf('/', 'https://'.length);
         const apiHost = new Settings().apiHost;
 
-        return apiHost + '/static' + href.substring(indexOfSlashAfterHost);
+        return apiHost + href.substring(indexOfSlashAfterHost);
     }
 }
 

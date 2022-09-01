@@ -24,7 +24,7 @@ public class SocialService : ISocialService
 
     public async Task<string> GetHtml(string pathWithoutStatic, bool redirect = true)
     {
-        var pathToHtml = Path.Combine(_webHostEnvironment.ContentRootPath, "ClientApp", "public", "social_redirect.html");
+        var pathToHtml = Path.Combine(_webHostEnvironment.ContentRootPath, _configuration["IndexHtmlPath"]);
         var html = await File.ReadAllTextAsync(pathToHtml);
         var socialDetail = await GetSocialDetail(pathWithoutStatic);
 
@@ -45,7 +45,7 @@ public class SocialService : ISocialService
         var socialDetail = await _socialDetailRepository.GetSocialDetail(pathWithoutStatic);
         socialDetail.Url ??= $"{request?.Scheme}://{uiHost}{pathWithoutStatic}";
         socialDetail.Type ??= "website";
-        socialDetail.Image ??= $"{request?.Scheme}://{uiHost}/static/media/1024x1024.png";
+        socialDetail.Image ??= $"{request?.Scheme}://{uiHost}/1024x1024.png";
 
         return socialDetail;
     }

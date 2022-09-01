@@ -12,7 +12,7 @@ public class SocialDetailRepository : ISocialDetailRepository
 
     private static readonly Dictionary<string, Func<GameDto, SocialDetail>> GameDetails = new()
     {
-        { "^/game/(?<gameId>.+)/view/?$", ViewGame },
+        { "^/game/(?<gameId>.+)(/view)?/?$", ViewGame },
         { "^/game/(?<gameId>.+)/play/?$", PlayGame },
         { "^/game/(?<gameId>.+)/availability/?$", GameAvailability },
     };
@@ -68,8 +68,8 @@ public class SocialDetailRepository : ISocialDetailRepository
         return new SocialDetail
         {
             Description = game.Training
-                ? $"Record availability for training on ${game.Date}"
-                : $"Record availability for game against ${game.Opponent} on ${game.Date}",
+                ? $"Record availability for training on {game.Date}"
+                : $"Record availability for game against {game.Opponent} on {game.Date}",
             Title = game.Training
                 ? "Record the availability of players for this training session"
                 : "Record the availability of players for this game",
@@ -81,7 +81,7 @@ public class SocialDetailRepository : ISocialDetailRepository
         return new SocialDetail
         {
             Description = "See the score line and update the goals as they're scored",
-            Title = $"Record goals in the game against ${game.Opponent}",
+            Title = $"Record goals in the game against {game.Opponent}",
         };
     }
 
@@ -94,7 +94,7 @@ public class SocialDetailRepository : ISocialDetailRepository
                 : "View players and goals",
             Title = game.Training
                 ? $"View training on {game.Date}"
-                : $"View game against ${game.Opponent}",
+                : $"View game against {game.Opponent}",
         };
     }
 
