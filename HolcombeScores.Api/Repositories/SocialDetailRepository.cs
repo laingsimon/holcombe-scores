@@ -10,6 +10,12 @@ public class SocialDetailRepository : ISocialDetailRepository
     private readonly IGameService _gameService;
     private readonly ITeamService _teamService;
 
+    private static readonly SocialDetail Default = new SocialDetail
+    {
+        Description = "View and record scores and availability for games/training",
+        Title = "Holcombe scores",
+    };
+
     private static readonly Dictionary<string, Func<GameDto, SocialDetail>> GameDetails = new()
     {
         { "^/game/(?<gameId>.+)(/view)?/?$", ViewGame },
@@ -60,7 +66,7 @@ public class SocialDetailRepository : ISocialDetailRepository
             return value(team);
         }
 
-        return new SocialDetail();
+        return Default;
     }
 
     private static SocialDetail GameAvailability(GameDto game)
