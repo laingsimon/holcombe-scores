@@ -44,10 +44,16 @@ public class SocialDetailRepository : ISocialDetailRepository
                 continue;
             }
 
-            var gameId = Guid.Parse(match.Groups["gameId"].Value);
-            var game = await _gameRepository.Get(gameId);
+            if (!Guid.TryParse(match.Groups["gameId"].Value, out var gameId))
+            {
+                continue;
+            }
 
-            return value(game);
+            var game = await _gameRepository.Get(gameId);
+            if (game != null)
+            {
+                return value(game);
+            }
         }
 
         foreach (var (key, value) in TeamDetails)
@@ -59,10 +65,16 @@ public class SocialDetailRepository : ISocialDetailRepository
                 continue;
             }
 
-            var teamId = Guid.Parse(match.Groups["teamId"].Value);
-            var team = await _teamRepository.Get(teamId);
+            if (!Guid.TryParse(match.Groups["teamId"].Value, out var teamId))
+            {
+                continue;
+            }
 
-            return value(team);
+            var team = await _teamRepository.Get(teamId);
+            if (team != null)
+            {
+                return value(team);
+            }
         }
 
         return Default;
