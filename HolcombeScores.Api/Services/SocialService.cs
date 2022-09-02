@@ -45,7 +45,7 @@ public class SocialService : ISocialService
         var socialDetail = await _socialDetailRepository.GetSocialDetail(pathWithoutStatic);
         socialDetail.Url ??= $"{request?.Scheme}://{uiHost}{pathWithoutStatic}";
         socialDetail.Type ??= "website";
-        socialDetail.Image ??= $"{request?.Scheme}://{uiHost}/1024x1024.png";
+        socialDetail.Image ??= $"{request?.Scheme}://{uiHost}/social.png";
 
         return socialDetail;
     }
