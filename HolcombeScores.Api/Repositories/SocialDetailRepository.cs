@@ -1,14 +1,13 @@
 using System.Text.RegularExpressions;
 using HolcombeScores.Api.Models;
-using HolcombeScores.Api.Models.Dtos;
-using HolcombeScores.Api.Services;
+using HolcombeScores.Api.Models.AzureTables;
 
 namespace HolcombeScores.Api.Repositories;
 
 public class SocialDetailRepository : ISocialDetailRepository
 {
-    private readonly IGameService _gameService;
-    private readonly ITeamService _teamService;
+    private readonly IGameRepository _gameRepository;
+    private readonly ITeamRepository _teamRepository;
 
     private static readonly SocialDetail Default = new SocialDetail
     {
@@ -16,22 +15,22 @@ public class SocialDetailRepository : ISocialDetailRepository
         Title = "Holcombe scores",
     };
 
-    private static readonly Dictionary<string, Func<GameDto, SocialDetail>> GameDetails = new()
+    private static readonly Dictionary<string, Func<Game, SocialDetail>> GameDetails = new()
     {
-        { "^/game/(?<gameId>.+)(/view)?/?$", ViewGame },
+        { "^/game/(?<gameId>.+?)(/view)?/?$", ViewGame },
         { "^/game/(?<gameId>.+)/play/?$", PlayGame },
         { "^/game/(?<gameId>.+)/availability/?$", GameAvailability },
     };
 
-    private static readonly Dictionary<string, Func<TeamDto, SocialDetail>> TeamDetails = new()
+    private static readonly Dictionary<string, Func<Team, SocialDetail>> TeamDetails = new()
     {
         { "^/team/(?<teamId>.+)/?$", ViewTeamGames },
     };
 
-    public SocialDetailRepository(IGameService gameService, ITeamService teamService)
+    public SocialDetailRepository(IGameRepository gameRepository, ITeamRepository teamRepository)
     {
-        _gameService = gameService;
-        _teamService = teamService;
+        _gameRepository = gameRepository;
+        _teamRepository = teamRepository;
     }
 
     public async Task<SocialDetail> GetSocialDetail(string urlPrefix)
@@ -46,7 +45,7 @@ public class SocialDetailRepository : ISocialDetailRepository
             }
 
             var gameId = Guid.Parse(match.Groups["gameId"].Value);
-            var game = await _gameService.GetGame(gameId);
+            var game = await _gameRepository.Get(gameId);
 
             return value(game);
         }
@@ -61,7 +60,7 @@ public class SocialDetailRepository : ISocialDetailRepository
             }
 
             var teamId = Guid.Parse(match.Groups["teamId"].Value);
-            var team = await _teamService.GetTeam(teamId);
+            var team = await _teamRepository.Get(teamId);
 
             return value(team);
         }
@@ -69,7 +68,7 @@ public class SocialDetailRepository : ISocialDetailRepository
         return Default;
     }
 
-    private static SocialDetail GameAvailability(GameDto game)
+    private static SocialDetail GameAvailability(Game game)
     {
         return new SocialDetail
         {
@@ -82,7 +81,7 @@ public class SocialDetailRepository : ISocialDetailRepository
         };
     }
 
-    private static SocialDetail PlayGame(GameDto game)
+    private static SocialDetail PlayGame(Game game)
     {
         return new SocialDetail
         {
@@ -91,7 +90,7 @@ public class SocialDetailRepository : ISocialDetailRepository
         };
     }
 
-    private static SocialDetail ViewGame(GameDto game)
+    private static SocialDetail ViewGame(Game game)
     {
         return new SocialDetail
         {
@@ -104,7 +103,7 @@ public class SocialDetailRepository : ISocialDetailRepository
         };
     }
 
-    private static SocialDetail ViewTeamGames(TeamDto team)
+    private static SocialDetail ViewTeamGames(Team team)
     {
         return new SocialDetail
         {
