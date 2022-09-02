@@ -11,8 +11,8 @@ public class SocialDetailRepository : ISocialDetailRepository
 
     private static readonly SocialDetail Default = new SocialDetail
     {
-        Description = "View and record scores and availability for games/training",
-        Title = "Holcombe scores",
+        Description = "View and record results and availability for games/training",
+        Title = "Holcombe Scores - view & record goals as they're scored",
     };
 
     private static readonly Dictionary<string, Func<Game, SocialDetail>> GameDetails = new()
@@ -107,10 +107,10 @@ public class SocialDetailRepository : ISocialDetailRepository
         return new SocialDetail
         {
             Description = game.Training
-                ? "Views players"
-                : "View players and goals",
+                ? "Views details of this training session and record availability"
+                : "View the squad, record availability and view/record goals as the game is played",
             Title = game.Training
-                ? $"View training on {game.Date}"
+                ? $"View training session on {game.Date}"
                 : $"View game against {game.Opponent}",
         };
     }
@@ -119,8 +119,8 @@ public class SocialDetailRepository : ISocialDetailRepository
     {
         return new SocialDetail
         {
-            Description = "View games",
-            Title = $"{team.Name}",
+            Description = $"View games and training sessions for {team.Name}",
+            Title = $"Holcombe Scores - {team.Name}",
         };
     }
 }
