@@ -11,6 +11,7 @@ import {Score} from './Score';
 import {ViewGame} from './ViewGame';
 import { Link } from 'react-router-dom';
 import {EditAvailability} from "./EditAvailability";
+import {Functions} from "../../functions";
 
 // noinspection JSUnresolvedVariable
 /*
@@ -132,18 +133,23 @@ export class GameDetails extends Component {
                 <Link className="nav-link" to={`/team/${this.props.team.id}`}>⬅️</Link>
             </li>
             {this.state.gameDeleted ? null : (<li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
-                   href={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</a>
+                <Link className={`nav-link${this.state.mode === 'view' ? ' active' : ''}`}
+                   to={`/game/${this.gameId}/view`} onClick={this.changeMode}>Overview</Link>
             </li>)}
             {(this.props.access.admin || this.props.access.manager) && !this.props.game.readOnly ? editNav : null}
             {!this.props.game.playable || this.state.gameDeleted || this.props.game.training ? null : (<li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
-                   href={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</a>
+                <Link className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
+                   to={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</Link>
             </li>)}
             {this.state.gameDeleted || this.props.game.readOnly ? null : (<li className="nav-item">
-                <a className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
-                   href={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</a>
+                <Link className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
+                   to={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</Link>
             </li>)}
+            <li className="nav-item">
+                <a className="nav-link" href={Functions.getSharingLink()}>
+                    ↗️️ Share
+                </a>
+            </li>
         </ul>);
     }
 
@@ -178,32 +184,12 @@ export class GameDetails extends Component {
         let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
 
         if (this.state.mode === 'view' || this.props.game.readOnly) {
-            if (this.props.game.training) {
-                this.props.updateSocialPreview(`View training`, `Views players`);
-            } else {
-                this.props.updateSocialPreview(`View game against ${this.props.game.opponent}`, `View players and goals`);
-            }
             component = (<ViewGame {...this.props} onGoalRemoved={this.goalRemoved} />);
         } else if (this.state.mode === 'edit') {
-            if (this.props.game.training) {
-                this.props.updateSocialPreview(`Edit training`, `Edit players, location and date`);
-            } else {
-                this.props.updateSocialPreview(`Edit game against ${this.props.game.opponent}`, `Edit players, location and date`);
-            }
             component = (<EditGame {...this.props} onChanged={this.gameChanged} onDeleted={this.gameDeleted} />);
         } else if (this.state.mode === 'play') {
-            if (this.props.game.training) {
-                this.props.updateSocialPreview(`n/a`, `n/a`);
-            } else {
-                this.props.updateSocialPreview(`Record goals in the game against ${this.props.game.opponent}`, `See the score line and update the goals as they're scored`);
-            }
             component = (<PlayGame {...this.props} onGoalScored={this.goalScored} />);
         } else if (this.state.mode === 'availability') {
-            if (this.props.game.training) {
-                this.props.updateSocialPreview(`Record availability for training on ${this.props.game.date}`, `Record the availability of players for this training session`);
-            } else {
-                this.props.updateSocialPreview(`Record availability for game against ${this.props.game.opponent} on ${this.props.game.date}`, `Record the availability of players for this game`);
-            }
             component = (<EditAvailability {...this.props} onAvailabilityChanged={this.availabilityChanged} />);
         }
 

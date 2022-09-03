@@ -98,6 +98,12 @@ class Functions {
 
         return messages.join('\n');
     }
+
+    static getSharingLink() {
+        return document.location.hostname === 'localhost'
+                ? `https://localhost:5001${document.location.pathname}`
+                : document.location.href;
+    }
 }
 
 export { Functions };
