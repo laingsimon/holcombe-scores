@@ -194,7 +194,7 @@ export class GameDetails extends Component {
 
         let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
 
-        if (this.state.mode === 'view' || !this.props.game.readOnly) {
+        if (this.state.mode === 'view' || this.props.game.readOnly) {
             component = (<ViewGame {...this.props} onGoalRemoved={this.goalRemoved} />);
         } else if (this.state.mode === 'edit') {
             component = (<EditGame {...this.props} onChanged={this.gameChanged} onDeleted={this.gameDeleted} />);
