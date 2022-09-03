@@ -131,4 +131,5 @@ body > div#root > div {
   position: absolute;
   transform: rotate(-45deg);
   background: #ffffff;
+  z-index: 100;
 }
