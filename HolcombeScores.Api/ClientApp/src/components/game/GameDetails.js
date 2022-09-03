@@ -109,6 +109,7 @@ export class GameDetails extends Component {
         const mode = segments[segments.length - 1];
         this.setState({
             mode: mode,
+            showSharingDetail: false
         });
         window.history.replaceState(null, event.target.textContent, url);
     }
