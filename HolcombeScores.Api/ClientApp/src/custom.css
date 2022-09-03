@@ -107,3 +107,28 @@ body > div#root > div {
   position: absolute;
   right: 0px;
 }
+
+.floating-drop-down {
+  border: 1px solid #cccccc;
+  padding: 4px;
+  position: absolute;
+  margin-top: 8px;
+  background: #ffffff;
+  box-shadow: #cccccc 2px 2px 5px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.floating-drop-down:before {
+  content: "";
+  border-top: 1px solid #cccccc;
+  border-right: 1px solid #cccccc;
+  height: 20px;
+  width: 20px;
+  top: -11px;
+  left: 25px;
+  display: block;
+  position: absolute;
+  transform: rotate(-45deg);
+  background: #ffffff;
+}

@@ -10,8 +10,9 @@ import {PlayGame} from './PlayGame';
 import {Score} from './Score';
 import {ViewGame} from './ViewGame';
 import { Link } from 'react-router-dom';
-import {EditAvailability} from "./EditAvailability";
-import {Functions} from "../../functions";
+import {EditAvailability} from './EditAvailability';
+import {Functions} from '../../functions';
+import {QRCodeSVG} from 'qrcode.react';
 
 // noinspection JSUnresolvedVariable
 /*
@@ -37,7 +38,8 @@ export class GameDetails extends Component {
             loading: true,
             gameDeleted: false,
             error: null,
-            mode: props.match.params.mode || 'view'
+            mode: props.match.params.mode || 'view',
+            showSharingDetail: false
         };
         this.changeMode = this.changeMode.bind(this);
         this.goalScored = this.goalScored.bind(this);
@@ -45,9 +47,18 @@ export class GameDetails extends Component {
         this.gameChanged = this.gameChanged.bind(this);
         this.gameDeleted = this.gameDeleted.bind(this);
         this.availabilityChanged = this.availabilityChanged.bind(this);
+        this.toggleSharingDetail = this.toggleSharingDetail.bind(this);
     }
 
     //event handlers
+    toggleSharingDetail(event) {
+        event.preventDefault();
+
+        this.setState({
+            showSharingDetail: !this.state.showSharingDetail
+        });
+    }
+
     async availabilityChanged() {
         await this.props.reloadAvailability(this.props.game.teamId, this.gameId);
     }
@@ -146,9 +157,9 @@ export class GameDetails extends Component {
                    to={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</Link>
             </li>)}
             <li className="nav-item">
-                <a className="nav-link" href={Functions.getSharingLink()}>
-                    ↗️️ Share
-                </a>
+                <a className="nav-link" onClick={this.toggleSharingDetail}
+                      href={`/game/${this.gameId}/share`}>↗ Share</a>
+                {this.state.showSharingDetail ? this.renderSharingComponent() : null}
             </li>
         </ul>);
     }
@@ -183,7 +194,7 @@ export class GameDetails extends Component {
 
         let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
 
-        if (this.state.mode === 'view' || this.props.game.readOnly) {
+        if (this.state.mode === 'view' || !this.props.game.readOnly) {
             component = (<ViewGame {...this.props} onGoalRemoved={this.goalRemoved} />);
         } else if (this.state.mode === 'edit') {
             component = (<EditGame {...this.props} onChanged={this.gameChanged} onDeleted={this.gameDeleted} />);
@@ -199,6 +210,12 @@ export class GameDetails extends Component {
             <br/>
             {component}
         </div>)
+    }
+
+    renderSharingComponent() {
+        return (<div className="floating-drop-down">
+            <QRCodeSVG includeMargin={true} value={Functions.getSharingLink()} />
+        </div>);
     }
 
     renderHeading() {
