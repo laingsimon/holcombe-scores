@@ -100,7 +100,9 @@ class Functions {
     }
 
     static getSharingLink() {
-        return document.location.href;
+        return document.location.hostname === 'localhost'
+                ? `https://localhost:5001${document.location.pathname}`
+                : document.location.href;
     }
 }
 
