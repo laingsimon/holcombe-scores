@@ -284,7 +284,7 @@ namespace HolcombeScores.Api.Services
             var expectedToken = GetRecordGoalToken(game, await _gameRepository.GetGoals(game.Id));
             if (goalDto.RecordGoalToken != expectedToken)
             {
-                return _serviceHelper.NotPermitted<GameDto>("Goal record token is not valid, someone else may have recorded the same goal");
+                return _serviceHelper.NotSuccess<GameDto>("Someone else may have recorded the same goal");
             }
 
             var goal = _goalDtoAdapter.Adapt(goalDto, game);
@@ -364,7 +364,7 @@ namespace HolcombeScores.Api.Services
 
         private static bool IsReadOnly(DateTime gameDate, AccessDto access)
         {
-            if (access.Admin) 
+            if (access.Admin)
             {
                 return false;
             }
