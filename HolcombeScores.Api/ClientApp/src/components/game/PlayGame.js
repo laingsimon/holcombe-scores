@@ -78,7 +78,7 @@ export class PlayGame extends Component {
     }
 
     componentDidMount() {
-        if (this.props.game.gamePlayable) {
+        if (this.props.game.playable) {
             this.setState({
                 refreshHandle: window.setInterval(this.refresh, PlayGame.REFRESH_INTERVAL)
             });
@@ -103,8 +103,8 @@ export class PlayGame extends Component {
             <h1 className="text-center"><Score playingAtHome={this.props.game.playingAtHome} score={score} /></h1>
             {this.state.errorRecordingGoal ? this.renderErrorRecordingGoal(this.state.errorRecordingGoal) : null}
             <div className="d-flex flex-wrap justify-content-center score-goals-container">
-                {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} onGoalScored={this.onGoalScored} onGoalNotRecorded={this.onGoalNotRecorded} />))}
-                {this.props.game.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} onGoalScored={this.onGoalScored} onGoalNotRecorded={this.onGoalNotRecorded} />)}
+                {this.props.game.squad.map(player => (<RecordGoal key={player.id} player={player} game={this.props.game} reloadGame={this.props.reloadGame} onGoalScored={this.onGoalScored} onGoalNotRecorded={this.onGoalNotRecorded} />))}
+                {this.props.game.readOnly ? null : (<RecordGoal key={'opponent'} game={this.props.game} reloadGame={this.props.reloadGame} onGoalScored={this.onGoalScored} onGoalNotRecorded={this.onGoalNotRecorded} />)}
             </div>
             <hr />
             <div className="text-center">

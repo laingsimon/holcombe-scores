@@ -96,7 +96,8 @@ export class GameDetails extends Component {
         });
         this.props.game.goals = repairedGoals;
 
-        await this.props.updateGame(this.props.game); // will also trigger a reload
+        await this.props.updateGame(this.props.game);
+        await this.props.reloadGame(gameId);
     }
 
     async goalScored(gameId, holcombeGoal, playerId) {
@@ -116,7 +117,7 @@ export class GameDetails extends Component {
             local: true
         });
 
-        await this.props.updateGame(this.props.game); // will also trigger a reload
+        await this.props.updateGame(this.props.game);
     }
 
     changeMode(event) {

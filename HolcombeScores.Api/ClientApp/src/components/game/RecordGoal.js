@@ -7,7 +7,7 @@ import {Game} from '../../api/game';
 * Props:
 * - [player]
 * - game
-*
+* - reloadGame()
 *
 * Events:
 * - onGoalScored(holcombeGoal, [playerId])
@@ -67,7 +67,9 @@ export class RecordGoal extends Component {
                     : null,
                 this.props.game.recordGoalToken);
 
-            if (!result.success) {
+            if (result.success) {
+                await this.props.reloadGame(this.props.game.id);
+            } else {
                 await this.goalNotRecorded(result);
             }
         } catch (exc) {
