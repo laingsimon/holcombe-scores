@@ -379,7 +379,7 @@ namespace HolcombeScores.Api.Services
 
         private static bool IsGamePlayable(DateTime gameDate)
         {
-            return DateTime.UtcNow < gameDate.AddDays(2)
+            return gameDate.AddDays(1) < DateTime.UtcNow
                 && gameDate > DateTime.UtcNow;
         }
 
