@@ -379,8 +379,10 @@ namespace HolcombeScores.Api.Services
 
         private static bool IsGamePlayable(DateTime gameDate)
         {
-            return gameDate < DateTime.UtcNow.AddDays(1)
-                && gameDate > DateTime.UtcNow;
+            var gameStarted = DateTime.UtcNow > gameDate;
+            var gameNotExpired = DateTime.UtcNow < gameDate.AddDays(1);
+
+            return gameNotExpired && gameStarted;
         }
 
         private static string GetRecordGoalToken(Game game, IEnumerable<Goal> goals)
