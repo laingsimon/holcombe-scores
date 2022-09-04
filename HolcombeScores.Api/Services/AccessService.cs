@@ -225,7 +225,11 @@ namespace HolcombeScores.Api.Services
 
             await _accessRepository.AddAccessRequest(accessRequest);
 
-            SetCookies(accessRequest.Token, accessRequest.UserId);
+            if (GetImpersonatingUserId() == null)
+            {
+                // dont set the cookies if impersonating, it'll reset the impersonating user to the impersonated user
+                SetCookies(accessRequest.Token, accessRequest.UserId);
+            }
 
             return _accessRequestedDtoAdapter.Adapt(accessRequest);
         }
