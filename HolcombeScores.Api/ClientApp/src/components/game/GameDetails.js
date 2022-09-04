@@ -48,6 +48,7 @@ export class GameDetails extends Component {
         this.gameDeleted = this.gameDeleted.bind(this);
         this.availabilityChanged = this.availabilityChanged.bind(this);
         this.toggleSharingDetail = this.toggleSharingDetail.bind(this);
+        this.goalNotRecorded = this.goalNotRecorded.bind(this);
     }
 
     //event handlers
@@ -80,6 +81,22 @@ export class GameDetails extends Component {
 
     async gameChanged(gameId, teamId) {
         await this.props.reloadGame(gameId); // don't set the state to loading
+    }
+
+    async goalNotRecorded(gameId, holcombeGoal, playerId) {
+        if (!gameId) {
+            // refresh
+            await this.props.reloadGame(gameId); // don't set the state to loading
+            return;
+        }
+
+        const repairedGoals = this.props.game.goals.filter(g => {
+            const goalThatCouldNotBeRecorded = g.local && g.holcombeGoal === holcombeGoal && (g.holcombeGoal ? g.player.id === playerId : g.player === null);
+            return !goalThatCouldNotBeRecorded;
+        });
+        this.props.game.goals = repairedGoals;
+
+        await this.props.updateGame(this.props.game); // will also trigger a reload
     }
 
     async goalScored(gameId, holcombeGoal, playerId) {
@@ -200,7 +217,7 @@ export class GameDetails extends Component {
         } else if (this.state.mode === 'edit') {
             component = (<EditGame {...this.props} onChanged={this.gameChanged} onDeleted={this.gameDeleted} />);
         } else if (this.state.mode === 'play') {
-            component = (<PlayGame {...this.props} onGoalScored={this.goalScored} />);
+            component = (<PlayGame {...this.props} onGoalScored={this.goalScored} onGoalNotRecorded={this.goalNotRecorded} />);
         } else if (this.state.mode === 'availability') {
             component = (<EditAvailability {...this.props} onAvailabilityChanged={this.availabilityChanged} />);
         }

@@ -290,7 +290,7 @@ export class AccessOverview extends Component {
                 <button type="button"
                         className={`btn ${btnCancelClassName}`}
                         onClick={this.prepareCancelAccess}>{this.renderBackButton('cancel', '🗑', this.state.cancelling)}</button>
-                {this.props.isImpersonated ? null : (<button type="button"
+                {this.props.isImpersonated || !this.myAccess.admin ? null : (<button type="button"
                         className={`btn ${btnImpersonateClassName}`}
                         onClick={this.prepareImpersonateAccess}>{this.renderBackButton('impersonate', '🕵️', this.state.impersonating)}</button>)}
             </span>
