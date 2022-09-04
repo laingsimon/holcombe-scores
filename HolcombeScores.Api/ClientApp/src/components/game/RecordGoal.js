@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {Settings} from '../../api/settings';
 import {Http} from '../../api/http';
 import {Game} from '../../api/game';
-import {Functions} from '../../functions';
 
 /*
 * Props:
@@ -11,7 +10,8 @@ import {Functions} from '../../functions';
 *
 *
 * Events:
-* - onGoalScored(holcombeGoal, playerId)
+* - onGoalScored(holcombeGoal, [playerId])
+* - onGoalNotRecorded(holcombeGoal, [playerId], result)
 * */
 // noinspection JSUnresolvedVariable
 export class RecordGoal extends Component {
@@ -33,6 +33,12 @@ export class RecordGoal extends Component {
         }
     }
 
+    async goalNotRecorded(result) {
+        if (this.props.onGoalNotRecorded) {
+            await this.props.onGoalNotRecorded(!!this.props.player, this.props.player ? this.props.player.id : null, result);
+        }
+    }
+
     // event handlers
     async recordGoal() {
         if (this.props.game.readOnly) {
@@ -40,27 +46,36 @@ export class RecordGoal extends Component {
         }
 
         this.setState({
-            latestScorer: true
+            goalJustScored: true,
+            recordingGoal: true
         });
 
         window.setTimeout(() => {
             this.setState({
-                latestScorer: false
+                goalJustScored: false
             });
         }, 1500);
 
         await this.goalScored();
-        const result = await this.gameApi.recordGoal(
-            this.props.game.id,
-            new Date().toISOString(),
-            !!this.props.player,
-            this.props.player
-                ? this.props.player.id
-                : null,
-            this.props.game.recordGoalToken);
+        try {
+            const result = await this.gameApi.recordGoal(
+                this.props.game.id,
+                new Date().toISOString(),
+                !!this.props.player,
+                this.props.player
+                    ? this.props.player.id
+                    : null,
+                this.props.game.recordGoalToken);
 
-        if (!result.success) {
-            alert(`Could not record goal: ${Functions.getResultMessages(result)}`);
+            if (!result.success) {
+                await this.goalNotRecorded(result);
+            }
+        } catch (exc) {
+            await this.goalNotRecorded(exc);
+        } finally {
+            this.setState({
+                recordingGoal: false
+            });
         }
     }
 
@@ -73,7 +88,8 @@ export class RecordGoal extends Component {
 
     renderHolcombeScoreButton() {
         const hasScored = this.props.game.goals.filter(g => g.holcombeGoal && g.player.id === this.props.player.id).length > 0;
-        const isLatestScorer = this.state.latestScorer || (this.props.game.readOnly && hasScored);
+        const shouldHighlight = this.state.goalJustScored || this.state.recordingGoal;
+        const isLatestScorer = shouldHighlight || (this.props.game.readOnly && hasScored);
         const colour = this.props.game.readOnly ? 'btn-light' : 'btn-primary';
         const suffix = !this.props.game.readOnly || hasScored ? 'scored!' : 'played';
 
