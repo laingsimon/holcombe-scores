@@ -31,6 +31,8 @@ namespace HolcombeScores.Api
             services.AddScoped<IAvailabilityService, AvailabilityService>();
             services.AddScoped<ISocialService, SocialService>();
             services.AddScoped<ISocialDetailRepository, SocialDetailRepository>();
+            services.AddScoped(p => p.GetService<IAzureRepositoryContextFactory>()!.CreateContext());
+            services.AddScoped<IAzureRepositoryContextFactory, AzureRepositoryContextFactory>();
 
             services.AddSingleton<IServiceHelper, ServiceHelper>();
             services.AddSingleton<IGamePlayerDtoAdapter, GamePlayerDtoAdapter>();
