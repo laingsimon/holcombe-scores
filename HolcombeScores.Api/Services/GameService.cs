@@ -379,10 +379,15 @@ namespace HolcombeScores.Api.Services
 
         private static bool IsGamePlayable(DateTime gameDate)
         {
-            var gameStarted = DateTime.UtcNow > gameDate;
+            var gameStarted = HasGameStarted(gameDate);
             var gameNotExpired = DateTime.UtcNow < gameDate.AddDays(1);
 
             return gameNotExpired && gameStarted;
+        }
+
+        private static bool HasGameStarted(DateTime gameDate)
+        {
+            return DateTime.UtcNow > gameDate;
         }
 
         private static string GetRecordGoalToken(Game game, IEnumerable<Goal> goals)
@@ -396,7 +401,8 @@ namespace HolcombeScores.Api.Services
             return new GameDtoAdapter.AdapterContext(
                 GetRecordGoalToken(game, goals),
                 IsGamePlayable(game),
-                IsReadOnly(game, access));
+                IsReadOnly(game, access),
+                HasGameStarted(game.Date));
         }
     }
 }

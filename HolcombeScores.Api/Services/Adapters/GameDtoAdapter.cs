@@ -34,6 +34,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Playable = context.Playable,
                 Training = game.Training,
                 RecordGoalToken = context.RecordGoalToken,
+                Started = context.HasStarted,
             };
         }
 
@@ -60,12 +61,14 @@ namespace HolcombeScores.Api.Services.Adapters
             public string RecordGoalToken { get; }
             public bool Playable { get; }
             public bool ReadOnly { get; }
+            public bool HasStarted { get; }
 
-            public AdapterContext(string recordGoalToken, bool playable, bool readOnly)
+            public AdapterContext(string recordGoalToken, bool playable, bool readOnly, bool hasStarted)
             {
                 RecordGoalToken = recordGoalToken;
                 Playable = playable;
                 ReadOnly = readOnly;
+                HasStarted = hasStarted;
             }
         }
     }
