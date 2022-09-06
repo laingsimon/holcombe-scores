@@ -13,4 +13,9 @@ public class AzureRepositoryContextFactory : IAzureRepositoryContextFactory
     {
         return new AzureRepositoryContext(_configuration);
     }
+
+    public static IAzureRepositoryContext Create(IServiceProvider serviceProvider)
+    {
+        return serviceProvider.GetService<IAzureRepositoryContextFactory>()!.CreateContext();
+    }
 }

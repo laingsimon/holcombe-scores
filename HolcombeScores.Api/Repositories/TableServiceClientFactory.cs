@@ -11,15 +11,9 @@ namespace HolcombeScores.Api.Repositories
             _context = context;
         }
 
-        public TableClient CreateTableClient(string tableName)
+        public TableServiceClient CreateTableServiceClient()
         {
-            var client = new TableClient(
-                _context.StorageUri,
-                tableName,
-                _context.GetTableSharedKeyCredential());
-
-            client.CreateIfNotExists();
-            return client;
+            return new TableServiceClient(_context.StorageUri, _context.GetTableSharedKeyCredential());
         }
     }
 }

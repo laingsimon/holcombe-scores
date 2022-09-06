@@ -7,9 +7,9 @@ namespace HolcombeScores.Api.Repositories
     {
         private readonly TypedTableClient<Player> _playerTableClient;
 
-        public PlayerRepository(ITableServiceClientFactory tableServiceClientFactory)
+        public PlayerRepository(ITableClientFactory tableClientFactory)
         {
-            _playerTableClient = new TypedTableClient<Player>(tableServiceClientFactory.CreateTableClient("Player"));
+            _playerTableClient = new TypedTableClient<Player>(tableClientFactory.CreateTableClient("Player"));
         }
 
         public IAsyncEnumerable<Player> GetAll(Guid? teamId)

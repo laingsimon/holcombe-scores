@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Azure;
 using HolcombeScores.Api.Models.AzureTables;
 
@@ -10,9 +7,9 @@ namespace HolcombeScores.Api.Repositories
     {
         private readonly TypedTableClient<Team> _teamTableClient;
 
-        public TeamRepository(ITableServiceClientFactory tableServiceClientFactory)
+        public TeamRepository(ITableClientFactory tableClientFactory)
         {
-            _teamTableClient = new TypedTableClient<Team>(tableServiceClientFactory.CreateTableClient("Team"));
+            _teamTableClient = new TypedTableClient<Team>(tableClientFactory.CreateTableClient("Team"));
         }
 
         public IAsyncEnumerable<Team> GetAll()

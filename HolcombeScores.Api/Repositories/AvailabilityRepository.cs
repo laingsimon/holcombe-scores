@@ -7,9 +7,9 @@ public class AvailabilityRepository : IAvailabilityRepository
 {
     private readonly TypedTableClient<Availability> _availabilityTableClient;
 
-    public AvailabilityRepository(ITableServiceClientFactory tableServiceClientFactory)
+    public AvailabilityRepository(ITableClientFactory tableClientFactory)
     {
-        _availabilityTableClient = new TypedTableClient<Availability>(tableServiceClientFactory.CreateTableClient("Availability"));
+        _availabilityTableClient = new TypedTableClient<Availability>(tableClientFactory.CreateTableClient("Availability"));
     }
 
     public async Task<Availability> GetAvailability(Guid teamId, Guid gameId, Guid playerId)

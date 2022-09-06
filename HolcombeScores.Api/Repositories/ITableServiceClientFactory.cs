@@ -4,6 +4,6 @@ namespace HolcombeScores.Api.Repositories
 {
     public interface ITableServiceClientFactory
     {
-        TableClient CreateTableClient(string tableName);
+        TableServiceClient CreateTableServiceClient();
     }
 }
