@@ -171,7 +171,7 @@ export class GameDetails extends Component {
                 <Link className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    to={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</Link>
             </li>)}
-            {this.state.gameDeleted || this.props.game.readOnly ? null : (<li className="nav-item">
+            {this.state.gameDeleted || this.props.game.started ? null : (<li className="nav-item">
                 <Link className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
                    to={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</Link>
             </li>)}
@@ -213,7 +213,7 @@ export class GameDetails extends Component {
 
         let component = (<Alert warnings={[`Unknown mode ${this.state.mode}`]}/>);
 
-        if (this.state.mode === 'view' || this.props.game.readOnly) {
+        if (this.state.mode === 'view') {
             component = (<ViewGame {...this.props} onGoalRemoved={this.goalRemoved} />);
         } else if (this.state.mode === 'edit') {
             component = (<EditGame {...this.props} onChanged={this.gameChanged} onDeleted={this.gameDeleted} />);
