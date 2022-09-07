@@ -6,5 +6,5 @@ public interface ITestingService
 {
     Task<ActionResultDto<TestingContextCreatedDto>> CreateTestingContext(CreateTestingContextRequestDto request);
     Task<ActionResultDto<DeleteTestingContextDto>> EndTestingContext();
-    Guid? GetContextCookie();
+    Guid? GetTestingContextId();
 }

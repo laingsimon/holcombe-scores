@@ -6,29 +6,31 @@ namespace HolcombeScores.Api.Services;
 
 public class TestingService : ITestingService
 {
-    private const string TestTableDelimiter = "TEST";
-
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IServiceHelper _serviceHelper;
     private readonly ITableServiceClientFactory _tableServiceClientFactory;
     private readonly ITableClientFactory _tableClientFactory;
-    private const string ContextIdCookieName = "HS_TestingContext";
+    private readonly ITestingContext _testingContext;
 
     public TestingService(
         IHttpContextAccessor httpContextAccessor,
         IServiceHelper serviceHelper,
         ITableServiceClientFactory tableServiceClientFactory,
-        ITableClientFactory tableClientFactory)
+        ITableClientFactory tableClientFactory,
+        ITestingContext testingContext)
     {
         _httpContextAccessor = httpContextAccessor;
         _serviceHelper = serviceHelper;
         _tableServiceClientFactory = tableServiceClientFactory;
         _tableClientFactory = tableClientFactory;
+        _testingContext = testingContext;
     }
 
     public async Task<ActionResultDto<TestingContextCreatedDto>> CreateTestingContext(CreateTestingContextRequestDto request)
     {
-        var deletionResult = await EndTestingContext();
+        var deletionResult = _testingContext.ContextId != null
+            ? await EndTestingContext()
+            : null;
         var newContextId = Guid.NewGuid();
         var result = new ActionResultDto<TestingContextCreatedDto>
         {
@@ -57,21 +59,20 @@ public class TestingService : ITestingService
 
     public async Task<ActionResultDto<DeleteTestingContextDto>> EndTestingContext()
     {
-        var contextId = GetContextCookie();
-        if (contextId == null)
+        if (_testingContext.ContextId == null)
         {
             return _serviceHelper.NotFound<DeleteTestingContextDto>("No testing context in session");
         }
 
         var result = new DeleteTestingContextDto
         {
-            ContextId = contextId.Value,
+            ContextId = _testingContext.ContextId.Value,
             RemovedTables = new List<string>(),
         };
 
         try
         {
-            await DeleteTables(contextId.Value, result);
+            await DeleteTables(result);
 
             DeleteContextCookie();
         }
@@ -83,15 +84,9 @@ public class TestingService : ITestingService
         return _serviceHelper.Success("Testing context removed", result);
     }
 
-    public Guid? GetContextCookie()
+    public Guid? GetTestingContextId()
     {
-        var requestCookie = _httpContextAccessor.HttpContext?.Request.Cookies[ContextIdCookieName];
-        if (!string.IsNullOrEmpty(requestCookie) && Guid.TryParse(requestCookie, out var contextId))
-        {
-            return contextId;
-        }
-
-        return null;
+        return _testingContext.ContextId;
     }
 
     private async Task ProvisionTables(CreateTestingContextRequestDto request, Guid newContextId,
@@ -152,7 +147,7 @@ public class TestingService : ITestingService
         }
 
         var genericType = typeof(TableProvisioningService<>).MakeGenericType(dataType);
-        return (ITableProvisioningService)Activator.CreateInstance(genericType, _tableClientFactory);
+        return (ITableProvisioningService)Activator.CreateInstance(genericType, _tableClientFactory, _testingContext);
     }
 
     private async IAsyncEnumerable<string> GetAllTableNames()
@@ -166,13 +161,13 @@ public class TestingService : ITestingService
 
     private IAsyncEnumerable<string> GetExistingTableNames()
     {
-        return GetAllTableNames().WhereAsync(name => !name.Contains(TestTableDelimiter));
+        return GetAllTableNames().WhereAsync(_testingContext.IsRealTable);
     }
 
-    private async Task DeleteTables(Guid contextId, DeleteTestingContextDto result)
+    private async Task DeleteTables(DeleteTestingContextDto result)
     {
         var tablesToDelete = GetAllTableNames()
-            .WhereAsync(name => name.EndsWith($"{TestTableDelimiter}{EscapeContextId(contextId)}"));
+            .WhereAsync(name => _testingContext.IsTestingTable(name));
 
         await foreach (var tableName in tablesToDelete)
         {
@@ -182,7 +177,7 @@ public class TestingService : ITestingService
 
     private async Task DeleteTable(string tableName, DeleteTestingContextDto result)
     {
-        if (!tableName.Contains(TestTableDelimiter))
+        if (_testingContext.IsRealTable(tableName))
         {
             throw new ArgumentException($"Cannot delete real table: {tableName}");
         }
@@ -190,21 +185,6 @@ public class TestingService : ITestingService
         var tableServiceClient = _tableServiceClientFactory.CreateTableServiceClient();
         await tableServiceClient.DeleteTableAsync(tableName);
         result.RemovedTables.Add(tableName);
-    }
-
-    private static string GetTableName(string tableName, Guid? contextId)
-    {
-        return $"{tableName}{TestTableDelimiter}{EscapeContextId(contextId)}";
-    }
-
-    private static string EscapeContextId(Guid? contextId)
-    {
-        if (contextId == null)
-        {
-            return null;
-        }
-
-        return contextId.ToString().Replace("-", "");
     }
 
     private void SetContextCookie(Guid contextId)
@@ -217,13 +197,13 @@ public class TestingService : ITestingService
             Secure = true,
             SameSite = SameSiteMode.None,
         };
-        response?.Cookies.Append(ContextIdCookieName, contextId.ToString(), options);
+        response?.Cookies.Append(TestingContext.ContextIdCookieName, contextId.ToString(), options);
     }
 
     private void DeleteContextCookie()
     {
         var response = _httpContextAccessor.HttpContext?.Response;
-        response?.Cookies.Delete(ContextIdCookieName);
+        response?.Cookies.Delete(TestingContext.ContextIdCookieName);
     }
 
     private interface ITableProvisioningService
@@ -237,17 +217,19 @@ public class TestingService : ITestingService
     private class TableProvisioningService<T> : ITableProvisioningService where T : class, ITableEntity, new()
     {
         private readonly ITableClientFactory _tableClientFactory;
-        
-        public TableProvisioningService(ITableClientFactory tableClientFactory)
+        private readonly ITestingContext _testingContext;
+
+        public TableProvisioningService(ITableClientFactory tableClientFactory, ITestingContext testingContext)
         {
             _tableClientFactory = tableClientFactory;
+            _testingContext = testingContext;
         }
 
         public async Task ProvisionTable(string sourceTableName, Guid newContextId, bool copyExistingTable,
             Dictionary<string,object>[] rows, ActionResultDto<TestingContextCreatedDto> result)
         {
             var sourceTableClient = _tableClientFactory.CreateTableClient(sourceTableName);
-            var newTableName = GetTableName(sourceTableName, newContextId);
+            var newTableName = _testingContext.GetTableName(sourceTableName, newContextId);
             var destinationTableClient = _tableClientFactory.CreateTableClient(newTableName);
             await destinationTableClient.CreateIfNotExistsAsync();
 

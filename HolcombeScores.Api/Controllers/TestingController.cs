@@ -17,7 +17,7 @@ public class TestingController : Controller
     [HttpGet("/api/Testing")]
     public Guid? GetTestingContext()
     {
-        return _testingService.GetContextCookie();
+        return _testingService.GetTestingContextId();
     }
 
     [HttpPost("/api/Testing")]
