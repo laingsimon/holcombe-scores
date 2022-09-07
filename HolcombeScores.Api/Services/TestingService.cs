@@ -11,19 +11,22 @@ public class TestingService : ITestingService
     private readonly ITableServiceClientFactory _tableServiceClientFactory;
     private readonly ITableClientFactory _tableClientFactory;
     private readonly ITestingContext _testingContext;
+    private readonly ILogger<TestingService> _logger;
 
     public TestingService(
         IHttpContextAccessor httpContextAccessor,
         IServiceHelper serviceHelper,
         ITableServiceClientFactory tableServiceClientFactory,
         ITableClientFactory tableClientFactory,
-        ITestingContext testingContext)
+        ITestingContext testingContext,
+        ILoggerFactory loggerFactory)
     {
         _httpContextAccessor = httpContextAccessor;
         _serviceHelper = serviceHelper;
         _tableServiceClientFactory = tableServiceClientFactory;
         _tableClientFactory = tableClientFactory;
         _testingContext = testingContext;
+        _logger = loggerFactory.CreateLogger<TestingService>();
     }
 
     public async Task<ActionResultDto<TestingContextCreatedDto>> CreateTestingContext(CreateTestingContextRequestDto request)
@@ -152,7 +155,7 @@ public class TestingService : ITestingService
         }
 
         var genericType = typeof(TableProvisioningService<>).MakeGenericType(dataType);
-        return (ITableProvisioningService)Activator.CreateInstance(genericType, _tableClientFactory);
+        return (ITableProvisioningService)Activator.CreateInstance(genericType, _tableClientFactory, _logger);
     }
 
     private async IAsyncEnumerable<string> GetAllTableNames()
@@ -220,10 +223,12 @@ public class TestingService : ITestingService
     private class TableProvisioningService<T> : ITableProvisioningService where T : class, ITableEntity, new()
     {
         private readonly ITableClientFactory _tableClientFactory;
+        private readonly ILogger<TestingService> _logger;
 
-        public TableProvisioningService(ITableClientFactory tableClientFactory)
+        public TableProvisioningService(ITableClientFactory tableClientFactory, ILogger<TestingService> logger)
         {
             _tableClientFactory = tableClientFactory;
+            _logger = logger;
         }
 
         public async Task ProvisionTable(string sourceTableName, ITestingContext newTestingContext, bool copyExistingTable,
@@ -233,6 +238,7 @@ public class TestingService : ITestingService
 
             try
             {
+                _logger.LogInformation("Provisioning table: {0}...", sourceTableName);
                 var sourceTableClient = _tableClientFactory.CreateTableClient(sourceTableName, notTestingContext);
                 var destinationTableClient = _tableClientFactory.CreateTableClient(sourceTableName, newTestingContext);
 
