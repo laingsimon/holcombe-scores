@@ -16,9 +16,14 @@ public class TableClientFactory : ITableClientFactory
 
     public TableClient CreateTableClient(string tableName)
     {
+        return CreateTableClient(tableName, _testingContext);
+    }
+
+    public TableClient CreateTableClient(string tableName, ITestingContext testingContext)
+    {
         var client = new TableClient(
             _repositoryContext.StorageUri,
-            _testingContext.GetTableName(tableName),
+            (testingContext ?? _testingContext).GetTableName(tableName),
             _repositoryContext.GetTableSharedKeyCredential());
 
         client.CreateIfNotExists();

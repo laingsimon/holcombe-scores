@@ -42,15 +42,20 @@ public class TestingService : ITestingService
             Success = true
         };
 
+        var newTestingContext = new TestingContext
+        {
+            ContextId = newContextId,
+        };
+
         try
         {
-            await ProvisionTables(request, newContextId, result);
+            await ProvisionTables(request, newTestingContext, result);
 
-            SetContextCookie(newContextId);
+            SetContextCookie(newTestingContext);
         }
         catch (Exception exc)
         {
-            result.Errors.Add(exc.Message);
+            result.Errors.Add(exc.ToString());
             result.Success = false;
         }
 
@@ -78,7 +83,7 @@ public class TestingService : ITestingService
         }
         catch (Exception exc)
         {
-            return _serviceHelper.Error<DeleteTestingContextDto>(exc.Message);
+            return _serviceHelper.Error<DeleteTestingContextDto>(exc.ToString());
         }
 
         return _serviceHelper.Success("Testing context removed", result);
@@ -89,7 +94,7 @@ public class TestingService : ITestingService
         return _testingContext.ContextId;
     }
 
-    private async Task ProvisionTables(CreateTestingContextRequestDto request, Guid newContextId,
+    private async Task ProvisionTables(CreateTestingContextRequestDto request, ITestingContext newTestingContext,
         ActionResultDto<TestingContextCreatedDto> result)
     {
         if (request.Tables == null)
@@ -97,7 +102,7 @@ public class TestingService : ITestingService
             // copy ALL tables according to request.CopyExistingTables
             if (request.CopyExistingTables == true)
             {
-                await CopyAllExistingTables(newContextId, result);
+                await CopyAllExistingTables(newTestingContext, result);
             }
 
             return;
@@ -115,14 +120,14 @@ public class TestingService : ITestingService
 
             await tableProvisioningService.ProvisionTable(
                 sourceTableName,
-                newContextId,
+                newTestingContext,
                 tableProvisionDetails.CopyExistingTable ?? request.CopyExistingTables ?? false, // default to NOT copying tables unless requested
                 tableProvisionDetails.Rows,
                 result);
         }
     }
 
-    private async Task CopyAllExistingTables(Guid newContextId, ActionResultDto<TestingContextCreatedDto> result)
+    private async Task CopyAllExistingTables(ITestingContext newTestingContext, ActionResultDto<TestingContextCreatedDto> result)
     {
         // find all the existing tables
         await foreach (var tableName in GetExistingTableNames())
@@ -134,7 +139,7 @@ public class TestingService : ITestingService
                 continue;
             }
 
-            await tableProvisioningService.ProvisionTable(tableName, newContextId, true, null, result);
+            await tableProvisioningService.ProvisionTable(tableName, newTestingContext, true, null, result);
         }
     }
 
@@ -147,7 +152,7 @@ public class TestingService : ITestingService
         }
 
         var genericType = typeof(TableProvisioningService<>).MakeGenericType(dataType);
-        return (ITableProvisioningService)Activator.CreateInstance(genericType, _tableClientFactory, _testingContext);
+        return (ITableProvisioningService)Activator.CreateInstance(genericType, _tableClientFactory);
     }
 
     private async IAsyncEnumerable<string> GetAllTableNames()
@@ -187,7 +192,7 @@ public class TestingService : ITestingService
         result.RemovedTables.Add(tableName);
     }
 
-    private void SetContextCookie(Guid contextId)
+    private void SetContextCookie(ITestingContext newTestingContext)
     {
         var response = _httpContextAccessor.HttpContext?.Response;
 
@@ -197,7 +202,7 @@ public class TestingService : ITestingService
             Secure = true,
             SameSite = SameSiteMode.None,
         };
-        response?.Cookies.Append(TestingContext.ContextIdCookieName, contextId.ToString(), options);
+        response?.Cookies.Append(TestingContext.ContextIdCookieName, newTestingContext.ContextId.ToString(), options);
     }
 
     private void DeleteContextCookie()
@@ -208,56 +213,61 @@ public class TestingService : ITestingService
 
     private interface ITableProvisioningService
     {
-        Task ProvisionTable(string sourceTableName, Guid newContextId, bool copyExistingTable,
+        Task ProvisionTable(string sourceTableName, ITestingContext newTestingContext, bool copyExistingTable,
             Dictionary<string,object>[] rows, ActionResultDto<TestingContextCreatedDto> result);
-
-        Task AddRows(TableClient destinationTableClient, Dictionary<string,object>[] rows, ActionResultDto<TestingContextCreatedDto> result);
     }
 
     private class TableProvisioningService<T> : ITableProvisioningService where T : class, ITableEntity, new()
     {
         private readonly ITableClientFactory _tableClientFactory;
-        private readonly ITestingContext _testingContext;
 
-        public TableProvisioningService(ITableClientFactory tableClientFactory, ITestingContext testingContext)
+        public TableProvisioningService(ITableClientFactory tableClientFactory)
         {
             _tableClientFactory = tableClientFactory;
-            _testingContext = testingContext;
         }
 
-        public async Task ProvisionTable(string sourceTableName, Guid newContextId, bool copyExistingTable,
+        public async Task ProvisionTable(string sourceTableName, ITestingContext newTestingContext, bool copyExistingTable,
             Dictionary<string,object>[] rows, ActionResultDto<TestingContextCreatedDto> result)
         {
-            var sourceTableClient = _tableClientFactory.CreateTableClient(sourceTableName);
-            var newTableName = _testingContext.GetTableName(sourceTableName, newContextId);
-            var destinationTableClient = _tableClientFactory.CreateTableClient(newTableName);
-            await destinationTableClient.CreateIfNotExistsAsync();
+            var notTestingContext = new TestingContext();
 
-            if (!copyExistingTable)
+            try
             {
-                result.Messages.Add($"Created table {newTableName}, copied no data");
+                var sourceTableClient = _tableClientFactory.CreateTableClient(sourceTableName, notTestingContext);
+                var destinationTableClient = _tableClientFactory.CreateTableClient(sourceTableName, newTestingContext);
+
+                if (!copyExistingTable)
+                {
+                    result.Messages.Add($"Created table {destinationTableClient.Name}, copied no data");
+                    if (rows != null)
+                    {
+                        await AddRows(destinationTableClient, rows, result);
+                    }
+
+                    return;
+                }
+
+                var rowsCopied = 0;
+                await foreach (var sourceRow in sourceTableClient.QueryAsync<T>())
+                {
+                    await destinationTableClient.AddEntityAsync(sourceRow);
+                    rowsCopied++;
+                }
+
+                result.Messages.Add($"Copied {rowsCopied} rows to {destinationTableClient.Name} from {sourceTableClient.Name}");
+
                 if (rows != null)
                 {
                     await AddRows(destinationTableClient, rows, result);
                 }
-                return;
             }
-
-            var rowsCopied = 0;
-            await foreach (var sourceRow in sourceTableClient.QueryAsync<T>())
+            catch (Exception exc)
             {
-                await destinationTableClient.AddEntityAsync(sourceRow);
-                rowsCopied++;
-            }
-            result.Messages.Add($"Copied {rowsCopied} rows to {newTableName} from {sourceTableName}");
-
-            if (rows != null)
-            {
-                await AddRows(destinationTableClient, rows, result);
+                throw new InvalidOperationException($"Error provisioning table: {sourceTableName}", exc);
             }
         }
 
-        public async Task AddRows(TableClient destinationTableClient, Dictionary<string,object>[] rows, ActionResultDto<TestingContextCreatedDto> result)
+        private static async Task AddRows(TableClient destinationTableClient, Dictionary<string,object>[] rows, ActionResultDto<TestingContextCreatedDto> result)
         {
             var index = 0;
             foreach (var row in rows)
