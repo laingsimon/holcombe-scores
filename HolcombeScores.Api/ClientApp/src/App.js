@@ -5,7 +5,7 @@ import {Home} from './components/access/Home';
 import {TeamDetails} from './components/team/TeamDetails';
 import {GameDetails} from './components/game/GameDetails';
 import {Teams} from './components/team/Teams';
-import {AccessAdmin} from './components/access/AccessAdmin';
+import {Admin} from './components/admin/Admin';
 import {About} from './components/About';
 
 import './custom.css'
@@ -234,7 +234,7 @@ export default class App extends Component {
                 <Route path='/team/:teamId/:mode?' render={(props) => <TeamDetails {...(this.combineProps(props))} />} />
                 <Route path='/teams/:mode?' render={(props) => <Teams {...(this.combineProps(props))} />} />
                 <Route path='/game/:gameId/:mode?' render={(props) => <GameDetails {...(this.combineProps(props))} />} />
-                <Route path='/admin/:mode?' render={(props) => <AccessAdmin {...(this.combineProps(props))} />} />
+                <Route path='/admin/:mode?' render={(props) => <Admin {...(this.combineProps(props))} />} />
                 <Route path='/about' render={(props) => <About {...(this.combineProps(props))} />} />
             </Layout>
         );

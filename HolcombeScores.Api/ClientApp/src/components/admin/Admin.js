@@ -5,7 +5,7 @@ import {Access} from '../../api/access';
 import {Team} from '../../api/team';
 import {Alert} from '../Alert';
 import {AccessOverview} from './AccessOverview';
-import {RequestOverview} from './RequestOverview';
+import {RequestOverview} from '../access/RequestOverview';
 
 /*
 * Props:
@@ -15,7 +15,7 @@ import {RequestOverview} from './RequestOverview';
 * Events:
 * -none-
 */
-export class AccessAdmin extends Component {
+export class Admin extends Component {
     constructor (props) {
         super(props);
         const http = new Http(new Settings());
