@@ -9,7 +9,6 @@ import {Functions} from '../../functions';
 * Props:
 * - teams
 * - myAccess
-* - access
 *
 * Events:
 * - onAccessChanged(userId)
@@ -30,8 +29,6 @@ export class AccessOverview extends Component {
             adminPassCode: ''
         };
 
-        this.teams = this.props.teams;
-        this.myAccess = this.props.myAccess;
         this.userId = this.props.access.userId;
         this.self = this.userId === this.props.myAccess.userId;
 
@@ -43,6 +40,11 @@ export class AccessOverview extends Component {
         this.prepareImpersonateAccess = this.prepareImpersonateAccess.bind(this);
         this.adminPassCodeChanged = this.adminPassCodeChanged.bind(this);
         this.impersonate = this.impersonate.bind(this);
+
+        this.teamsMap = {};
+        this.props.teams.forEach(team => {
+            this.teamsMap[team.id] = team;
+        });
     }
 
     // events
@@ -78,7 +80,7 @@ export class AccessOverview extends Component {
             return;
         }
 
-        if (this.props.access.admin && !this.myAccess.admin) {
+        if (this.props.access.admin && !this.props.myAccess.admin) {
             alert('Only admins can delete other admin acceses');
             return;
         }
@@ -128,7 +130,7 @@ export class AccessOverview extends Component {
             return;
         }
 
-        if (!this.myAccess.admin) {
+        if (!this.props.myAccess.admin) {
             alert('Only admins can impersonate other acceses');
             return;
         }
@@ -277,7 +279,7 @@ export class AccessOverview extends Component {
                 <strong>{this.state.access.name}</strong> Teams: {this.renderTeams(this.state.access.teams)}
             </span>
             <span className="float-end">
-                {this.myAccess.admin && !this.props.access.revoked ? (<span className="form-check form-switch form-check-inline margin-right">
+                {this.props.myAccess.admin && !this.props.access.revoked ? (<span className="form-check form-switch form-check-inline margin-right">
                     <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                            checked={this.state.access.admin} onChange={this.adminChanged}/>
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Admin</label>
@@ -290,7 +292,7 @@ export class AccessOverview extends Component {
                 <button type="button"
                         className={`btn ${btnCancelClassName}`}
                         onClick={this.prepareCancelAccess}>{this.renderBackButton('cancel', '🗑', this.state.cancelling)}</button>
-                {this.props.isImpersonated || !this.myAccess.admin ? null : (<button type="button"
+                {this.props.isImpersonated || !this.props.myAccess.admin ? null : (<button type="button"
                         className={`btn ${btnImpersonateClassName}`}
                         onClick={this.prepareImpersonateAccess}>{this.renderBackButton('impersonate', '🕵️', this.state.impersonating)}</button>)}
             </span>
@@ -303,7 +305,7 @@ export class AccessOverview extends Component {
         return (<span className="separate-with-comma">
             {teamIds.map(teamId => {
                 return (<span key={teamId}>
-                    {this.props.teams[teamId].name}
+                    {this.teamsMap[teamId].name}
                 </span>);
             })}
         </span>);
