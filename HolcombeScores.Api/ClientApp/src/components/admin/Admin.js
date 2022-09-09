@@ -5,6 +5,7 @@ import {Access} from '../../api/access';
 import {Alert} from '../Alert';
 import {AccessAdmin} from './AccessAdmin';
 import {RequestAdmin} from './RequestAdmin';
+import {TestingAdmin} from './TestingAdmin';
 
 /*
 * Props:
@@ -84,6 +85,9 @@ export class Admin extends Component {
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/admin/access`} onClick={this.changeMode}>Access</a>
             </li>
+            <li className="nav-item">
+                <a className={`nav-link${this.state.mode === 'testing' ? ' active' : ''}`} href={`/admin/testing`} onClick={this.changeMode}>Testing</a>
+            </li>
         </ul>);
     }
 
@@ -114,6 +118,8 @@ export class Admin extends Component {
             component = (<RequestAdmin requests={this.state.requests} teams={this.props.teams} onRequestChanged={this.requestChanged} />);
         } else if (this.state.mode === 'access') {
             component = (<AccessAdmin allAccess={this.state.allAccess} myAccess={this.props.access} teams={this.props.teams} onAccessImpersonated={this.accessImpersonated} onAccessChanged={this.accessChanged} isImpersonated={this.props.isImpersonated} />);
+        } else if (this.state.mode === 'testing') {
+            component = (<TestingAdmin {...this.props} />);
         }
 
         return (<div>
