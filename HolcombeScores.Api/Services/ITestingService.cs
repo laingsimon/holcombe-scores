@@ -7,4 +7,6 @@ public interface ITestingService
     Task<ActionResultDto<TestingContextCreatedDto>> CreateTestingContext(CreateTestingContextRequestDto request);
     Task<ActionResultDto<DeleteTestingContextDto>> EndTestingContext();
     Guid? GetTestingContextId();
+    IAsyncEnumerable<TestingContextDetail> GetAllTestingContexts();
+    Task<ActionResultDto<DeleteTestingContextDto>> EndAllTestingContexts();
 }

@@ -20,6 +20,12 @@ public class TestingController : Controller
         return _testingService.GetTestingContextId();
     }
 
+    [HttpGet("/api/Testing/All")]
+    public IAsyncEnumerable<TestingContextDetail> GetTestingContexts()
+    {
+        return _testingService.GetAllTestingContexts();
+    }
+
     [HttpPost("/api/Testing")]
     public async Task<ActionResultDto<TestingContextCreatedDto>> CreateTestingContext(CreateTestingContextRequestDto request)
     {
@@ -30,5 +36,11 @@ public class TestingController : Controller
     public async Task<ActionResultDto<DeleteTestingContextDto>> EndTestingContext()
     {
         return await _testingService.EndTestingContext();
+    }
+
+    [HttpDelete("/api/Testing/All")]
+    public async Task<ActionResultDto<DeleteTestingContextDto>> EndAllTestingContexts()
+    {
+        return await _testingService.EndAllTestingContexts();
     }
 }

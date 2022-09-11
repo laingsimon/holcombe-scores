@@ -1,4 +1,6 @@
-﻿namespace HolcombeScores.Api.Services;
+﻿using System.Text.RegularExpressions;
+
+namespace HolcombeScores.Api.Services;
 
 public class TestingContext : ITestingContext
 {
@@ -34,6 +36,24 @@ public class TestingContext : ITestingContext
         return !tableName.Contains(TestTableDelimiter);
     }
 
+    public Guid? GetContextIdFromTableName(string tableName)
+    {
+        if (IsRealTable(tableName))
+        {
+            return null;
+        }
+
+        var match = Regex.Match(tableName, $@".+{TestTableDelimiter}(?<escapedContextId>.+)$");
+        if (!match.Success)
+        {
+            return null;
+        }
+
+        var escapedContextId = match.Groups["escapedContextId"].Value;
+        return UnescapeContextId(escapedContextId);
+    }
+
+
     private static string GetTableName(string tableName, Guid alternativeContextId)
     {
         return $"{tableName}{TestTableDelimiter}{EscapeContextId(alternativeContextId)}";
@@ -44,5 +64,10 @@ public class TestingContext : ITestingContext
         return contextId == null
             ? null
             : contextId.ToString().Replace("-", "");
+    }
+
+    private static Guid UnescapeContextId(string escaped)
+    {
+        return Guid.Parse($"{escaped[..8]}-{escaped[8..12]}-{escaped[12..16]}-{escaped[16..20]}-{escaped[20..]}");
     }
 }

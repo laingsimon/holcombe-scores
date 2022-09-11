@@ -11,6 +11,7 @@ public class TestingService : ITestingService
     private readonly ITableServiceClientFactory _tableServiceClientFactory;
     private readonly ITableClientFactory _tableClientFactory;
     private readonly ITestingContext _testingContext;
+    private readonly IAccessService _accessService;
     private readonly ILogger<TestingService> _logger;
 
     public TestingService(
@@ -19,13 +20,15 @@ public class TestingService : ITestingService
         ITableServiceClientFactory tableServiceClientFactory,
         ITableClientFactory tableClientFactory,
         ITestingContext testingContext,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        IAccessService accessService)
     {
         _httpContextAccessor = httpContextAccessor;
         _serviceHelper = serviceHelper;
         _tableServiceClientFactory = tableServiceClientFactory;
         _tableClientFactory = tableClientFactory;
         _testingContext = testingContext;
+        _accessService = accessService;
         _logger = loggerFactory.CreateLogger<TestingService>();
     }
 
@@ -100,6 +103,76 @@ public class TestingService : ITestingService
     public Guid? GetTestingContextId()
     {
         return _testingContext.ContextId;
+    }
+
+    public async IAsyncEnumerable<TestingContextDetail> GetAllTestingContexts()
+    {
+        if (!await _accessService.IsAdmin())
+        {
+            // not permitted
+            yield break;
+        }
+
+        var details = new Dictionary<Guid, TestingContextDetail>();
+        await foreach (var testingTableName in GetAllTableNames().WhereAsync(t => !_testingContext.IsRealTable(t)))
+        {
+            var contextId = _testingContext.GetContextIdFromTableName(testingTableName);
+            if (contextId == null)
+            {
+                _logger.LogWarning("Unable to get context id from testing table: {0}", testingTableName);
+                continue;
+            }
+
+            if (!details.TryGetValue(contextId.Value, out var detail))
+            {
+                detail = new TestingContextDetail
+                {
+                    ContextId = contextId.Value,
+                    Tables = 0,
+                    Self = _testingContext.ContextId == contextId.Value,
+                };
+                details.Add(contextId.Value, detail);
+            }
+
+            detail.Tables++;
+        }
+
+        foreach (var contextDetail in details.Values)
+        {
+            yield return contextDetail;
+        }
+    }
+
+    public async Task<ActionResultDto<DeleteTestingContextDto>> EndAllTestingContexts()
+    {
+        if (!await _accessService.IsAdmin())
+        {
+            // not permitted
+            return _serviceHelper.NotPermitted<DeleteTestingContextDto>("Must be an admin to do this");
+        }
+
+        try
+        {
+            var result = new DeleteTestingContextDto
+            {
+                ContextId = _testingContext.ContextId.GetValueOrDefault(),
+                RemovedTables = new List<string>(),
+            };
+
+            await foreach (var testingTable in GetAllTableNames().WhereAsync(t => !_testingContext.IsRealTable(t)))
+            {
+                await DeleteTable(testingTable, result);
+            }
+
+            DeleteContextCookie();
+            DeleteContextRequiredCookie();
+
+            return _serviceHelper.Success("All testing tables removed and current session ended", result);
+        }
+        catch (Exception exc)
+        {
+            return _serviceHelper.Error<DeleteTestingContextDto>(exc.Message);
+        }
     }
 
     private async Task ProvisionTables(CreateTestingContextRequestDto request, ITestingContext newTestingContext,

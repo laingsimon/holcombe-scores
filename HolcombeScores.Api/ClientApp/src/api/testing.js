@@ -14,6 +14,14 @@ class Testing {
     stopTesting() {
         return this.http.delete(`/api/Testing`);
     }
+
+    getAllTestingContexts() {
+        return this.http.get(`/api/Testing/All`);
+    }
+
+    endAllTestingContexts() {
+        return this.http.delete(`/api/Testing/All`);
+    }
 }
 
 export { Testing };
