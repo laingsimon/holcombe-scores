@@ -77,16 +77,23 @@ export class TestingAdmin extends Component {
 
     render() {
         return (<div>
-            <p>Status: <b>{this.props.testing ? 'Testing data in use' : 'Production data in use'}</b></p>
+            <p>Status: <b>{this.props.testing ? `Testing data in use` : 'Production data in use'}</b></p>
             {this.state.error ? (<Alert errors={this.state.error} />) : null}
+            {this.props.testing ? this.renderContextOptions() : null}
             <div>
                 {this.props.testing ? null : (<button className="btn btn-warning margin-right" onClick={this.startTesting}>
                     {this.state.loading ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                     Start testing</button>)}
-                {this.props.testing ? (<button className="btn btn-secondary" onClick={this.endTesting}>
-                    {this.state.loading ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
-                    End testing</button>) : null}
             </div>
         </div>)
+    }
+
+    renderContextOptions() {
+        return (<div>
+            <p>Context: <b>{this.props.testing}</b></p>
+            <button className="btn btn-secondary" onClick={this.endTesting}>
+                {this.state.loading ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                End testing</button>
+        </div>);
     }
 }
