@@ -2,6 +2,8 @@
 
 public class TestingContextFactory : ITestingContextFactory
 {
+    public const string TestingContextRequiredName = "Testing-Context-Required";
+
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public TestingContextFactory(IHttpContextAccessor httpContextAccessor)
@@ -14,7 +16,25 @@ public class TestingContextFactory : ITestingContextFactory
         return new TestingContext
         {
             ContextId = GetContextCookie(),
+            TestingContextRequired = GetTestingContextRequired(),
         };
+    }
+
+    private bool GetTestingContextRequired()
+    {
+        var requestHeader = _httpContextAccessor.HttpContext?.Request.Headers[TestingContextRequiredName];
+        if (!string.IsNullOrEmpty(requestHeader) && bool.TryParse(requestHeader, out var requiredViaHeader))
+        {
+            return requiredViaHeader;
+        }
+
+        var requestCookie = _httpContextAccessor.HttpContext?.Request.Cookies[TestingContextRequiredName];
+        if (!string.IsNullOrEmpty(requestCookie) && bool.TryParse(requestCookie, out var requiredViaCookie))
+        {
+            return requiredViaCookie;
+        }
+
+        return false;
     }
 
     private Guid? GetContextCookie()

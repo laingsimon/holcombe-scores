@@ -6,20 +6,20 @@ public class TestingContext : ITestingContext
 
     private const string TestTableDelimiter = "TEST";
 
-    public bool IsTesting => ContextId != null;
-
     public Guid? ContextId { get; set; }
+
+    public bool TestingContextRequired { get; set; }
 
     public string GetTableName(string tableName)
     {
+        if (ContextId == null && TestingContextRequired)
+        {
+            throw new InvalidOperationException("TestingContext is required but not supplied");
+        }
+
         return ContextId == null
             ? tableName
             : GetTableName(tableName, ContextId.Value);
-    }
-
-    public string GetTableName(string tableName, Guid alternativeContextId)
-    {
-        return $"{tableName}{TestTableDelimiter}{EscapeContextId(alternativeContextId)}";
     }
 
     public bool IsTestingTable(string tableName)
@@ -32,6 +32,11 @@ public class TestingContext : ITestingContext
     public bool IsRealTable(string tableName)
     {
         return !tableName.Contains(TestTableDelimiter);
+    }
+
+    private static string GetTableName(string tableName, Guid alternativeContextId)
+    {
+        return $"{tableName}{TestTableDelimiter}{EscapeContextId(alternativeContextId)}";
     }
 
     private static string EscapeContextId(Guid? contextId)

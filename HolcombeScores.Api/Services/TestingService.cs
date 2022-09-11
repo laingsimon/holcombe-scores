@@ -55,6 +55,10 @@ public class TestingService : ITestingService
             await ProvisionTables(request, newTestingContext, result);
 
             SetContextCookie(newTestingContext);
+            if (request.SetContextRequiredCookie)
+            {
+                SetContextRequiredCookie();
+            }
         }
         catch (Exception exc)
         {
@@ -83,6 +87,7 @@ public class TestingService : ITestingService
             await DeleteTables(result);
 
             DeleteContextCookie();
+            DeleteContextRequiredCookie();
         }
         catch (Exception exc)
         {
@@ -208,10 +213,29 @@ public class TestingService : ITestingService
         response?.Cookies.Append(TestingContext.ContextIdCookieName, newTestingContext.ContextId.ToString(), options);
     }
 
+    private void SetContextRequiredCookie()
+    {
+        var response = _httpContextAccessor.HttpContext?.Response;
+
+        var options = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+        };
+        response?.Cookies.Append(TestingContextFactory.TestingContextRequiredName, "true", options);
+    }
+
     private void DeleteContextCookie()
     {
         var response = _httpContextAccessor.HttpContext?.Response;
         response?.Cookies.Delete(TestingContext.ContextIdCookieName);
+    }
+
+    private void DeleteContextRequiredCookie()
+    {
+        var response = _httpContextAccessor.HttpContext?.Response;
+        response?.Cookies.Delete(TestingContextFactory.TestingContextRequiredName);
     }
 
     private interface ITableProvisioningService

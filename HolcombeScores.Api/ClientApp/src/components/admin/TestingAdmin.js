@@ -33,7 +33,8 @@ export class TestingAdmin extends Component {
 
         try {
             await this.testingApi.startTesting({
-                copyExistingTables: true
+                copyExistingTables: true,
+                setContextRequiredCookie: true
             });
 
             await this.props.reloadAll();
