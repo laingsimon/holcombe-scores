@@ -159,7 +159,7 @@ namespace HolcombeScores.Api.Services
         public async IAsyncEnumerable<AccessDto> GetAllAccess()
         {
             var myAccess = await GetAccess();
-            if (!myAccess.Admin && !myAccess.Manager)
+            if (myAccess == null || (!myAccess.Admin && !myAccess.Manager))
             {
                 yield break;
             }
@@ -204,6 +204,11 @@ namespace HolcombeScores.Api.Services
         public async Task<bool> CanAccessTeam(Guid teamId)
         {
             var access = await GetAccess();
+            if (access == null)
+            {
+                return false;
+            }
+
             return (access.Admin || (access.Teams != null && access.Teams.Contains(teamId))) && access.Revoked == null;
         }
 
@@ -298,7 +303,7 @@ namespace HolcombeScores.Api.Services
         public async IAsyncEnumerable<AccessRequestDto> GetAccessRequests()
         {
             var myAccess = await GetAccess();
-            if (!myAccess.Admin && !myAccess.Manager)
+            if (myAccess == null || (!myAccess.Admin && !myAccess.Manager))
             {
                 yield break;
             }
@@ -312,7 +317,7 @@ namespace HolcombeScores.Api.Services
         public async Task<ActionResultDto<AccessDto>> RemoveAccess(Guid userId, Guid? teamId)
         {
             var myAccess = await GetAccessInternal();
-            if (!myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId)
+            if (myAccess == null || (!myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId))
             {
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
@@ -366,7 +371,7 @@ namespace HolcombeScores.Api.Services
         public async Task<ActionResultDto<AccessDto>> RevokeAccess(AccessResponseDto accessResponseDto)
         {
             var myAccess = await GetAccessInternal();
-            if (!myAccess.Admin && !myAccess.Manager)
+            if (myAccess == null || (!myAccess.Admin && !myAccess.Manager))
             {
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
