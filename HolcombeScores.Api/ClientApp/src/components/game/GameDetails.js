@@ -171,7 +171,7 @@ export class GameDetails extends Component {
                 <Link className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    to={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</Link>
             </li>)}
-            {this.state.gameDeleted || this.props.game.started ? null : (<li className="nav-item">
+            {true || this.state.gameDeleted || this.props.game.started ? null : (<li className="nav-item">
                 <Link className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
                    to={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</Link>
             </li>)}
@@ -219,9 +219,9 @@ export class GameDetails extends Component {
             component = (<EditGame {...this.props} onChanged={this.gameChanged} onDeleted={this.gameDeleted} />);
         } else if (this.state.mode === 'play') {
             component = (<PlayGame {...this.props} onGoalScored={this.goalScored} onGoalNotRecorded={this.goalNotRecorded} />);
-        } else if (this.state.mode === 'availability') {
+        /*} else if (this.state.mode === 'availability') {
             component = (<EditAvailability {...this.props} onAvailabilityChanged={this.availabilityChanged} />);
-        }
+        */}
 
         return (<div>
             {this.renderHeading()}
