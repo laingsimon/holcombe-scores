@@ -10,7 +10,6 @@ import {PlayGame} from './PlayGame';
 import {Score} from './Score';
 import {ViewGame} from './ViewGame';
 import { Link } from 'react-router-dom';
-import {EditAvailability} from './EditAvailability';
 import {Functions} from '../../functions';
 import {QRCodeSVG} from 'qrcode.react';
 
