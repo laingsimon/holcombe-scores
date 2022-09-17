@@ -4,8 +4,7 @@ namespace HolcombeScores.Api.Services;
 
 public class TestingContext : ITestingContext
 {
-    internal const string ContextIdCookieName = "HS_TestingContext";
-
+    public const string ContextIdCookieName = "HS_TestingContext";
     private const string TestTableDelimiter = "TEST";
 
     public Guid? ContextId { get; set; }

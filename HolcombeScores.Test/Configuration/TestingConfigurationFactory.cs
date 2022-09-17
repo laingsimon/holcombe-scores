@@ -1,17 +1,17 @@
-namespace HolcombeScores.Test;
+namespace HolcombeScores.Test.Configuration;
 
-public class TestingContextFactory
+public class TestingConfigurationFactory
 {
-    private static readonly ITestingContext Default = new TestingContext
+    private static readonly ITestingConfiguration Default = new TestingConfiguration
     {
         ApiAddress = "https://localhost:5001",
         UiAddress = "https://localhost:44419",
         AdminPassCode = "test",
     };
 
-    public ITestingContext Create()
+    public ITestingConfiguration Create()
     {
-        return new TestingContext
+        return new TestingConfiguration
         {
             AdminPassCode = GetConfig("AdminPassCode") ?? Default.AdminPassCode,
             ApiAddress = GetConfig("ApiAddress") ?? Default.ApiAddress,

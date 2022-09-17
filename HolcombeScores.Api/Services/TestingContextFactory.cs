@@ -22,12 +22,6 @@ public class TestingContextFactory : ITestingContextFactory
 
     private bool GetTestingContextRequired()
     {
-        var requestHeader = _httpContextAccessor.HttpContext?.Request.Headers[TestingContextRequiredName];
-        if (!string.IsNullOrEmpty(requestHeader) && bool.TryParse(requestHeader, out var requiredViaHeader))
-        {
-            return requiredViaHeader;
-        }
-
         var requestCookie = _httpContextAccessor.HttpContext?.Request.Cookies[TestingContextRequiredName];
         if (!string.IsNullOrEmpty(requestCookie) && bool.TryParse(requestCookie, out var requiredViaCookie))
         {

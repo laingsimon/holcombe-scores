@@ -1,6 +1,6 @@
-namespace HolcombeScores.Test;
+namespace HolcombeScores.Test.Configuration;
 
-public interface ITestingContext
+public interface ITestingConfiguration
 {
     string ApiAddress { get; }
     string UiAddress { get; }
