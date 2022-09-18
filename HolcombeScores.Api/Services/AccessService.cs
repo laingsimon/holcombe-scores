@@ -348,9 +348,15 @@ namespace HolcombeScores.Api.Services
         public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid teamId, Guid? userId)
         {
             var myAccess = await GetAccessInternal();
+            var myUserId = GetImpersonatingUserId() ?? GetRequestUserId() ?? Guid.Empty;
             if (myAccess != null && !myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId)
             {
                 return _serviceHelper.NotAnAdmin<AccessRequestDto>();
+            }
+
+            if (userId != myUserId && (myAccess == null || !myAccess.Admin))
+            {
+                return _serviceHelper.NotPermitted<AccessRequestDto>("Not permitted to modify another users access requests");
             }
 
             var accessRequest = await _accessRepository.GetAccessRequest(userId ?? GetImpersonatingUserId() ?? GetRequestUserId() ?? Guid.Empty, teamId);
