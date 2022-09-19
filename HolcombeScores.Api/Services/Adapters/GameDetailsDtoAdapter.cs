@@ -7,12 +7,10 @@ namespace HolcombeScores.Api.Services.Adapters
     public class GameDetailsDtoAdapter : IGameDetailsDtoAdapter
     {
         private readonly IPlayerRepository _playerRepository;
-        private readonly IConfiguration _configuration;
 
-        public GameDetailsDtoAdapter(IPlayerRepository playerRepository, IConfiguration configuration)
+        public GameDetailsDtoAdapter(IPlayerRepository playerRepository)
         {
             _playerRepository = playerRepository;
-            _configuration = configuration;
         }
 
         public Game AdaptToGame(GameDetailsDto gameDetailsDto)
@@ -32,7 +30,6 @@ namespace HolcombeScores.Api.Services.Adapters
                 Training = gameDetailsDto.Training,
                 Address = gameDetailsDto.Address,
                 Postponed = gameDetailsDto.Postponed,
-                GoogleMapsApiKey = _configuration["GoogleMapsApiKey"],
             };
         }
 
