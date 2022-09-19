@@ -175,6 +175,18 @@ namespace HolcombeScores.Api.Services
                     updates.Add("Type updated");
                 }
 
+                if (game.Postponed != update.Postponed)
+                {
+                    game.Postponed = update.Postponed;
+                    updates.Add("Postponed updated");
+                }
+
+                if (game.Address != update.Address)
+                {
+                    game.Address = update.Address;
+                    updates.Add("Address updated");
+                }
+
                 if (update.Date != default && game.Date != update.Date)
                 {
                     game.Date = update.Date;

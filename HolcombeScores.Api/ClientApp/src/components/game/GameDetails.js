@@ -247,12 +247,12 @@ export class GameDetails extends Component {
 
         const content = this.props.game.training
             ? `training at ${this.props.game.playingAtHome ? 'home' : this.props.game.opponent} on ${date.toDateString()}`
-            : `${location} to ${this.props.game.opponent} on ${date.toDateString()}`
+            : `${location} to ${this.props.game.opponent} on ${date.toDateString()}`;
 
         return (<h4>
-            {this.props.team.name}: {content}
+            {this.props.team.name}: {content}{this.props.game.postponed ? ' (postponed)' : null}
             &nbsp;
-            {this.props.game.training ? null : (<Score playingAtHome={this.props.game.playingAtHome} score={score}/>)}
+            {this.props.game.training || this.props.game.postponed ? null : (<Score playingAtHome={this.props.game.playingAtHome} score={score}/>)}
         </h4>);
     }
 }

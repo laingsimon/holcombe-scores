@@ -35,6 +35,8 @@ namespace HolcombeScores.Api.Services.Adapters
                 Training = game.Training,
                 RecordGoalToken = context.RecordGoalToken,
                 Started = context.HasStarted,
+                Address = game.Address,
+                Postponed = game.Postponed,
             };
         }
 
@@ -53,6 +55,8 @@ namespace HolcombeScores.Api.Services.Adapters
                 PlayingAtHome = game.PlayingAtHome,
                 TeamId = game.TeamId,
                 Training = game.Training,
+                Address = game.Address,
+                Postponed = game.Postponed,
             };
         }
 
