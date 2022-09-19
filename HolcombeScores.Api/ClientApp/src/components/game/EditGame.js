@@ -36,7 +36,7 @@ export class EditGame extends Component {
         this.updateGame = this.updateGame.bind(this);
         this.deleteGame = this.deleteGame.bind(this);
         this.onPlayerSelected = this.onPlayerSelected.bind(this);
-        this.beforePlayNewGame = this.beforePlayNewGame.bind(this);
+        this.beforeViewGame = this.beforeViewGame.bind(this);
         this.reset = this.reset.bind(this);
     }
 
@@ -131,7 +131,7 @@ export class EditGame extends Component {
         });
     }
 
-    async beforePlayNewGame(event) {
+    async beforeViewGame(event) {
         event.preventDefault();
         this.setState({
             loadingGame: true
@@ -166,7 +166,7 @@ export class EditGame extends Component {
                 return (<div>
                     <Alert messages={result.messages} warnings={result.warnings} errors={result.errors}/>
                     <hr/>
-                    <Link to={`/game/${result.outcome.id}/play`} onClick={this.beforePlayNewGame} className="btn btn-primary margin-right">
+                    <Link to={`/game/${result.outcome.id}/view`} onClick={this.beforeViewGame} className="btn btn-primary margin-right">
                         {this.state.loadingGame ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
                         {this.state.loadingGame ? 'Loading game...' : 'Play game'}
                     </Link>

@@ -7,11 +7,13 @@ namespace HolcombeScores.Api.Services.Adapters
     {
         private readonly IGoalDtoAdapter _goalAdapter;
         private readonly IGamePlayerDtoAdapter _gamePlayerAdapter;
+        private readonly IConfiguration _configuration;
 
-        public GameDtoAdapter(IGoalDtoAdapter goalAdapter, IGamePlayerDtoAdapter gamePlayerAdapter)
+        public GameDtoAdapter(IGoalDtoAdapter goalAdapter, IGamePlayerDtoAdapter gamePlayerAdapter, IConfiguration configuration)
         {
             _goalAdapter = goalAdapter;
             _gamePlayerAdapter = gamePlayerAdapter;
+            _configuration = configuration;
         }
 
         public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals, AdapterContext context)
@@ -35,8 +37,9 @@ namespace HolcombeScores.Api.Services.Adapters
                 Training = game.Training,
                 RecordGoalToken = context.RecordGoalToken,
                 Started = context.HasStarted,
-                Address = game.Address,
+                Address = game.PlayingAtHome ? _configuration["HOME_ADDRESS"] : game.Address,
                 Postponed = game.Postponed,
+                GoogleMapsApiKey = _configuration["GOOGLE_MAPS_API_KEY"],
             };
         }
 
