@@ -58,7 +58,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 HolcombeGoal = goal.HolcombeGoal,
                 GameId = goal.GameId,
                 GoalId = goal.GoalId,
-                AssistedByPlayerId = goal.AssistedBy?.PlayerId
+                AssistedByPlayerId = goal.AssistedBy?.Id
             };
         }
     }
