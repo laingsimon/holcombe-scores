@@ -39,7 +39,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 GoalId = goal.GoalId,
                 AssistedBy = assistPlayer == null
                     ? null
-                    _playerAdapter.Adapt(assistPlayer)
+                    : _playerAdapter.Adapt(assistPlayer)
             };
         }
 
