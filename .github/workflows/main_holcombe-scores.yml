@@ -44,7 +44,7 @@ jobs:
           AZURE_TABLE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_TABLE_STORAGE_ACCOUNT_NAME }}
           AZURE_TABLE_STORAGE_KEY: ${{ secrets.AZURE_TABLE_STORAGE_KEY }}
           AdminPassCode: ${{ secrets.AdminPassCode }}
-          GoogleMapsApiKey: ${{ secrets.GOOGLEMAPSAPIKEY }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
