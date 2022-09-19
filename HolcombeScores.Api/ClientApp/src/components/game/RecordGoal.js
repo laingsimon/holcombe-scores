@@ -20,7 +20,8 @@ export class RecordGoal extends Component {
         const http = new Http(new Settings());
         this.gameApi = new Game(http);
         this.state = {
-            latestScorer: false
+            latestScorer: false,
+            assistedByPlayerId: null
         };
 
         this.recordGoal = this.recordGoal.bind(this);
@@ -65,7 +66,8 @@ export class RecordGoal extends Component {
                 this.props.player
                     ? this.props.player.id
                     : null,
-                this.props.game.recordGoalToken);
+                this.props.game.recordGoalToken,
+                this.state.assistedByPlayerId);
 
             if (result.success) {
                 await this.props.reloadGame(this.props.game.id);
