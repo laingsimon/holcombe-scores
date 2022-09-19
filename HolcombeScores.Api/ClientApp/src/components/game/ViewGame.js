@@ -11,6 +11,8 @@ import {GoalOverview} from './GoalOverview';
 * */
 // noinspection JSUnresolvedVariable
 export class ViewGame extends Component {
+    static API_KEY = window.googleMapsApiKey;
+
     constructor(props) {
         super(props);
         this.goalRemoved = this.goalRemoved.bind(this);
@@ -53,7 +55,15 @@ export class ViewGame extends Component {
     renderAddress(address) {
         return (<div>
             <h5>Address</h5>
-            <span>{address}</span>
+            <p>{address}</p>
+            <iframe
+                title="Game address - HolcombeScores"
+                width="450"
+                height="250"
+                referrerPolicy="no-referrer-when-downgrade"
+                src={`https://www.google.com/maps/embed/v1/place?key=${ViewGame.API_KEY}&q=${address}`}
+                allowFullScreen>
+            </iframe>
             <br />
         </div>)
     }
