@@ -29,7 +29,6 @@ public class SocialService : ISocialService
         var socialDetail = await GetSocialDetail(pathWithoutStatic);
 
         html = html.Replace("${redirectTime}", redirect ? "0" : "-1");
-        html = html.Replace("${GoogleMapsAPIKey}", _configuration["GoogleMapsAPIKey"]);
 
         return socialDetail
             .ToVariables()
