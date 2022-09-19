@@ -57,6 +57,7 @@ export class ViewGame extends Component {
             <h5>Address</h5>
             <p>{address}</p>
             <iframe
+                title="Game address - HolcombeScores"
                 width="450"
                 height="250"
                 referrerPolicy="no-referrer-when-downgrade"
