@@ -5,7 +5,7 @@ import {Home} from './components/access/Home';
 import {TeamDetails} from './components/team/TeamDetails';
 import {GameDetails} from './components/game/GameDetails';
 import {Teams} from './components/team/Teams';
-import {AccessAdmin} from './components/access/AccessAdmin';
+import {Admin} from './components/admin/Admin';
 import {About} from './components/About';
 
 import './custom.css'
@@ -16,7 +16,8 @@ import {Team} from './api/team';
 import {Functions} from './functions';
 import {Game} from './api/game';
 import {Player} from './api/player';
-import {Availability} from "./api/availability";
+import {Availability} from './api/availability';
+import {Testing} from './api/testing';
 
 export default class App extends Component {
     constructor(props) {
@@ -27,6 +28,7 @@ export default class App extends Component {
         this.gameApi = new Game(http);
         this.playerApi = new Player(http);
         this.availabilityApi = new Availability(http);
+        this.testingApi = new Testing(http);
         this.state = {
             loading: true,
             subProps: null,
@@ -39,14 +41,31 @@ export default class App extends Component {
         this.combineProps = this.combineProps.bind(this);
         this.updateGame = this.updateGame.bind(this);
         this.reloadAvailability = this.reloadAvailability.bind(this);
+        this.reloadTestingState = this.reloadTestingState.bind(this);
     }
 
     async componentDidMount() {
         await this.reloadAll();
     }
 
+    async reloadTestingState() {
+        const subProps = Object.assign({}, this.state.subProps);
+        subProps.testing = await this.getTestingState();
+
+        this.setState({
+            subProps: subProps
+        });
+    }
+
+    async getTestingState() {
+        const testingId = await this.testingApi.getTestingId();
+        return testingId;
+    }
+
     async updateGame(game) {
         const subProps = Object.assign({}, this.state.subProps);
+        subProps.testing = await this.getTestingState();
+
         if (subProps.game && subProps.game.id === game.id) {
             subProps.game = game;
         }
@@ -64,6 +83,7 @@ export default class App extends Component {
 
     async reloadAvailability(teamId, gameId) {
         const subProps = Object.assign({}, this.state.subProps);
+        subProps.testing = await this.getTestingState();
 
         subProps.gameAvailability = await this.availabilityApi.get(teamId, gameId);
         subProps.gameAvailability.sort(Functions.playerAvailabilitySortFunction);
@@ -75,6 +95,7 @@ export default class App extends Component {
 
     async reloadGame(id) {
         const subProps = Object.assign({}, this.state.subProps);
+        subProps.testing = await this.getTestingState();
         subProps.game = await this.gameApi.getGame(id);
         if (subProps.game) {
             subProps.game.found = true;
@@ -109,6 +130,7 @@ export default class App extends Component {
 
     async reloadTeam(id, reloadTeam, reloadPlayers, reloadGames) {
         const subProps = Object.assign({}, this.state.subProps);
+        subProps.testing = await this.getTestingState();
         const existingTeam = subProps.teams.filter(t => t.id === id)[0];
         subProps.team = reloadTeam || !existingTeam ? await this.teamApi.getTeam(id) : existingTeam;
 
@@ -149,6 +171,7 @@ export default class App extends Component {
 
     async reloadTeams() {
         const subProps = Object.assign({}, this.state.subProps);
+        subProps.testing = await this.getTestingState();
         subProps.teams = await this.teamApi.getAllTeams();
         subProps.teams.forEach(t => t.asAt = new Date());
         subProps.teams.sort(Functions.teamSortFunction);
@@ -160,6 +183,7 @@ export default class App extends Component {
 
     async reloadAccess() {
         const subProps = Object.assign({}, this.state.subProps);
+        subProps.testing = await this.getTestingState();
         const access = await this.accessApi.getMyAccess();
         subProps.access = access.access;
         subProps.requests = access.requests;
@@ -186,7 +210,9 @@ export default class App extends Component {
                 reloadGame: this.reloadGame,
                 reloadAll: this.reloadAll,
                 updateGame: this.updateGame,
-                reloadAvailability: this.reloadAvailability
+                reloadAvailability: this.reloadAvailability,
+                reloadTestingState: this.reloadTestingState,
+                testing: await this.getTestingState()
             },
             loading: false
         });
@@ -208,7 +234,7 @@ export default class App extends Component {
                 <Route path='/team/:teamId/:mode?' render={(props) => <TeamDetails {...(this.combineProps(props))} />} />
                 <Route path='/teams/:mode?' render={(props) => <Teams {...(this.combineProps(props))} />} />
                 <Route path='/game/:gameId/:mode?' render={(props) => <GameDetails {...(this.combineProps(props))} />} />
-                <Route path='/admin/:mode?' render={(props) => <AccessAdmin {...(this.combineProps(props))} />} />
+                <Route path='/admin/:mode?' render={(props) => <Admin {...(this.combineProps(props))} />} />
                 <Route path='/about' render={(props) => <About {...(this.combineProps(props))} />} />
             </Layout>
         );

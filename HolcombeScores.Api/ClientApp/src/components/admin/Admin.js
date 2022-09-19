@@ -2,40 +2,36 @@ import React, { Component } from 'react';
 import {Http} from '../../api/http';
 import {Settings} from '../../api/settings';
 import {Access} from '../../api/access';
-import {Team} from '../../api/team';
 import {Alert} from '../Alert';
-import {AccessOverview} from './AccessOverview';
-import {RequestOverview} from './RequestOverview';
+import {AccessAdmin} from './AccessAdmin';
+import {RequestAdmin} from './RequestAdmin';
+import {TestingAdmin} from './TestingAdmin';
 
 /*
 * Props:
 * - access
 * - teams
+* - reloadAll()
 *
 * Events:
 * -none-
 */
-export class AccessAdmin extends Component {
+export class Admin extends Component {
     constructor (props) {
         super(props);
         const http = new Http(new Settings());
         this.accessApi = new Access(http);
-        this.teamApi = new Team(http);
         this.state = {
             loading: true,
             error: null,
             mode: props.match.params.mode || 'requests',
-            teams: {},
             requests: null,
             allAccess: null,
-            processing: [],
-            unimpersonating: false
         };
         this.changeMode = this.changeMode.bind(this);
         this.accessChanged = this.accessChanged.bind(this);
         this.requestChanged = this.requestChanged.bind(this);
         this.accessImpersonated = this.accessImpersonated.bind(this);
-        this.unimpersonate = this.unimpersonate.bind(this);
     }
 
     //event handlers
@@ -76,38 +72,6 @@ export class AccessAdmin extends Component {
         window.history.replaceState(null, event.target.textContent, url);
     }
 
-    async unimpersonate() {
-        if (!window.confirm('Are you sure you want to unimpersonate?')) {
-            return;
-        }
-
-        this.setState({
-            unimpersonating: true
-        });
-
-        try {
-            await this.accessApi.unimpersonate();
-
-            this.setState({
-                loading: true
-            });
-
-            await this.props.reloadAll();
-
-            this.setState({
-                unimpersonating: false,
-                loading: false,
-                allAccess: await this.getAllAccess(true),
-            });
-        } catch (e) {
-            this.setState({
-                unimpersonating: false
-            });
-
-            alert(e);
-        }
-    }
-
     async componentDidMount() {
         await this.requestData();
     }
@@ -120,6 +84,9 @@ export class AccessAdmin extends Component {
             </li>
             <li className="nav-item">
                 <a className={`nav-link${this.state.mode === 'access' ? ' active' : ''}`} href={`/admin/access`} onClick={this.changeMode}>Access</a>
+            </li>
+            <li className="nav-item">
+                <a className={`nav-link${this.state.mode === 'testing' ? ' active' : ''}`} href={`/admin/testing`} onClick={this.changeMode}>Testing</a>
             </li>
         </ul>);
     }
@@ -145,57 +112,21 @@ export class AccessAdmin extends Component {
             return (<Alert warnings={[ 'This service is only available for managers and administrators.' ]} />);
         }
 
+        let component = (<div>Unknown mode {this.state.mode}</div>)
+
         if (this.state.mode === 'requests') {
-            return this.renderRequests();
-        }
-        if (this.state.mode === 'access') {
-            return this.renderAccess();
+            component = (<RequestAdmin requests={this.state.requests} teams={this.props.teams} onRequestChanged={this.requestChanged} />);
+        } else if (this.state.mode === 'access') {
+            component = (<AccessAdmin allAccess={this.state.allAccess} myAccess={this.props.access} teams={this.props.teams} onAccessImpersonated={this.accessImpersonated} onAccessChanged={this.accessChanged} isImpersonated={this.props.isImpersonated} />);
+        } else if (this.state.mode === 'testing') {
+            component = (<TestingAdmin {...this.props} />);
         }
 
-        return (<div>Unknown mode: {this.state.mode}</div>);
-    }
-
-    renderAccess() {
         return (<div>
             {this.renderNav()}
             <br />
-            <h5>Active</h5>
-            <div className="list-group">
-                {this.state.allAccess.filter(a => !a.revoked).map(access => this.renderAccessOverview(access))}
-            </div>
-            <h5>Canceled</h5>
-            <div className="list-group">
-                {this.state.allAccess.filter(a => a.revoked).map(access => this.renderAccessOverview(access))}
-            </div>
-            {this.props.isImpersonated ? (<button className="btn btn-secondary" onClick={this.unimpersonate}>
-                {this.state.unimpersonating ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
-                Unimpersonate
-            </button>) : null}
+            {component}
         </div>);
-    }
-
-    renderAccessOverview(access) {
-        return (<AccessOverview key={access.userId} onAccessChanged={this.accessChanged} onAccessRevoked={this.accessChanged} access={access} teams={this.state.teams}
-                        myAccess={this.props.access} onAccessImpersonated={this.accessImpersonated} />);
-    }
-
-    renderRequests() {
-        return (<div>
-            {this.renderNav()}
-            <br />
-            <h5>Pending: {this.state.requests.filter(r => !r.rejected).length}</h5>
-            <div className="list-group">
-                {this.state.requests.filter(r => !r.rejected).map(request => this.renderRequest(request))}
-            </div>
-            <h5>Rejected: {this.state.requests.filter(r => r.rejected).length}</h5>
-            <div className="list-group">
-                {this.state.requests.filter(r => r.rejected).map(request => this.renderRequest(request))}
-            </div>
-        </div>);
-    }
-
-    renderRequest(request) {
-        return (<RequestOverview key={request.userId + ':' + request.teamId} request={request} teams={this.state.teams} onRequestChanged={this.requestChanged} onRequestDeleted={this.requestChanged} />);
     }
 
     //api
@@ -215,16 +146,10 @@ export class AccessAdmin extends Component {
 
     async requestData() {
         try {
-            const teamsMap = {};
-            this.props.teams.forEach(team => {
-                teamsMap[team.id] = team;
-            });
-
             this.setState({
                 loading: false,
                 requests: await this.getAccessRequests(),
-                allAccess: await this.getAllAccess(),
-                teams: teamsMap
+                allAccess: await this.getAllAccess()
             });
         } catch (e) {
             console.error(e);

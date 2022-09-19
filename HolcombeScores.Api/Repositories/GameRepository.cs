@@ -10,11 +10,11 @@ namespace HolcombeScores.Api.Repositories
         private readonly TypedTableClient<GamePlayer> _gamePlayerTableClient;
         private readonly TypedTableClient<Goal> _goalTableClient;
 
-        public GameRepository(ITableServiceClientFactory tableServiceClientFactory)
+        public GameRepository(ITableClientFactory tableClientFactory)
         {
-            _gameTableClient = new TypedTableClient<Game>(tableServiceClientFactory.CreateTableClient("Game"));
-            _gamePlayerTableClient = new TypedTableClient<GamePlayer>(tableServiceClientFactory.CreateTableClient("GamePlayer"));
-            _goalTableClient = new TypedTableClient<Goal>(tableServiceClientFactory.CreateTableClient("Goal"));
+            _gameTableClient = new TypedTableClient<Game>(tableClientFactory.CreateTableClient("Game"));
+            _gamePlayerTableClient = new TypedTableClient<GamePlayer>(tableClientFactory.CreateTableClient("GamePlayer"));
+            _goalTableClient = new TypedTableClient<Goal>(tableClientFactory.CreateTableClient("Goal"));
         }
 
         public IAsyncEnumerable<Game> GetAll(Guid? teamId)

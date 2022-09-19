@@ -10,10 +10,10 @@ namespace HolcombeScores.Api.Repositories
         private readonly TypedTableClient<Access> _accessTableClient;
         private readonly TypedTableClient<AccessRequest> _accessRequestTableClient;
 
-        public AccessRepository(ITableServiceClientFactory tableServiceClientFactory)
+        public AccessRepository(ITableClientFactory tableClientFactory)
         {
-            _accessTableClient = new TypedTableClient<Access>(tableServiceClientFactory.CreateTableClient("Access"));
-            _accessRequestTableClient = new TypedTableClient<AccessRequest>(tableServiceClientFactory.CreateTableClient("AccessRequest"));
+            _accessTableClient = new TypedTableClient<Access>(tableClientFactory.CreateTableClient("Access"));
+            _accessRequestTableClient = new TypedTableClient<AccessRequest>(tableClientFactory.CreateTableClient("AccessRequest"));
         }
 
         public IAsyncEnumerable<Access> GetAllAccess(Guid[] teamIds = null)

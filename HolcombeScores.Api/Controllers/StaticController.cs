@@ -15,9 +15,30 @@ namespace HolcombeScores.Api.Controllers
         }
 
         [HttpGet(UrlPrefix + "/{url1}")]
-        [HttpGet(UrlPrefix + "/{url1}/{url2?}")]
+        // ReSharper disable UnusedParameter.Global
+        public async Task<ContentResult> Html(string url1)
+            // ReSharper restore UnusedParameter.Global
+        {
+            return await GenerateHtml();
+        }
+
+        [HttpGet(UrlPrefix + "/{url1}/{url2}")]
+        // ReSharper disable UnusedParameter.Global
+        public async Task<ContentResult> Html(string url1, string url2)
+            // ReSharper restore UnusedParameter.Global
+        {
+            return await GenerateHtml();
+        }
+
         [HttpGet(UrlPrefix + "/{url1}/{url2}/{url3}")]
+        // ReSharper disable UnusedParameter.Global
         public async Task<ContentResult> Html(string url1, string url2, string url3)
+            // ReSharper restore UnusedParameter.Global
+        {
+            return await GenerateHtml();
+        }
+
+        private async Task<ContentResult> GenerateHtml()
         {
             var path = Request.Path.ToUriComponent();
             var redirect = true;

@@ -29,6 +29,7 @@ export class RequestOverview extends Component {
         this.rejectRequest = this.rejectRequest.bind(this);
         this.approveRequest = this.approveRequest.bind(this);
         this.reasonChanged = this.reasonChanged.bind(this);
+        this.team = this.props.teams.filter(team => team.id === this.props.request.teamId)[0];
     }
 
     //event handlers
@@ -87,7 +88,6 @@ export class RequestOverview extends Component {
 
     render() {
         const requestedDate = new Date(this.props.request.requested);
-        const team = this.props.teams[this.props.request.teamId];
         const btnClassName = this.state.processing
             ? 'btn-light'
             : this.state.mode === 'view'
@@ -98,7 +98,7 @@ export class RequestOverview extends Component {
             : (<button type="button" className={`btn ${btnClassName}`} onClick={this.prepareRejectRequest}>❓</button>);
 
         return (<div className="list-group-item list-group-item-action flex-column align-items-start">
-            <span>Name: <strong>{this.props.request.name}</strong>, Team: {team.name}, Requested: {requestedDate.toLocaleString()}</span>
+            <span>Name: <strong>{this.props.request.name}</strong>, Team: {this.team.name}, Requested: {requestedDate.toLocaleString()}</span>
             <span className="float-end">
                 {this.state.processing || !this.props.request.rejected ? null : (<button type="button" className={`btn ${this.state.processing ? 'btn-light' : 'btn-danger'} margin-right`} onClick={this.deleteRequest}>🗑</button>)}
                 {this.props.request.rejected ? null : respondRequestButton}

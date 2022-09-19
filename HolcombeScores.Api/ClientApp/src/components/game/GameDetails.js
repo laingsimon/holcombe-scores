@@ -12,6 +12,7 @@ import {ViewGame} from './ViewGame';
 import { Link } from 'react-router-dom';
 import {Functions} from '../../functions';
 import {QRCodeSVG} from 'qrcode.react';
+import {ShareIcon} from "../ShareIcon";
 
 // noinspection JSUnresolvedVariable
 /*
@@ -176,7 +177,7 @@ export class GameDetails extends Component {
             </li>)}
             <li className="nav-item">
                 <a className="nav-link" onClick={this.toggleSharingDetail}
-                      href={`/game/${this.gameId}/share`}>↗ Share</a>
+                      href={`/game/${this.gameId}/share`}><ShareIcon /></a>
                 {this.state.showSharingDetail ? this.renderSharingComponent() : null}
             </li>
         </ul>);

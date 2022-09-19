@@ -1,6 +1,11 @@
 class Http {
     constructor(settings) {
         this.settings = settings;
+        this.isTestingContextExpected = false;
+    }
+
+    expectTestingContext(expectation) {
+        this.isTestingContextExpected = !!expectation;
     }
 
     get(relativeUrl) {
@@ -35,7 +40,10 @@ class Http {
                 method: httpMethod,
                 mode: 'cors',
                 body: JSON.stringify(content),
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Testing-Context-Required': this.isTestingContextExpected
+                },
                 credentials: 'include'
             }).then(response => response.json());
         }
@@ -43,7 +51,10 @@ class Http {
         return await fetch(absoluteUrl, {
             method: httpMethod,
             mode: 'cors',
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Testing-Context-Required': this.isTestingContextExpected
+            }
         })
             .then(response => response.json())
             .catch(e => console.error('ERROR: ' + e));

@@ -19,6 +19,7 @@ namespace HolcombeScores.Api
             services.AddScoped<IAccessRepository, AccessRepository>();
             services.AddScoped<ITeamRepository, TeamRepository>();
             services.AddScoped<ITableServiceClientFactory, TableServiceClientFactory>();
+            services.AddScoped<ITableClientFactory, TableClientFactory>();
             services.AddScoped<IGameDetailsDtoAdapter, GameDetailsDetailsDtoAdapter>();
             services.AddScoped<IGoalDtoAdapter, GoalDtoAdapter>();
             services.AddScoped<IGameService, GameService>();
@@ -31,6 +32,11 @@ namespace HolcombeScores.Api
             services.AddScoped<IAvailabilityService, AvailabilityService>();
             services.AddScoped<ISocialService, SocialService>();
             services.AddScoped<ISocialDetailRepository, SocialDetailRepository>();
+            services.AddScoped(AzureRepositoryContextFactory.Create);
+            services.AddScoped<IAzureRepositoryContextFactory, AzureRepositoryContextFactory>();
+            services.AddScoped<ITestingService, TestingService>();
+            services.AddScoped(TestingContextFactory.Create);
+            services.AddScoped<ITestingContextFactory, TestingContextFactory>();
 
             services.AddSingleton<IServiceHelper, ServiceHelper>();
             services.AddSingleton<IGamePlayerDtoAdapter, GamePlayerDtoAdapter>();
