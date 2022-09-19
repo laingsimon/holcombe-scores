@@ -40,6 +40,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Address = game.PlayingAtHome ? _configuration["HOME_ADDRESS"] : game.Address,
                 Postponed = game.Postponed,
                 GoogleMapsApiKey = _configuration["GOOGLE_MAPS_API_KEY"],
+                HasStarted = context.HasStarted,
             };
         }
 
