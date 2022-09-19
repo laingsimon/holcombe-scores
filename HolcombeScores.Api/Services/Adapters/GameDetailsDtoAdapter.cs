@@ -7,7 +7,7 @@ namespace HolcombeScores.Api.Services.Adapters
     public class GameDetailsDtoAdapter : IGameDetailsDtoAdapter
     {
         private readonly IPlayerRepository _playerRepository;
-        private readonly IConfiguration _configuration
+        private readonly IConfiguration _configuration;
 
         public GameDetailsDtoAdapter(IPlayerRepository playerRepository, IConfiguration configuration)
         {
