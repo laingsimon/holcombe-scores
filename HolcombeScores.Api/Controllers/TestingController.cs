@@ -15,9 +15,12 @@ public class TestingController : Controller
     }
 
     [HttpGet("/api/Testing")]
-    public Guid? GetTestingContext()
+    public TestingContextDto GetTestingContext()
     {
-        return _testingService.GetTestingContextId();
+        return new TestingContextDto
+        {
+            ContextId = _testingService.GetTestingContextId(),
+        };
     }
 
     [HttpGet("/api/Testing/All")]

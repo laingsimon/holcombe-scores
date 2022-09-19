@@ -3,8 +3,9 @@ class Testing {
         this.http = http;
     }
 
-    getTestingId() {
-        return this.http.get(`/api/Testing`);
+    async getTestingId() {
+        const contextObject = await this.http.get(`/api/Testing`);
+        return contextObject.contextId;
     }
 
     startTesting(request) {
