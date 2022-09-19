@@ -39,7 +39,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Started = context.HasStarted,
                 Address = game.Address,
                 Postponed = game.Postponed,
-                GoogleMapsApiKey = _configuration["GOOGLE_MAPS_API_KEY"],
+                GoogleMapsApiKey = _configuration["GOOGLE_MAPS_API_KEY"] ?? "unknown",
             };
         }
 
