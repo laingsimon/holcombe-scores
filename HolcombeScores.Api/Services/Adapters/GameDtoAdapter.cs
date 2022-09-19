@@ -37,9 +37,9 @@ namespace HolcombeScores.Api.Services.Adapters
                 Training = game.Training,
                 RecordGoalToken = context.RecordGoalToken,
                 Started = context.HasStarted,
-                Address = game.Address,
+                Address = game.PlayingAtHome ? _configuration["HOME_ADDRESS"] : game.Address,
                 Postponed = game.Postponed,
-                GoogleMapsApiKey = _configuration["GOOGLE_MAPS_API_KEY"] ?? "unknown",
+                GoogleMapsApiKey = _configuration["GOOGLE_MAPS_API_KEY"],
             };
         }
 
