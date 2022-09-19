@@ -20,7 +20,7 @@ namespace HolcombeScores.Api
             services.AddScoped<ITeamRepository, TeamRepository>();
             services.AddScoped<ITableServiceClientFactory, TableServiceClientFactory>();
             services.AddScoped<ITableClientFactory, TableClientFactory>();
-            services.AddScoped<IGameDetailsDtoAdapter, GameDetailsDetailsDtoAdapter>();
+            services.AddScoped<IGameDetailsDtoAdapter, GameDetailsDtoAdapter>();
             services.AddScoped<IGoalDtoAdapter, GoalDtoAdapter>();
             services.AddScoped<IGameService, GameService>();
             services.AddScoped<IPlayerService, PlayerService>();

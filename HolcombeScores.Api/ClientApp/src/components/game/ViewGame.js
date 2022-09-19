@@ -36,6 +36,7 @@ export class ViewGame extends Component {
 
         return (<div>
             <h6>Start time: {date.toLocaleTimeString()}</h6>
+            {game.playingAtHome || !game.address ? null : this.renderAddress(game.address)}
             {game.training ? null : (<div>
                 <h5>Goals</h5>
                 {this.renderGoals(game, runningScore)}
@@ -47,6 +48,14 @@ export class ViewGame extends Component {
                 </ul>
             </div>
         </div>);
+    }
+
+    renderAddress(address) {
+        return (<div>
+            <h5>Address</h5>
+            <span>{address}</span>
+            <br />
+        </div>)
     }
 
     renderGoals(game, runningScore) {

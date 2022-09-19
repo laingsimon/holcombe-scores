@@ -4,11 +4,11 @@ using HolcombeScores.Api.Repositories;
 
 namespace HolcombeScores.Api.Services.Adapters
 {
-    public class GameDetailsDetailsDtoAdapter : IGameDetailsDtoAdapter
+    public class GameDetailsDtoAdapter : IGameDetailsDtoAdapter
     {
         private readonly IPlayerRepository _playerRepository;
 
-        public GameDetailsDetailsDtoAdapter(IPlayerRepository playerRepository)
+        public GameDetailsDtoAdapter(IPlayerRepository playerRepository)
         {
             _playerRepository = playerRepository;
         }
@@ -28,6 +28,8 @@ namespace HolcombeScores.Api.Services.Adapters
                 PlayingAtHome = gameDetailsDto.PlayingAtHome,
                 TeamId = gameDetailsDto.TeamId,
                 Training = gameDetailsDto.Training,
+                Address = gameDetailsDto.Address,
+                Postponed = gameDetailsDto.Postponed,
             };
         }
 

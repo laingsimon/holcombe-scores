@@ -48,12 +48,12 @@ export class GameOverview extends Component {
         };
         const content = game.training
             ? `training at ${game.playingAtHome ? 'home' : game.opponent} on ${date.toDateString()}`
-            : `${location} to ${game.opponent} on ${date.toDateString()}`
+            : `${location} to ${game.opponent} on ${date.toDateString()}`;
 
         return (<Link to={`/game/${game.id}`} onClick={this.beforeNavigate} className="list-group-item d-flex justify-content-between align-items-center">
-            {content}
+            {content}{game.postponed ? ' (postponed)' : null}
             {this.state.navigating ? (<span className="float-end spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></span>) : null}
-            {game.training ? null : (<Score playingAtHome={game.playingAtHome} score={score} />)}
+            {game.training || game.postponed ? null : (<Score playingAtHome={game.playingAtHome} score={score} />)}
         </Link>);
     }
 }

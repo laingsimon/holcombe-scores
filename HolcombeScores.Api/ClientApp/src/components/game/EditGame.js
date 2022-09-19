@@ -235,12 +235,24 @@ export class EditGame extends Component {
                                name="playingAtHome" checked={this.state.proposed.playingAtHome}  onChange={this.valueChanged}/>
                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{this.state.proposed.training ? 'Training' : 'Playing'} at home</label>
                     </div>
-                    <div className="form-check form-switch">
+                    <div className="form-check form-switch margin-right">
                         <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                                name="training" checked={this.state.proposed.training}  onChange={this.valueChanged}/>
                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Training</label>
                     </div>
+                    {this.props.game ? (<div className="form-check form-switch margin-right">
+                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                               name="postponed" checked={this.state.proposed.postponed} onChange={this.valueChanged}/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Postponed</label>
+                    </div>) : null}
                 </div>
+                {this.state.proposed.playingAtHome ? null : (<div className="input-group mb-3">
+                    <div className="input-group-prepend">
+                        <span className="input-group-text" id="basic-addon3">Address</span>
+                    </div>
+                    <input readOnly={this.state.readOnly || this.state.saving || this.state.deleting} type="text" className="form-control" id="basic-url" aria-describedby="basic-addon3"
+                           name="address" value={this.state.proposed.address} onChange={this.valueChanged}/>
+                </div>)}
                 <div className="input-group mb-3">
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon3">📆 Date</span>
@@ -270,6 +282,7 @@ export class EditGame extends Component {
         let proposedGame = Object.assign({}, game);
         proposedGame.date = Functions.toLocalDateTime(new Date(game.date));
         proposedGame.players = {};
+        proposedGame.address = proposedGame.address || '';
 
         delete proposedGame.squad; //remove squad to prevent confusion between players (dict) and squad (array)
 
@@ -286,8 +299,8 @@ export class EditGame extends Component {
             const team = this.props.team;
             const proposed = this.state.proposed;
             const apiFunction = this.props.game
-                ? async () => await this.gameApi.updateGame(game.id, team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training)
-                : async () => await this.gameApi.createGame(team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training);
+                ? async () => await this.gameApi.updateGame(game.id, team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training, proposed.address, proposed.postponed)
+                : async () => await this.gameApi.createGame(team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training, proposed.address);
 
             const result = await apiFunction();
 
@@ -327,7 +340,9 @@ export class EditGame extends Component {
         return {
             opponent: '',
             playingAtHome: true,
-            date: new Date().toISOString().substring(0, 10) + 'T11:00'
+            date: new Date().toISOString().substring(0, 10) + 'T11:00',
+            address: '',
+            postponed: false
         };
     }
 }
