@@ -252,7 +252,7 @@ export class GameDetails extends Component {
         return (<h4>
             {this.props.team.name}: {content}{this.props.game.postponed ? ' (postponed)' : null}
             &nbsp;
-            {this.props.game.training || this.props.game.postponed || !game.hasStarted ? null : (<Score playingAtHome={this.props.game.playingAtHome} score={score}/>)}
+            {this.props.game.training || this.props.game.postponed || !this.props.game.hasStarted ? null : (<Score playingAtHome={this.props.game.playingAtHome} score={score}/>)}
         </h4>);
     }
 }
