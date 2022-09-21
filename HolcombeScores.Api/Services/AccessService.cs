@@ -140,7 +140,7 @@ namespace HolcombeScores.Api.Services
                 var adapted = _recoverAccessDtoAdapter.Adapt(access);
                 if (adapted.RecoveryId == recoverAccessDto.RecoveryId)
                 {
-                    return await RecoverAccess(access);
+                    return await RecoverAccess(access, recoverAccessDto.Admin);
                 }
             }
 
@@ -149,7 +149,7 @@ namespace HolcombeScores.Api.Services
                 var adapted = _recoverAccessDtoAdapter.Adapt(accessRequest);
                 if (adapted.RecoveryId == recoverAccessDto.RecoveryId)
                 {
-                    return await RecoverAccess(accessRequest);
+                    return await RecoverAccess(accessRequest, recoverAccessDto.Admin);
                 }
             }
 
@@ -615,7 +615,7 @@ namespace HolcombeScores.Api.Services
             return _accessRepository.GetAccessRequests(userId.Value);
         }
 
-        private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access)
+        private async Task<ActionResultDto<AccessDto>> RecoverAccess(Access access, bool recoverAsAdmin)
         {
             if (access.Revoked != null)
             {
@@ -624,13 +624,18 @@ namespace HolcombeScores.Api.Services
 
             var newToken = Guid.NewGuid().ToString();
             await _accessRepository.UpdateAccessToken(access.Token, newToken);
+            if (recoverAsAdmin)
+            {
+                access.Admin = true;
+                await _accessRepository.UpdateAccess(access);
+            }
 
             SetCookies(newToken, access.UserId);
 
             return _serviceHelper.Success("Access recovered", _accessDtoAdapter.Adapt(access));
         }
 
-        private async Task<ActionResultDto<AccessDto>> RecoverAccess(AccessRequest accessRequest)
+        private async Task<ActionResultDto<AccessDto>> RecoverAccess(AccessRequest accessRequest, bool recoverAsAdmin)
         {
             var newToken = Guid.NewGuid().ToString();
             await _accessRepository.UpdateAccessRequestToken(accessRequest.Token, newToken);
@@ -645,7 +650,7 @@ namespace HolcombeScores.Api.Services
 
             var newAccess = new Access
             {
-               Admin = false,
+               Admin = recoverAsAdmin,
                Manager = false,
                Granted = DateTime.UtcNow,
                Name = accessRequest.Name,
