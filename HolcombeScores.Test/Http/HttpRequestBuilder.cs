@@ -97,7 +97,8 @@ public class HttpRequestBuilder
         var cookies = new CookieContainer();
         var httpClient = new HttpClient(new HttpClientHandler
         {
-            CookieContainer = cookies
+            CookieContainer = cookies,
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
         });
         var request = new HttpRequestMessage(Method, $"{_baseUri}{RelativeUri}");
 

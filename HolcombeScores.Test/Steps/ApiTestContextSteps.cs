@@ -44,9 +44,9 @@ public class ApiTestContextSteps
             .WithData(HttpMethod.Post, MediaTypeNames.Application.Json, json)
             .Send();
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), string.IsNullOrEmpty(response.Body) ? "<Empty body>" : response.Body);
         var result = JsonConvert.DeserializeObject<ActionResultDto<TestingContextCreatedDto>>(response.Body!);
-        Assert.That(result!.Success, Is.True);
+        Assert.That(result!.Success, Is.True, response.Body);
         _suiteContext = new ApiSuiteContext(result.Outcome.ContextId, testingConfiguration, apiInstance);
         featureContext.TestingConfiguration = _suiteContext.TestingConfiguration;
         featureContext.TestContextId = _suiteContext.TestContextId!.Value;
@@ -73,7 +73,7 @@ public class ApiTestContextSteps
                 .Send();
 
             featureContext.TestContextId = Guid.Empty;
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), string.IsNullOrEmpty(response.Body) ? "<Empty body>" : response.Body);
             suiteContext.ApiInstance.Dispose();
         }
     }
