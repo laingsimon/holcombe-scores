@@ -19,60 +19,65 @@ public class JsonSteps : StepBase
     [Then(@"the response has an array with (\d+) elements")]
     public async Task ThenTheResponseHasAnArrayWithElementCount(int count)
     {
-        Response ??= await RequestBuilder.Send();
+        var response = await GetResponse();
 
-        Assert.That(Response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
-        Assert.That(Response.Body, Is.Not.Null.Or.Empty);
-        Assert.That(Response.Body, Does.StartWith("["));
+        Assert.That(response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
+        Assert.That(response.Body, Is.Not.Null.Or.Empty);
+        Assert.That(response.Body, Does.StartWith("["));
         try
         {
-            var array = JsonSerializer.Deserialize<object[]>(Response.Body!);
+            var array = JsonSerializer.Deserialize<object[]>(response.Body!);
             Assert.That(array!.Length, Is.EqualTo(count));
         }
         catch (JsonException exc)
         {
-            Assert.Fail(exc.Message + "\n\nStatusCode: " + Response?.StatusCode + "\n" + Response?.Body);
+            Assert.Fail(exc.Message + "\n\nStatusCode: " + response.StatusCode + "\n" + response?.Body);
         }
     }
 
     [Then("the response has the following properties")]
     public async Task ThenTheResponseHasTheFollowingProperties(Table properties)
     {
-        Response ??= await RequestBuilder.Send();
+        var response = await GetResponse();
 
-        Assert.That(Response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
-        Assert.That(Response.Body, Is.Not.Null.Or.Empty);
-        Assert.That(Response.Body, Does.StartWith("{"));
-        Assert.That(Response.Body!, new MatchesJsonPropertiesConstraint(SupplantValues(properties), true));
+        Assert.That(response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
+        Assert.That(response.Body, Is.Not.Null.Or.Empty);
+        Assert.That(response.Body, Does.StartWith("{"));
+        Assert.That(response.Body!, new MatchesJsonPropertiesConstraint(SupplantValues(properties), true), () =>
+        {
+            return $"Response body was {response.Body}";
+        });
     }
 
     [Then("the response has an array element with the following properties")]
     public async Task ThenTheResponseHasAnArrayElementWithTheFollowingProperties(Table properties)
     {
-        Response ??= await RequestBuilder.Send();
+        var response = await GetResponse();
 
-        Assert.That(Response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
-        Assert.That(Response.Body, Is.Not.Null.Or.Empty);
-        Assert.That(Response.Body, Does.StartWith("["));
+        Assert.That(response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
+        Assert.That(response.Body, Is.Not.Null.Or.Empty);
+        Assert.That(response.Body, Does.StartWith("["));
         try
         {
-            var array = JArray.Parse(Response.Body!).Select(t => t.ToString());
+            var array = JArray.Parse(response.Body!).Select(t => t.ToString());
             Assert.That(array, Has.Some.MatchingJson(SupplantValues(properties), false));
         }
         catch (JsonException exc)
         {
-            Assert.Fail(exc.Message + "\n\nStatusCode: " + Response?.StatusCode + "\n" + Response?.Body);
+            Assert.Fail(exc.Message + "\n\nStatusCode: " + response?.StatusCode + "\n" + response?.Body);
         }
     }
 
-    [Then(@"the property (.+) is stashed")]
-    public async Task ThenThePropertyIsStashed(string propertyPath)
+    [Then(@"the property (.+) is stashed as (.+)")]
+    public async Task ThenThePropertyIsStashed(string propertyPath, string stashName)
     {
-        Response ??= await RequestBuilder.Send();
+        var response = await GetResponse();
 
-        Assert.That(Response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
+        Assert.That(response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
 
-        var json = JToken.Parse(Response.Body!);
-        Stash = json.SelectToken(propertyPath)!.Value<string>()!;
+        var json = JToken.Parse(response.Body!);
+        var selectedElement = json.SelectToken(propertyPath);
+        Assert.That(selectedElement, Is.Not.Null, $"Json element not found at path: {propertyPath} from {response.Body}");
+        Stash[stashName] = selectedElement!.Value<string>()!;
     }
 }

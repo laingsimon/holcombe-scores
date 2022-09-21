@@ -1,4 +1,5 @@
-﻿using HolcombeScores.Test.Configuration;
+﻿using System.Text.RegularExpressions;
+using HolcombeScores.Test.Configuration;
 using HolcombeScores.Test.Contexts;
 using HolcombeScores.Test.Http;
 using TechTalk.SpecFlow;
@@ -18,11 +19,7 @@ public abstract class StepBase
 
     protected ITestingConfiguration TestingConfiguration => _scenarioContext.TestingConfiguration;
 
-    protected string Stash
-    {
-        get => _scenarioContext.Stash;
-        set => _scenarioContext.Stash = value;
-    }
+    protected Dictionary<string, string> Stash => _scenarioContext.Stash;
 
     protected HttpRequestBuilder RequestBuilder
     {
@@ -30,10 +27,9 @@ public abstract class StepBase
         set => _scenarioContext.RequestBuilder = value;
     }
 
-    protected HttpResponse? Response
+    protected async Task<HttpResponse> GetResponse()
     {
-        get => _scenarioContext.Response;
-        set => _scenarioContext.Response = value;
+        return await _scenarioContext.RequestBuilder.GetResponse();
     }
 
     protected Table SupplantValues(Table properties, string? adminPassCode = null)
@@ -51,14 +47,21 @@ public abstract class StepBase
 
     protected string SupplantValues(string value, string? adminPassCode = null)
     {
-        if (value.Contains("${AdminPassCode}") && string.IsNullOrEmpty(adminPassCode))
+        var replacementValues = new Dictionary<string, string>(Stash)
         {
-            throw new InvalidOperationException("AdminPassCode requested to be transformed but value not supplied");
+            { "ScenarioUniqueId", _scenarioContext.ScenarioUniqueId },
+            { "UniqueId", Guid.NewGuid().ToString() },
+            { "TestContextId", TestContextId.ToString()! }
+        };
+
+        if (!string.IsNullOrEmpty(adminPassCode))
+        {
+            replacementValues.Add("AdminPassCode", adminPassCode);
         }
 
-        return value
-            .Replace("${AdminPassCode}", adminPassCode)
-            .Replace("${Stash}", value.Contains("${Stash}") ? Stash : "")
-            .Replace("${TestContextId}", TestContextId.ToString());
+        return Regex.Replace(value, @"\$\{([a-z0-9]+)\}", group =>
+            replacementValues.TryGetValue(group.Groups[1].Value, out value!)
+                ? value
+                : group.Name, RegexOptions.IgnoreCase);
     }
 }

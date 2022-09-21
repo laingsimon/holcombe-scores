@@ -86,12 +86,12 @@ Tests for when unapproved requests are sent to the API
     # grab the recoveryId for the created request
         Given a GET request is sent to the api route /api/Access/Recover
         Then the response has an array with 1 elements
-        And the property [0].recoveryId is stashed
+        And the property [0].recoveryId is stashed as recoveryId
 
     # try to recover the stashed recoveryId
         Then a POST request is sent to the api route /api/Access/Recover with the following content
         """
-          { "recoveryId": "${Stash}",
+          { "recoveryId": "${recoveryId}",
             "name": "Simon Laing",
             "type": "Access",
             "adminPassCode": "${AdminPassCode}" }
@@ -101,9 +101,9 @@ Tests for when unapproved requests are sent to the API
           | PropertyPath | Value |
           | success      | True  |
         And the response set the following cookies
-          | Name     | ValueRegex                | HttpOnly | Secure |
-          | HS_Token | ^[a-fA-F0-9\-]+$          | False    | True   |
-          | HS_User  | ^${Stash}-[a-fA-F0-9\-]+$ | False    | True   |
+          | Name     | ValueRegex                     | HttpOnly | Secure |
+          | HS_Token | ^[a-fA-F0-9\-]+$               | False    | True   |
+          | HS_User  | ^${recoveryId}-[a-fA-F0-9\-]+$ | False    | True   |
 
     Scenario: Access_RequestAccess
         Given a GET request is sent to the api route /api/Access/Request

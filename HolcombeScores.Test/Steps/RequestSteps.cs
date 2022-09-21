@@ -13,12 +13,12 @@ public class RequestSteps : StepBase
     {
     }
 
-    [Given(@"a (DELETE|GET) request is sent to the api route ([a-zA-Z0-9/\-_]+)")]
-    [Then(@"a (DELETE|GET) request is sent to the api route ([a-zA-Z0-9/\-_]+)")]
+    [Given(@"a (DELETE|GET) request is sent to the api route ([a-zA-Z0-9/\-_\{\}\$]+)")]
+    [Then(@"a (DELETE|GET) request is sent to the api route ([a-zA-Z0-9/\-_\{\}\$]+)")]
     public void ARequestIsSetToApiRoute(string method, string apiRoute)
     {
         RequestBuilder = NewRequestBuilder()
-            .ForUri(TestingConfiguration.ApiAddress, apiRoute)
+            .ForUri(TestingConfiguration.ApiAddress, SupplantValues(apiRoute))
             .WithMethod(GetHttpMethod(method));
     }
 
@@ -27,14 +27,13 @@ public class RequestSteps : StepBase
     public void ARequestIsSetToApiRoute(string method, string apiRoute, string body)
     {
         RequestBuilder = NewRequestBuilder()
-            .ForUri(TestingConfiguration.ApiAddress, apiRoute)
+            .ForUri(TestingConfiguration.ApiAddress,  SupplantValues(apiRoute))
             .WithData(GetHttpMethod(method), MediaTypeNames.Application.Json, SupplantValues(body, TestingConfiguration.AdminPassCode));
     }
 
     private HttpRequestBuilder NewRequestBuilder()
     {
-        Response = null;
-        return new HttpRequestBuilder(TestContextId);
+        return new HttpRequestBuilder(TestContextId, RequestBuilder);
     }
 
     private static HttpMethod GetHttpMethod(string method)

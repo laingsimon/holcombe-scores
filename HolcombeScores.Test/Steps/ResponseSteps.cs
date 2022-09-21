@@ -15,22 +15,22 @@ public class ResponseSteps : StepBase
     [Then(@"the response has the following headers")]
     public async Task ThenTheResponseHasTheFollowingHeaders(Table headers)
     {
-        Response ??= await RequestBuilder.Send();
+        var response = await GetResponse();
 
         foreach (var headerRow in SupplantValues(headers).Rows)
         {
             var headerName = headerRow["Header"];
             var headerValue = headerRow["Value"];
 
-            Assert.That(Response.Headers.Keys, Has.Member(headerName));
-            Assert.That(Response.Headers[headerName], Is.EqualTo(headerValue));
+            Assert.That(response.Headers.Keys, Has.Member(headerName));
+            Assert.That(response.Headers[headerName], Is.EqualTo(headerValue));
         }
     }
 
     [Then("the response set the following cookies")]
     public async Task ThenTheResponseHasTheFollowingCookies(Table cookieSpec)
     {
-        Response ??= await RequestBuilder.Send();
+        var response = await GetResponse();
 
         foreach (var cookieSpecRow in SupplantValues(cookieSpec).Rows)
         {
@@ -39,8 +39,8 @@ public class ResponseSteps : StepBase
             var httpOnly = bool.Parse(cookieSpecRow["HttpOnly"]);
             var secure = bool.Parse(cookieSpecRow["Secure"]);
 
-            var cookie = Response.Cookies.SingleOrDefault(c => c.Name.Equals(name));
-            Assert.That(cookie, Is.Not.Null);
+            var cookie = response.Cookies.SingleOrDefault(c => c.Name.Equals(name));
+            Assert.That(cookie, Is.Not.Null, $"Cookie not found with name {name}");
             Assert.That(cookie!.Value, Does.Match(valueRegex), $"Cookie {name} does not have correct value - was " + cookie.Value);
             Assert.That(cookie.HttpOnly, Is.EqualTo(httpOnly), $"Cookie {name} does not have correct HttpOnly value");
             Assert.That(cookie.Secure, Is.EqualTo(secure), $"Cookie {name} does not have correct Secure value");
@@ -50,24 +50,28 @@ public class ResponseSteps : StepBase
     [Then("the response is (.+)")]
     public async Task ThenTheResponseIs(string statusCodeName)
     {
-        Response ??= await RequestBuilder.Send();
+        var response = await GetResponse();
 
-        Assert.That(Response.StatusCode.ToString(), Is.EqualTo(statusCodeName), () =>
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response.StatusCode, Is.Not.Null);
+        Assert.That(response.StatusCode.ToString(), Is.EqualTo(statusCodeName), () =>
         {
             return @$"Expected: ""{statusCodeName}""
-But was:  ""{Response.StatusCode}""
-With the body:
-{Response.Body}";
+But was:  ""{response.StatusCode}""
+With a {RequestBuilder.Method} request to {RequestBuilder.RelativeUri} with the request body:
+{RequestBuilder.Content}
+With the response body:
+{response.Body}";
         });
     }
 
-    [Then("the cookie (.+) is stashed")]
-    public async Task ThenTheCookieIsStashed(string cookieName)
+    [Then("the cookie (.+) is stashed as (.+)")]
+    public async Task ThenTheCookieIsStashed(string cookieName, string stashName)
     {
-        Response ??= await RequestBuilder.Send();
+        var response = await GetResponse();
 
-        var cookie = Response.Cookies.SingleOrDefault(c => c.Name.Equals(cookieName));
+        var cookie = response.Cookies.SingleOrDefault(c => c.Name.Equals(cookieName));
         Assert.That(cookie, Is.Not.Null, $"Cookie {cookieName} was not found");
-        Stash = cookie!.Value;
+        Stash[stashName] = cookie!.Value;
     }
 }

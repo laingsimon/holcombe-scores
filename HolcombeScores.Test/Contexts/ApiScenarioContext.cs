@@ -15,6 +15,14 @@ public class ApiScenarioContext
         _scenarioContext = scenarioContext;
         _featureContext = featureContext;
         RequestBuilder = new HttpRequestBuilder(featureContext.TestContextId);
+        Stash = new Dictionary<string, string>();
+        ScenarioUniqueId = Guid.NewGuid().ToString();
+    }
+
+    public string ScenarioUniqueId
+    {
+        get => (string)_scenarioContext[nameof(ScenarioUniqueId)];
+        set => _scenarioContext[nameof(ScenarioUniqueId)] = value;
     }
 
     public HttpRequestBuilder RequestBuilder
@@ -23,27 +31,19 @@ public class ApiScenarioContext
         set => _scenarioContext[nameof(RequestBuilder)] = value;
     }
 
-    public HttpResponse? Response
-    {
-        get => _scenarioContext.ContainsKey(nameof(Response))
-            ? (HttpResponse)_scenarioContext[nameof(Response)]
-            : null;
-        set => _scenarioContext[nameof(Response)] = value;
-    }
-
     public ITestingConfiguration TestingConfiguration => _featureContext.TestingConfiguration;
 
     public Guid? TestContextId => _featureContext.TestContextId;
 
-    public string Stash
+    public Dictionary<string, string> Stash
     {
         get
         {
             var stashedValue = _scenarioContext.ContainsKey(nameof(Stash))
-                ? (string)_scenarioContext[nameof(Stash)]
+                ? (Dictionary<string, string>)_scenarioContext[nameof(Stash)]
                 : throw new InvalidOperationException("No value has been stashed");
             return stashedValue;
         }
-        set => _scenarioContext[nameof(Stash)] = value;
+        private set => _scenarioContext[nameof(Stash)] = value;
     }
 }
