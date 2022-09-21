@@ -62,7 +62,7 @@ export class GoalOverview extends Component {
         const deleteContent = this.state.deleting
             ? (<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>)
             : '🗑';
-        const assist = this.props.goal.assistedBy ? ` assisted by ${this.props.goal.assistedBy.name}` : null;
+        const assist = this.props.goal.assistedBy ? ` assisted by ${this.props.goal.assistedBy.name}` : '';
         const timeAndName = `${time} - ${name}${assist}`;
 
         return (
