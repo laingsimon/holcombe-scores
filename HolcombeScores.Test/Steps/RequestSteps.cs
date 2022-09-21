@@ -1,5 +1,4 @@
 using System.Net.Mime;
-using HolcombeScores.Test.Configuration;
 using HolcombeScores.Test.Contexts;
 using HolcombeScores.Test.Http;
 using TechTalk.SpecFlow;
@@ -9,12 +8,9 @@ namespace HolcombeScores.Test.Steps;
 [Binding]
 public class RequestSteps : StepBase
 {
-    private readonly ITestingConfiguration _testingConfiguration;
-
-    public RequestSteps(TestingConfigurationFactory testingConfigurationFactory, ApiScenarioContext scenarioContext)
+    public RequestSteps(ApiScenarioContext scenarioContext)
         : base(scenarioContext)
     {
-        _testingConfiguration = testingConfigurationFactory.Create();
     }
 
     [Given(@"a (DELETE|GET) request is sent to the api route ([a-zA-Z0-9/\-_]+)")]
@@ -22,7 +18,7 @@ public class RequestSteps : StepBase
     public void ARequestIsSetToApiRoute(string method, string apiRoute)
     {
         RequestBuilder = NewRequestBuilder()
-            .ForUri(_testingConfiguration.ApiAddress, apiRoute)
+            .ForUri(TestingConfiguration.ApiAddress, apiRoute)
             .WithMethod(GetHttpMethod(method));
     }
 
@@ -31,8 +27,8 @@ public class RequestSteps : StepBase
     public void ARequestIsSetToApiRoute(string method, string apiRoute, string body)
     {
         RequestBuilder = NewRequestBuilder()
-            .ForUri(_testingConfiguration.ApiAddress, apiRoute)
-            .WithData(GetHttpMethod(method), MediaTypeNames.Application.Json, SupplantValues(body, _testingConfiguration.AdminPassCode));
+            .ForUri(TestingConfiguration.ApiAddress, apiRoute)
+            .WithData(GetHttpMethod(method), MediaTypeNames.Application.Json, SupplantValues(body, TestingConfiguration.AdminPassCode));
     }
 
     private HttpRequestBuilder NewRequestBuilder()

@@ -1,4 +1,5 @@
-﻿using HolcombeScores.Test.Contexts;
+﻿using HolcombeScores.Test.Configuration;
+using HolcombeScores.Test.Contexts;
 using HolcombeScores.Test.Http;
 using TechTalk.SpecFlow;
 
@@ -14,6 +15,8 @@ public abstract class StepBase
     }
 
     protected Guid? TestContextId => _scenarioContext.TestContextId;
+
+    protected ITestingConfiguration TestingConfiguration => _scenarioContext.TestingConfiguration;
 
     protected string Stash
     {

@@ -1,21 +1,25 @@
 namespace HolcombeScores.Test.Configuration;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class TestingConfigurationFactory
 {
-    private static readonly ITestingConfiguration Default = new TestingConfiguration
-    {
-        ApiAddress = "https://localhost:5001",
-        UiAddress = "https://localhost:44419",
-        AdminPassCode = "test",
-    };
-
     public ITestingConfiguration Create()
     {
+        var random = new Random();
+        var apiHttpsPort = random.Next(5002, 6000);
+        var uiHttpsPort = random.Next(7000, 8000);
+        var fallback = new TestingConfiguration
+        {
+            ApiAddress = $"https://localhost:{apiHttpsPort}",
+            UiAddress = $"https://localhost:{uiHttpsPort}",
+            AdminPassCode = "test",
+        };
+
         return new TestingConfiguration
         {
-            AdminPassCode = GetConfig("AdminPassCode") ?? Default.AdminPassCode,
-            ApiAddress = GetConfig("ApiAddress") ?? Default.ApiAddress,
-            UiAddress = GetConfig("UiAddress") ?? Default.UiAddress,
+            AdminPassCode = GetConfig("AdminPassCode") ?? fallback.AdminPassCode,
+            ApiAddress = GetConfig("ApiAddress") ?? fallback.ApiAddress,
+            UiAddress = GetConfig("UiAddress") ?? fallback.UiAddress,
         };
     }
 

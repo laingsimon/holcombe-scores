@@ -1,9 +1,10 @@
-﻿using HolcombeScores.Test.Http;
-using HolcombeScores.Test.Steps;
+﻿using HolcombeScores.Test.Configuration;
+using HolcombeScores.Test.Http;
 using TechTalk.SpecFlow;
 
 namespace HolcombeScores.Test.Contexts;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class ApiScenarioContext
 {
     private readonly ScenarioContext _scenarioContext;
@@ -29,6 +30,8 @@ public class ApiScenarioContext
             : null;
         set => _scenarioContext[nameof(Response)] = value;
     }
+
+    public ITestingConfiguration TestingConfiguration => _featureContext.TestingConfiguration;
 
     public Guid? TestContextId => _featureContext.TestContextId;
 

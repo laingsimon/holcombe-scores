@@ -1,7 +1,9 @@
-﻿using TechTalk.SpecFlow;
+﻿using HolcombeScores.Test.Configuration;
+using TechTalk.SpecFlow;
 
 namespace HolcombeScores.Test.Contexts;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class ApiFeatureContext
 {
     private readonly FeatureContext _featureContext;
@@ -18,4 +20,10 @@ public class ApiFeatureContext
     }
 
     public string Name => _featureContext.FeatureInfo.Title;
+
+    public ITestingConfiguration TestingConfiguration
+    {
+        get => (ITestingConfiguration)_featureContext[nameof(TestingConfiguration)];
+        set => _featureContext[nameof(TestingConfiguration)] = value;
+    }
 }
