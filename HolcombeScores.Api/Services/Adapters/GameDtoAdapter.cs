@@ -41,6 +41,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Postponed = game.Postponed,
                 GoogleMapsApiKey = _configuration["GOOGLE_MAPS_API_KEY"],
                 HasStarted = context.HasStarted,
+                Friendly = game.Friendly,
             };
         }
 
@@ -61,6 +62,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Training = game.Training,
                 Address = game.Address,
                 Postponed = game.Postponed,
+                Friendly = game.Friendly,
             };
         }
 
