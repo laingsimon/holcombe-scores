@@ -14,6 +14,7 @@ public class RequestSteps : StepBase
     }
 
     [Given(@"a (DELETE|GET) request is sent to the api route ([a-zA-Z0-9/\-_\{\}\$]+)")]
+    [When(@"a (DELETE|GET) request is sent to the api route ([a-zA-Z0-9/\-_\{\}\$]+)")]
     [Then(@"a (DELETE|GET) request is sent to the api route ([a-zA-Z0-9/\-_\{\}\$]+)")]
     public void ARequestIsSetToApiRoute(string method, string apiRoute)
     {
@@ -23,6 +24,7 @@ public class RequestSteps : StepBase
     }
 
     [Given(@"a (DELETE|POST|PATCH|PUT) request is sent to the api route (.+) with the following content")]
+    [When(@"a (DELETE|POST|PATCH|PUT) request is sent to the api route (.+) with the following content")]
     [Then(@"a (DELETE|POST|PATCH|PUT) request is sent to the api route (.+) with the following content")]
     public void ARequestIsSetToApiRoute(string method, string apiRoute, string body)
     {

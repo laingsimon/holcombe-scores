@@ -1,4 +1,5 @@
-﻿using HolcombeScores.Test.Configuration;
+﻿using System.Diagnostics;
+using HolcombeScores.Test.Configuration;
 using TechTalk.SpecFlow;
 
 namespace HolcombeScores.Test.Contexts;
@@ -15,7 +16,9 @@ public class ApiFeatureContext
 
     public Guid TestContextId
     {
+        [DebuggerStepThrough]
         get => (Guid)_featureContext[nameof(TestContextId)];
+        [DebuggerStepThrough]
         set => _featureContext[nameof(TestContextId)] = value;
     }
 
@@ -23,7 +26,9 @@ public class ApiFeatureContext
 
     public ITestingConfiguration TestingConfiguration
     {
+        [DebuggerStepThrough]
         get => (ITestingConfiguration)_featureContext[nameof(TestingConfiguration)];
+        [DebuggerStepThrough]
         set => _featureContext[nameof(TestingConfiguration)] = value;
     }
 }

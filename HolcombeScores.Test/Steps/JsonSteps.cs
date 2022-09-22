@@ -16,6 +16,7 @@ public class JsonSteps : StepBase
     {
     }
 
+    [Given(@"the response has an array with (\d+) elements")]
     [Then(@"the response has an array with (\d+) elements")]
     public async Task ThenTheResponseHasAnArrayWithElementCount(int count)
     {
@@ -35,6 +36,7 @@ public class JsonSteps : StepBase
         }
     }
 
+    [Given("the response has the following properties")]
     [Then("the response has the following properties")]
     public async Task ThenTheResponseHasTheFollowingProperties(Table properties)
     {
@@ -49,6 +51,7 @@ public class JsonSteps : StepBase
         });
     }
 
+    [Given("the response has an array element with the following properties")]
     [Then("the response has an array element with the following properties")]
     public async Task ThenTheResponseHasAnArrayElementWithTheFollowingProperties(Table properties)
     {
@@ -68,6 +71,7 @@ public class JsonSteps : StepBase
         }
     }
 
+    [Given(@"the property (.+) is stashed as (.+)")]
     [Then(@"the property (.+) is stashed as (.+)")]
     public async Task ThenThePropertyIsStashed(string propertyPath, string stashName)
     {

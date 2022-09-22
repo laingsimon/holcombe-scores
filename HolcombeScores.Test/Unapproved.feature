@@ -16,19 +16,11 @@ Tests for when unapproved requests are sent to the API
             "name": "Simon Laing",
             "revokedReason": "some reason" }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value         |
-          | success      | False         |
-          | warnings[0]  | Not logged in |
+        Then the request failed with the warning Not logged in
 
     Scenario: Access_DeleteAccess
         Given a DELETE request is sent to the api route /api/Access/11111111-1111-1111-1111-111111111111/11111111-1111-1111-1111-111111111111
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value        |
-          | success      | False        |
-          | errors[0]    | Not an admin |
+        Then the request failed with the error Not an admin
 
     Scenario: Access_RecoverAccess_GetAccessRequest
     # create a request to recover
@@ -52,11 +44,7 @@ Tests for when unapproved requests are sent to the API
             "type": "Access",
             "adminPassCode": "invalid_passcode" }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value                   |
-          | success      | False                   |
-          | errors[0]    | Admin passcode mismatch |
+        Then the request failed with the error Admin passcode mismatch
 
     Scenario: Access_RecoverAccess_MissingRecoveryId
         Given a POST request is sent to the api route /api/Access/Recover with the following content
@@ -66,11 +54,7 @@ Tests for when unapproved requests are sent to the API
             "type": "Access",
             "adminPassCode": "${AdminPassCode}" }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value            |
-          | success      | False            |
-          | warnings[0]  | Access not found |
+        Then the request failed with the warning Access not found
 
     Scenario: Access_RecoverAccess_CorrectPassCode
     # make a new request
@@ -96,10 +80,7 @@ Tests for when unapproved requests are sent to the API
             "type": "Access",
             "adminPassCode": "${AdminPassCode}" }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value |
-          | success      | True  |
+        Then the request was successful with the message Access request recovered
         And the response set the following cookies
           | Name     | ValueRegex                     | HttpOnly | Secure |
           | HS_Token | ^[a-fA-F0-9\-]+$               | False    | True   |
@@ -112,11 +93,7 @@ Tests for when unapproved requests are sent to the API
 
     Scenario: Access_DeleteAccessRequest
         Given a DELETE request is sent to the api route /api/Access/Request/11111111-1111-1111-1111-111111111111/11111111-1111-1111-1111-111111111111
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value                                                 |
-          | success      | False                                                 |
-          | errors[0]    | Not permitted to modify another users access requests |
+        Then the request failed with the error Not permitted to modify another users access requests
 
     Scenario: Access_RespondToAccessRequest
         Given a POST request is sent to the api route /api/Access/Respond with the following content
@@ -126,11 +103,7 @@ Tests for when unapproved requests are sent to the API
             "reason": "some reason",
             "teamId": "11111111-1111-1111-1111-111111111111" }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value        |
-          | success      | False        |
-          | errors[0]    | Not an admin |
+        Then the request failed with the error Not an admin
 
     Scenario: Access_RevokeAccess
         Given a POST request is sent to the api route /api/Access/Revoke with the following content
@@ -140,21 +113,13 @@ Tests for when unapproved requests are sent to the API
             "reason": "some reason",
             "teamId": "11111111-1111-1111-1111-111111111111" }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value        |
-          | success      | False        |
-          | errors[0]    | Not an admin |
+        Then the request failed with the error Not an admin
 
     Scenario: Access_Logout
         Given a POST request is sent to the api route /api/Access/Logout with the following content
         """
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value      |
-          | success      | True       |
-          | messages[0]  | Logged out |
+        Then the request was successful with the message Logged out
 
     Scenario: Access_Impersonate
         Given a POST request is sent to the api route /api/Access/Impersonate with the following content
@@ -162,11 +127,7 @@ Tests for when unapproved requests are sent to the API
            { "userId": "11111111-1111-1111-1111-111111111111",
              "adminPassCode": "${AdminPassCode}" }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value        |
-          | success      | False        |
-          | errors[0]    | Not an admin |
+        Then the request failed with the error Not an admin
 
     Scenario: Access_Unimpersonate
         Given a POST request is sent to the api route /api/Access/Unimpersonate with the following content
@@ -193,11 +154,7 @@ Tests for when unapproved requests are sent to the API
             "available": true
             }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value             |
-          | success      | False             |
-          | errors[0]    | No access to team |
+        Then the request failed with the error No access to team
 
     Scenario: Availability_Delete
         Given a DELETE request is sent to the api route /api/Availability with the following content
@@ -209,11 +166,7 @@ Tests for when unapproved requests are sent to the API
             "available": true
             }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value             |
-          | success      | False             |
-          | errors[0]    | No access to team |
+        Then the request failed with the error No access to team
 
     Scenario: Game_GetGamesForTeam
         Given a GET request is sent to the api route /api/Games/11111111-1111-1111-1111-111111111111
@@ -226,11 +179,7 @@ Tests for when unapproved requests are sent to the API
 
     Scenario: Game_Delete
         Given a DELETE request is sent to the api route /api/Game/11111111-1111-1111-1111-111111111111
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value          |
-          | success      | False          |
-          | warnings[0]  | Game not found |
+        Then the request failed with the warning Game not found
 
     Scenario: Game_Create
         Given a POST request is sent to the api route /api/Game with the following content
@@ -246,11 +195,7 @@ Tests for when unapproved requests are sent to the API
         "training": true
         }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value          |
-          | success      | False          |
-          | warnings[0]  | Team not found |
+        Then the request failed with the warning Team not found
 
     Scenario: Game_Update
         Given a PATCH request is sent to the api route /api/Game with the following content
@@ -266,27 +211,15 @@ Tests for when unapproved requests are sent to the API
         "training": true
         }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value          |
-          | success      | False          |
-          | warnings[0]  | Team not found |
+        Then the request failed with the warning Team not found
 
     Scenario: Game_RemovePlayer
         Given a DELETE request is sent to the api route /api/Game/Player/11111111-1111-1111-1111-111111111111/11111111-1111-1111-1111-111111111111
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value          |
-          | success      | False          |
-          | warnings[0]  | Game not found |
+        Then the request failed with the warning Game not found
 
     Scenario: Game_RemoveGoal
         Given a DELETE request is sent to the api route /api/Game/Goal/11111111-1111-1111-1111-111111111111/11111111-1111-1111-1111-111111111111
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value          |
-          | success      | False          |
-          | warnings[0]  | Game not found |
+        Then the request failed with the warning Game not found
 
     Scenario: Game_RecordGoal
         Given a POST request is sent to the api route /api/Game/Goal with the following content
@@ -305,11 +238,7 @@ Tests for when unapproved requests are sent to the API
         "recordGoalToken": "a token"
         }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value         |
-          | success      | False         |
-          | warnings[0]  | Not logged in |
+        Then the request failed with the warning Not logged in
 
     Scenario: My_Access
         Given a GET request is sent to the api route /api/My/Access
@@ -334,19 +263,11 @@ Tests for when unapproved requests are sent to the API
         "id": "11111111-1111-1111-1111-111111111111"
         }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value                        |
-          | success      | False                        |
-          | errors[0]    | Not permitted to access team |
+        Then the request failed with the error Not permitted to access team
 
     Scenario: Player_Delete
         Given a DELETE request is sent to the api route /api/Player/11111111-1111-1111-1111-111111111111
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value                                       |
-          | success      | False                                       |
-          | errors[0]    | Only managers and admins can remove players |
+        Then the request failed with the error Only managers and admins can remove players
 
     Scenario: Player_Transfer
         Given a POST request is sent to the api route /api/Player/Transfer with the following content
@@ -357,11 +278,7 @@ Tests for when unapproved requests are sent to the API
         "newTeamId": "11111111-1111-1111-1111-111111111111"
         }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value                            |
-          | success      | False                            |
-          | errors[0]    | Only admins can transfer players |
+        Then the request failed with the error Only admins can transfer players
 
     Scenario: Static_Get1
         Given a GET request is sent to the api route /static/A
@@ -386,11 +303,7 @@ Tests for when unapproved requests are sent to the API
 
     Scenario: Team_Delete
         Given a DELETE request is sent to the api route /api/Team/11111111-1111-1111-1111-111111111111
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value        |
-          | success      | False        |
-          | errors[0]    | Not an admin |
+        Then the request failed with the error Not an admin
 
     Scenario: Team_Create
         Given a POST request is sent to the api route /api/Team with the following content
@@ -401,11 +314,7 @@ Tests for when unapproved requests are sent to the API
         "id": "11111111-1111-1111-1111-111111111111"
         }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value        |
-          | success      | False        |
-          | errors[0]    | Not an admin |
+        Then the request failed with the error Not an admin
 
     Scenario: Team_Update
         Given a PATCH request is sent to the api route /api/Team with the following content
@@ -416,8 +325,4 @@ Tests for when unapproved requests are sent to the API
         "id": "11111111-1111-1111-1111-111111111111"
         }
         """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value        |
-          | success      | False        |
-          | errors[0]    | Not an admin |
+        Then the request failed with the error Not an admin

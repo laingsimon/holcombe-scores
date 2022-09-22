@@ -42,7 +42,7 @@ public class ApiTestContextSteps
         });
         var response = await requestBuilder.ForUri(testingConfiguration.ApiAddress, "/api/Testing")
             .WithData(HttpMethod.Post, MediaTypeNames.Application.Json, json)
-            .Send();
+            .GetResponse();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), string.IsNullOrEmpty(response.Body) ? "<Empty body>" : response.Body);
         var result = JsonConvert.DeserializeObject<ActionResultDto<TestingContextCreatedDto>>(response.Body!);
@@ -70,7 +70,7 @@ public class ApiTestContextSteps
             var requestBuilder = new HttpRequestBuilder(null);
             var response = await requestBuilder.ForUri(testingConfiguration.ApiAddress, "/api/Testing")
                 .WithMethod(HttpMethod.Delete)
-                .Send();
+                .GetResponse();
 
             featureContext.TestContextId = Guid.Empty;
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), string.IsNullOrEmpty(response.Body) ? "<Empty body>" : response.Body);

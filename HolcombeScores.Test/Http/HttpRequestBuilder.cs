@@ -92,7 +92,7 @@ public class HttpRequestBuilder
         };
     }
 
-    public async Task<HttpResponse> Send()
+    private async Task<HttpResponse> Send()
     {
         var cookies = new CookieContainer();
         var httpClient = new HttpClient(new HttpClientHandler
