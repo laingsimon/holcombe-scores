@@ -30,6 +30,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 Training = gameDetailsDto.Training,
                 Address = gameDetailsDto.Address,
                 Postponed = gameDetailsDto.Postponed,
+                Friendly = gameDetailsDto.Friendly,
             };
         }
 

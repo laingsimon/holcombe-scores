@@ -181,6 +181,12 @@ namespace HolcombeScores.Api.Services
                     updates.Add("Postponed updated");
                 }
 
+                if (game.Friendly != update.Friendly)
+                {
+                    game.Friendly = update.Friendly;
+                    updates.Add("Friendly updated");
+                }
+
                 if (game.Address != update.Address)
                 {
                     game.Address = update.Address;

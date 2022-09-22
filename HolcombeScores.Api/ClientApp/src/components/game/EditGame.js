@@ -240,6 +240,11 @@ export class EditGame extends Component {
                                name="training" checked={this.state.proposed.training}  onChange={this.valueChanged}/>
                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Training</label>
                     </div>
+                    <div className="form-check form-switch margin-right">
+                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                               name="friendly" checked={this.state.proposed.friendly}  onChange={this.valueChanged}/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Friendly</label>
+                    </div>
                     {this.props.game ? (<div className="form-check form-switch margin-right">
                         <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
                                name="postponed" checked={this.state.proposed.postponed} onChange={this.valueChanged}/>
@@ -299,8 +304,8 @@ export class EditGame extends Component {
             const team = this.props.team;
             const proposed = this.state.proposed;
             const apiFunction = this.props.game
-                ? async () => await this.gameApi.updateGame(game.id, team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training, proposed.address, proposed.postponed)
-                : async () => await this.gameApi.createGame(team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training, proposed.address);
+                ? async () => await this.gameApi.updateGame(game.id, team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training, proposed.address, proposed.postponed, proposed.friendly)
+                : async () => await this.gameApi.createGame(team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training, proposed.address, proposed.friendly);
 
             const result = await apiFunction();
 
@@ -342,7 +347,8 @@ export class EditGame extends Component {
             playingAtHome: true,
             date: new Date().toISOString().substring(0, 10) + 'T11:00',
             address: '',
-            postponed: false
+            postponed: false,
+            friendly: false
         };
     }
 }
