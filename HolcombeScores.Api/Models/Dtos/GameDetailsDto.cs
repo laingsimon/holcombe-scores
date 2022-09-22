@@ -13,5 +13,6 @@ namespace HolcombeScores.Api.Models.Dtos
         public bool Training { get; set; }
         public bool Postponed { get; set; }
         public string Address { get; set; }
+        public bool Friendly { get; set; }
     }
 }
