@@ -250,7 +250,7 @@ export class GameDetails extends Component {
             : `${location} to ${this.props.game.opponent} on ${date.toDateString()}`;
 
         return (<h4>
-            {this.props.team.name}: {content}{this.props.game.postponed ? ' (postponed)' : null}
+            {this.props.team.name}: {content}{this.props.game.postponed ? ' (postponed)' : null}{this.props.game.friendly ? ' (friendly)' : null}
             &nbsp;
             {this.props.game.training || this.props.game.postponed ? null : (<Score playingAtHome={this.props.game.playingAtHome} score={score}/>)}
         </h4>);
