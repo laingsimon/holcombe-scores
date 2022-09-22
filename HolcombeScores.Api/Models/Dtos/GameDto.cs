@@ -19,6 +19,7 @@ namespace HolcombeScores.Api.Models.Dtos
         public string Address { get; set; }
         public string GoogleMapsApiKey { get; set; }
         public bool HasStarted { get; set; }
+        public bool Friendly { get; set; }
 
         /// <summary>
         /// A token that must be passed to POST /api/Game/Goal to record a goal
