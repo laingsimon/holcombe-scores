@@ -113,6 +113,58 @@ Tests for when goals are recorded
           | PropertyPath | Value |
           | success      | True  |
 
+    Scenario: Holcombe goal is recorded for game
+        Given I wait for the background to complete
+        Given a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value         |
+          | success      | True          |
+          | messages[0]  | Goal recorded |
+
+    Scenario: Goal assists can be recorded
+        Given I wait for the background to complete
+        And a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "assistedBy": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value         |
+          | success      | True          |
+          | messages[0]  | Goal recorded |
+
     Scenario: Goal is rejected with invalid token
         Given I wait for the background to complete
     # get token
@@ -160,29 +212,6 @@ Tests for when goals are recorded
           | success      | False          |
           | warnings[0]  | Game not found |
 
-    Scenario: Holcombe goal is recorded for game
-        Given I wait for the background to complete
-        Given a POST request is sent to the api route /api/Game/Goal with the following content
-        """
-        {
-        "time": "2022-09-19T06:37:52.281Z",
-        "holcombeGoal": true,
-        "player": {
-          "name": "player",
-          "number": 1,
-          "teamId": "${teamId}",
-          "id": "${playerId}"
-        },
-        "gameId": "${gameId}",
-        "recordGoalToken": "${goalRecordToken}"
-        }
-        """
-        Then the response is OK
-        And the response has the following properties
-          | PropertyPath | Value         |
-          | success      | True          |
-          | messages[0]  | Goal recorded |
-
     Scenario: Goals cannot be recorded for training
         Given I wait for the background to complete
         Given a PATCH request is sent to the api route /api/Game with the following content
@@ -221,8 +250,23 @@ Tests for when goals are recorded
           | success      | False                                 |
           | errors[0]    | Goals cannot be recorded for training |
 
-    Scenario: Goal assists can be recorded
+    Scenario: Goals cannot be recorded for postponed games
         Given I wait for the background to complete
+        Given a PATCH request is sent to the api route /api/Game with the following content
+        """
+        {
+        "id": "${gameId}",
+        "teamId": "${teamId}",
+        "date": "2022-09-19T06:34:36.020Z",
+        "opponent": "string",
+        "playingAtHome": true,
+        "playerIds": [
+          "${playerId}"
+        ],
+        "postponed": true
+        }
+        """
+        Then the response is OK
         And a POST request is sent to the api route /api/Game/Goal with the following content
         """
         {
@@ -234,18 +278,12 @@ Tests for when goals are recorded
           "teamId": "${teamId}",
           "id": "${playerId}"
         },
-        "assistedBy": {
-          "name": "player",
-          "number": 1,
-          "teamId": "${teamId}",
-          "id": "${playerId}"
-        },
         "gameId": "${gameId}",
         "recordGoalToken": "${goalRecordToken}"
         }
         """
         Then the response is OK
         And the response has the following properties
-          | PropertyPath | Value         |
-          | success      | True          |
-          | messages[0]  | Goal recorded |
+          | PropertyPath | Value                                        |
+          | success      | False                                        |
+          | errors[0]    | Goals cannot be recorded for postponed games |

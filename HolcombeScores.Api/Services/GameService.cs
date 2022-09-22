@@ -293,6 +293,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Goals cannot be recorded for training");
             }
 
+            if (game.Postponed)
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Goals cannot be recorded for postponed games");
+            }
+
             var expectedToken = GetRecordGoalToken(game, await _gameRepository.GetGoals(game.Id));
             if (goalDto.RecordGoalToken != expectedToken)
             {
@@ -386,7 +391,7 @@ namespace HolcombeScores.Api.Services
 
         private static bool IsGamePlayable(Game game)
         {
-            return !game.Training && IsGamePlayable(game.Date);
+            return !game.Postponed && !game.Training && IsGamePlayable(game.Date);
         }
 
         private static bool IsGamePlayable(DateTime gameDate)
