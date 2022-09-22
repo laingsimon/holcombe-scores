@@ -29,6 +29,7 @@ Tests for when goals are recorded
           | Name     | ValueRegex                     | HttpOnly | Secure |
           | HS_Token | ^[a-fA-F0-9\-]+$               | False    | True   |
           | HS_User  | ^${recoveryId}-[a-fA-F0-9\-]+$ | False    | True   |
+        And the cookie HS_User is stashed as userId
     # create a unique team
         Then a POST request is sent to the api route /api/Team with the following content
         """
@@ -287,3 +288,485 @@ Tests for when goals are recorded
           | PropertyPath | Value                                        |
           | success      | False                                        |
           | errors[0]    | Goals cannot be recorded for postponed games |
+
+    Scenario: Admins can record goals for games that have not started
+        Given I wait for the background to complete
+        Given a PATCH request is sent to the api route /api/Game with the following content
+        """
+        {
+        "id": "${gameId}",
+        "teamId": "${teamId}",
+        "date": "${UtcNow+2hr}",
+        "opponent": "string",
+        "playingAtHome": true,
+        "playerIds": [
+          "${playerId}"
+        ]
+        }
+        """
+        Then the response is OK
+        And a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value         |
+          | success      | True          |
+          | messages[0]  | Goal recorded |
+
+    Scenario: Admins can record goals for games that have ended
+        Given I wait for the background to complete
+        Given a PATCH request is sent to the api route /api/Game with the following content
+        """
+        {
+        "id": "${gameId}",
+        "teamId": "${teamId}",
+        "date": "${UtcNow-2hr}",
+        "opponent": "string",
+        "playingAtHome": true,
+        "playerIds": [
+          "${playerId}"
+        ]
+        }
+        """
+        Then the response is OK
+        And a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value         |
+          | success      | True          |
+          | messages[0]  | Goal recorded |
+
+    Scenario: Managers cannot record goals for games that have not started
+        Given I wait for the background to complete
+    # request access to the team
+        Given a POST request is sent to the api route /api/Access/Request with the following content
+        """
+          { "name": "Goal_Manager_RecordForNotStarted_${TestContextId}",
+            "userId": "${userId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # grant access to the team
+        Given a POST request is sent to the api route /api/Access/Respond with the following content
+        """
+          { "userId": "${userId}",
+            "allow": true,
+            "reason": "Goal_Manager_RecordForNotStarted_${TestContextId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # update game start time
+        And a PATCH request is sent to the api route /api/Game with the following content
+        """
+        {
+        "id": "${gameId}",
+        "teamId": "${teamId}",
+        "date": "${UtcNow+2hr}",
+        "opponent": "string",
+        "playingAtHome": true,
+        "playerIds": [
+          "${playerId}"
+        ]
+        }
+        """
+        Then the response is OK
+    # remove admin, add manager access
+        Given a PATCH request is sent to the api route /api/Access with the following content
+        """
+        {   "userId": "${userId}",
+            "admin": false,
+            "manager": true }
+        """
+        Then the response is OK
+        And a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value                                |
+          | success      | False                                |
+          | errors[0]    | Game is over, no changes can be made |
+
+    Scenario: Managers cannot record goals for games that have ended
+        Given I wait for the background to complete
+    # request access to the team
+        Given a POST request is sent to the api route /api/Access/Request with the following content
+        """
+          { "name": "Goal_Manager_RecordForFinishedGame_${TestContextId}",
+            "userId": "${userId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # grant access to the team
+        Given a POST request is sent to the api route /api/Access/Respond with the following content
+        """
+          { "userId": "${userId}",
+            "allow": true,
+            "reason": "Goal_Manager_RecordForFinishedGame_${TestContextId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # update game start time
+        Given a PATCH request is sent to the api route /api/Game with the following content
+        """
+        {
+        "id": "${gameId}",
+        "teamId": "${teamId}",
+        "date": "${UtcNow-2hr}",
+        "opponent": "string",
+        "playingAtHome": true,
+        "playerIds": [
+          "${playerId}"
+        ]
+        }
+        """
+        Then the response is OK
+    # remove admin, add manager access
+        Given a PATCH request is sent to the api route /api/Access with the following content
+        """
+        {   "userId": "${userId}",
+            "admin": false,
+            "manager": true }
+        """
+        Then the response is OK
+        And a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value                                |
+          | success      | False                                |
+          | errors[0]    | Game is over, no changes can be made |
+
+    Scenario: Goals cannot be recorded for games that have not started
+        Given I wait for the background to complete
+    # request access to the team
+        Given a POST request is sent to the api route /api/Access/Request with the following content
+        """
+          { "name": "Goal_StandardUser_RecordForNotStarted_${TestContextId}",
+            "userId": "${userId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # grant access to the team
+        Given a POST request is sent to the api route /api/Access/Respond with the following content
+        """
+          { "userId": "${userId}",
+            "allow": true,
+            "reason": "Goal_StandardUser_RecordForNotStarted_${TestContextId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # update game start time
+        Given a PATCH request is sent to the api route /api/Game with the following content
+        """
+        {
+        "id": "${gameId}",
+        "teamId": "${teamId}",
+        "date": "${UtcNow+2hr}",
+        "opponent": "string",
+        "playingAtHome": true,
+        "playerIds": [
+          "${playerId}"
+        ]
+        }
+        """
+        Then the response is OK
+    # remove admin access
+        Given a PATCH request is sent to the api route /api/Access with the following content
+        """
+        {   "userId": "${userId}",
+            "admin": false,
+            "manager": false }
+        """
+        Then the response is OK
+        And a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value                                |
+          | success      | False                                |
+          | errors[0]    | Game is over, no changes can be made |
+
+    Scenario: Goals cannot be recorded for games that have ended
+        Given I wait for the background to complete
+    # request access to the team
+        Given a POST request is sent to the api route /api/Access/Request with the following content
+        """
+          { "name": "Goal_StandardUser_RecordForFinishedGame_${TestContextId}",
+            "userId": "${userId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # grant access to the team
+        Given a POST request is sent to the api route /api/Access/Respond with the following content
+        """
+          { "userId": "${userId}",
+            "allow": true,
+            "reason": "Goal_StandardUser_RecordForFinishedGame_${TestContextId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # update game start time
+        Given a PATCH request is sent to the api route /api/Game with the following content
+        """
+        {
+        "id": "${gameId}",
+        "teamId": "${teamId}",
+        "date": "${UtcNow-2hr}",
+        "opponent": "string",
+        "playingAtHome": true,
+        "playerIds": [
+          "${playerId}"
+        ]
+        }
+        """
+        Then the response is OK
+    # remove admin access
+        Given a PATCH request is sent to the api route /api/Access with the following content
+        """
+        {   "userId": "${userId}",
+            "admin": false,
+            "manager": false }
+        """
+        Then the response is OK
+        And a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value                                |
+          | success      | False                                |
+          | errors[0]    | Game is over, no changes can be made |
+
+    Scenario: Goal can be deleted
+        Given I wait for the background to complete
+        Given a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value         |
+          | success      | True          |
+          | messages[0]  | Goal recorded |
+        And the property outcome.id is stashed as goalId
+        And a DELETE request is sent to the api route /api/Game/Goal/${gameId}/${goalId}
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value        |
+          | success      | True         |
+          | messages[0]  | Goal deleted |
+
+    Scenario: Managers cannot delete goals for games which have ended
+        Given I wait for the background to complete
+        Given a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value         |
+          | success      | True          |
+          | messages[0]  | Goal recorded |
+        And the property outcome.id is stashed as goalId
+    # request access to the team
+        Given a POST request is sent to the api route /api/Access/Request with the following content
+        """
+          { "name": "Goal_Manager_DeleteGoal_${TestContextId}",
+            "userId": "${userId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # grant access to the team
+        Given a POST request is sent to the api route /api/Access/Respond with the following content
+        """
+          { "userId": "${userId}",
+            "allow": true,
+            "reason": "Goal_Manager_DeleteGoal_${TestContextId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # remove admin, add manager access
+        Given a PATCH request is sent to the api route /api/Access with the following content
+        """
+        {   "userId": "${userId}",
+            "admin": false,
+            "manager": true }
+        """
+        Then the response is OK
+        And a DELETE request is sent to the api route /api/Game/Goal/${gameId}/${goalId}
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value                                |
+          | success      | False                                |
+          | errors[0]    | Game is over, no changes can be made |
+
+    Scenario: Managers can delete goals for games which have not completed
+        Given I wait for the background to complete
+    # update game start time
+        Given a PATCH request is sent to the api route /api/Game with the following content
+        """
+        {
+        "id": "${gameId}",
+        "teamId": "${teamId}",
+        "date": "${UtcNow}",
+        "opponent": "string",
+        "playingAtHome": true,
+        "playerIds": [
+          "${playerId}"
+        ]
+        }
+        """
+        Then the response is OK
+    # record a goal
+        Given a POST request is sent to the api route /api/Game/Goal with the following content
+        """
+        {
+        "time": "2022-09-19T06:37:52.281Z",
+        "holcombeGoal": true,
+        "player": {
+          "name": "player",
+          "number": 1,
+          "teamId": "${teamId}",
+          "id": "${playerId}"
+        },
+        "gameId": "${gameId}",
+        "recordGoalToken": "${goalRecordToken}"
+        }
+        """
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value         |
+          | success      | True          |
+          | messages[0]  | Goal recorded |
+        And the property outcome.id is stashed as goalId
+    # request access to the team
+        Given a POST request is sent to the api route /api/Access/Request with the following content
+        """
+          { "name": "Goal_Manager_DeleteGoal_${TestContextId}",
+            "userId": "${userId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # grant access to the team
+        Given a POST request is sent to the api route /api/Access/Respond with the following content
+        """
+          { "userId": "${userId}",
+            "allow": true,
+            "reason": "Goal_Manager_DeleteGoal_${TestContextId}",
+            "teamId": "${teamId}" }
+        """
+        Then the response is OK
+    # remove admin, add manager access
+        Given a PATCH request is sent to the api route /api/Access with the following content
+        """
+        {   "userId": "${userId}",
+            "admin": false,
+            "manager": true }
+        """
+        Then the response is OK
+        And a DELETE request is sent to the api route /api/Game/Goal/${gameId}/${goalId}
+        Then the response is OK
+        And the response has the following properties
+          | PropertyPath | Value        |
+          | success      | True         |
+          | messages[0]  | Goal deleted |

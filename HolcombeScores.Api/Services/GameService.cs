@@ -283,7 +283,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
             }
 
-            if (IsReadOnly(game, await _accessService.GetAccess()))
+            if (IsReadOnly(game, access))
             {
                 return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
             }
@@ -397,9 +397,9 @@ namespace HolcombeScores.Api.Services
         private static bool IsGamePlayable(DateTime gameDate)
         {
             var gameStarted = HasGameStarted(gameDate);
-            var gameNotExpired = DateTime.UtcNow < gameDate.AddDays(1);
+            var gameExpired = DateTime.UtcNow > gameDate.AddHours(2);
 
-            return gameNotExpired && gameStarted;
+            return !gameExpired && gameStarted;
         }
 
         private static bool HasGameStarted(DateTime gameDate)

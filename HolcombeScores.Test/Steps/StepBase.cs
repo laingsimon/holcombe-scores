@@ -47,11 +47,19 @@ public abstract class StepBase
 
     protected string SupplantValues(string value, string? adminPassCode = null)
     {
-        var replacementValues = new Dictionary<string, string>(Stash)
+        var utcNow = DateTime.UtcNow;
+        const string utcDateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
+
+        var replacementValues = new Dictionary<string, string>(Stash, StringComparer.OrdinalIgnoreCase)
         {
             { "ScenarioUniqueId", _scenarioContext.ScenarioUniqueId },
             { "UniqueId", Guid.NewGuid().ToString() },
-            { "TestContextId", TestContextId.ToString()! }
+            { "TestContextId", TestContextId.ToString()! },
+            { "UtcNow-1hr", utcNow.AddHours(-1).ToString(utcDateTimeFormat) },
+            { "UtcNow-2hr", utcNow.AddHours(-2).ToString(utcDateTimeFormat) },
+            { "UtcNow", utcNow.ToString(utcDateTimeFormat) },
+            { "UtcNow+1hr", utcNow.AddHours(1).ToString(utcDateTimeFormat) },
+            { "UtcNow+2hr", utcNow.AddHours(2).ToString(utcDateTimeFormat) },
         };
 
         if (!string.IsNullOrEmpty(adminPassCode))
@@ -59,7 +67,7 @@ public abstract class StepBase
             replacementValues.Add("AdminPassCode", adminPassCode);
         }
 
-        return Regex.Replace(value, @"\$\{([a-z0-9]+)\}", group =>
+        return Regex.Replace(value, @"\$\{([a-z0-9-+]+)\}", group =>
             replacementValues.TryGetValue(group.Groups[1].Value, out value!)
                 ? value
                 : group.Name, RegexOptions.IgnoreCase);
