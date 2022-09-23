@@ -289,7 +289,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Not permitted to interact with this team");
             }
 
-            if (IsReadOnly(game, await _accessService.GetAccess()))
+            if (IsReadOnly(game, access))
             {
                 return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
             }
@@ -297,6 +297,11 @@ namespace HolcombeScores.Api.Services
             if (game.Training)
             {
                 return _serviceHelper.NotPermitted<GameDto>("Goals cannot be recorded for training");
+            }
+
+            if (game.Postponed)
+            {
+                return _serviceHelper.NotPermitted<GameDto>("Goals cannot be recorded for postponed games");
             }
 
             var expectedToken = GetRecordGoalToken(game, await _gameRepository.GetGoals(game.Id));
@@ -342,7 +347,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can update games");
             }
 
-            if (IsReadOnly(game.Date, await _accessService.GetAccess()))
+            if (IsReadOnly(game.Date, await _accessService.GetAccess(), game.Postponed))
             {
                 return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
             }
@@ -365,7 +370,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<GameDto>("Only managers and admins can remove goals");
             }
 
-            if (IsReadOnly(game.Date, await _accessService.GetAccess()))
+            if (IsReadOnly(game.Date, await _accessService.GetAccess(), game.Postponed))
             {
                 return _serviceHelper.NotPermitted<GameDto>("Game is over, no changes can be made");
             }
@@ -377,35 +382,35 @@ namespace HolcombeScores.Api.Services
 
         private static bool IsReadOnly(Game game, AccessDto access)
         {
-            return IsReadOnly(game.Date, access);
+            return IsReadOnly(game.Date, access, game.Postponed);
         }
 
-        private static bool IsReadOnly(DateTime gameDate, AccessDto access)
+        private static bool IsReadOnly(DateTime gameDate, AccessDto access, bool postponed)
         {
             if (access.Admin)
             {
                 return false;
             }
-            var notStarted = gameDate > DateTime.UtcNow;
-            return !IsGamePlayable(gameDate) || (notStarted && !access.Manager);
+            var notStarted = !HasGameStarted(gameDate);
+            return postponed || !IsGamePlayable(gameDate) || (notStarted && !access.Manager);
         }
 
         private static bool IsGamePlayable(Game game)
         {
-            return !game.Training && IsGamePlayable(game.Date);
+            return !game.Postponed && !game.Training && IsGamePlayable(game.Date);
         }
 
         private static bool IsGamePlayable(DateTime gameDate)
         {
             var gameStarted = HasGameStarted(gameDate);
-            var gameNotExpired = DateTime.UtcNow < gameDate.AddDays(1);
+            var gameExpired = DateTime.UtcNow > gameDate.AddHours(2);
 
-            return gameNotExpired && gameStarted;
+            return !gameExpired && gameStarted;
         }
 
         private static bool HasGameStarted(DateTime gameDate)
         {
-            return DateTime.UtcNow > gameDate;
+            return DateTime.UtcNow > gameDate.AddMinutes(-5);
         }
 
         private static string GetRecordGoalToken(Game game, IEnumerable<Goal> goals)

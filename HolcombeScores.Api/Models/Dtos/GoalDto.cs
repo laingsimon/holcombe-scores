@@ -8,6 +8,7 @@ namespace HolcombeScores.Api.Models.Dtos
         public DateTime Time { get; set; }
         public bool HolcombeGoal { get; set; }
         public PlayerDto Player { get; set; }
+        public PlayerDto AssistedBy { get; set; }
         public Guid GameId { get; set; }
         public Guid GoalId { get; set; }
         public string RecordGoalToken { get; set; }

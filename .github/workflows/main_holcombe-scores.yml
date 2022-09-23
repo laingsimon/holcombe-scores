@@ -33,6 +33,14 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
+      - name: Test with dotnet
+        run: dotnet test --configuration Release
+        env:
+          AZURE_TABLE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_TABLE_STORAGE_ACCOUNT_NAME }}
+          AZURE_TABLE_STORAGE_KEY: ${{ secrets.AZURE_TABLE_STORAGE_KEY }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          HOME_ADDRESS: ${{ secrets.HOME_ADDRESS }}
+
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 

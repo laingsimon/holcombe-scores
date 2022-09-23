@@ -13,5 +13,7 @@ namespace HolcombeScores.Api.Models.Dtos
         
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string AdminPassCode { get; set; }
+
+        public bool Admin { get; set; }
     }
 }

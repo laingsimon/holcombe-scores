@@ -26,6 +26,10 @@ namespace HolcombeScores.Api.Services.Adapters
                 ? await _playerRepository.Get(goal.PlayerId.Value)
                 : null;
 
+            var assistPlayer = goal.HolcombeGoal && goal.AssistedByPlayerId.HasValue
+                ? await _playerRepository.Get(goal.AssistedByPlayerId.Value)
+                : null;
+
             return new GoalDto
             {
                 Player = _playerAdapter.Adapt(player),
@@ -33,6 +37,9 @@ namespace HolcombeScores.Api.Services.Adapters
                 HolcombeGoal = goal.HolcombeGoal,
                 GameId = goal.GameId,
                 GoalId = goal.GoalId,
+                AssistedBy = assistPlayer == null
+                    ? null
+                    : _playerAdapter.Adapt(assistPlayer)
             };
         }
 
@@ -51,6 +58,7 @@ namespace HolcombeScores.Api.Services.Adapters
                 HolcombeGoal = goal.HolcombeGoal,
                 GameId = goal.GameId,
                 GoalId = goal.GoalId,
+                AssistedByPlayerId = goal.AssistedBy?.Id
             };
         }
     }
