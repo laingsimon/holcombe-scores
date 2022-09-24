@@ -138,6 +138,20 @@ export class GameDetails extends Component {
         window.history.replaceState(null, event.target.textContent, url);
     }
 
+    shouldRefresh() {
+        if (this.props.game.training || this.props.game.postponed) {
+            return false;
+        }
+
+        if (this.props.game.started) {
+            if (!this.props.game.playable || this.props.game.readOnly) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     async refresh() {
         if (this.state.mode === 'edit' || !this.state.refreshEnabled || !this.props.game || this.state.refreshing) {
             return;
@@ -148,7 +162,7 @@ export class GameDetails extends Component {
             const asAt = this.props.game.asAt.getTime();
             const diff = now - asAt;
 
-            if (this.props.game.training || this.props.game.postponed || (!this.props.game.playable && this.props.game.started)) {
+            if (!this.shouldRefresh()) {
                 this.setState({
                     refreshEnabled: false
                 });
@@ -184,7 +198,8 @@ export class GameDetails extends Component {
     async componentDidMount() {
         if (this.props.game) {
             this.setState({
-                loading: false
+                loading: false,
+                refreshEnabled: this.shouldRefresh()
             });
 
             return;
@@ -194,7 +209,8 @@ export class GameDetails extends Component {
             await this.props.reloadGame(this.gameId);
 
             this.setState({
-                loading: false
+                loading: false,
+                refreshEnabled: this.shouldRefresh()
             });
         }
     }
@@ -277,10 +293,6 @@ export class GameDetails extends Component {
             component = (<EditAvailability {...this.props} onAvailabilityChanged={this.availabilityChanged} />);
         }
 
-        const notRefreshStatus = this.props.game.readOnly
-            ? 'Game over'
-            : 'Not refreshing';
-
         return (<div>
             {this.renderHeading()}
             {this.renderNav()}
@@ -293,7 +305,7 @@ export class GameDetails extends Component {
                 &nbsp;-&nbsp;
                 {this.state.refreshEnabled && this.state.mode !== 'edit'
                     ? (<button className="btn btn-secondary" onClick={this.stopRefresh}>Stop Refresh</button>)
-                    : <span>{notRefreshStatus}</span>}
+                    : <span>Not refreshing</span>}
             </div>
         </div>)
     }
