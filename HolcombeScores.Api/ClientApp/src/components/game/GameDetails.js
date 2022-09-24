@@ -148,7 +148,7 @@ export class GameDetails extends Component {
             const asAt = this.props.game.asAt.getTime();
             const diff = now - asAt;
 
-            if (!this.props.game.playable) {
+            if (this.props.game.training || this.props.game.postponed || (!this.props.game.playable && this.props.game.started)) {
                 this.setState({
                     refreshEnabled: false
                 });
