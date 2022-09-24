@@ -93,9 +93,9 @@ export default class App extends Component {
         });
     }
 
-    async reloadGame(id) {
+    async reloadGame(id, skipTesting, skipAvailability) {
         const subProps = Object.assign({}, this.state.subProps);
-        subProps.testing = await this.getTestingState();
+        subProps.testing = skipTesting ? subProps.testing : await this.getTestingState();
         subProps.game = await this.gameApi.getGame(id);
         if (subProps.game) {
             subProps.game.found = true;
@@ -111,7 +111,7 @@ export default class App extends Component {
                 }
             }
 
-            subProps.gameAvailability = await this.availabilityApi.get(subProps.game.teamId, id);
+            subProps.gameAvailability = skipAvailability ? subProps.gameAvailability : await this.availabilityApi.get(subProps.game.teamId, id);
             subProps.gameAvailability.sort(Functions.playerAvailabilitySortFunction);
         } else {
             subProps.game = {

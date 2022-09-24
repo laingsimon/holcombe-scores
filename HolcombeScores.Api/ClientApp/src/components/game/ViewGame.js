@@ -56,7 +56,7 @@ export class ViewGame extends Component {
             <p>{address}</p>
             <iframe
                 title="Game address - HolcombeScores"
-                width="450"
+                width="100%"
                 height="250"
                 referrerPolicy="no-referrer-when-downgrade"
                 src={`https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${address}`}
