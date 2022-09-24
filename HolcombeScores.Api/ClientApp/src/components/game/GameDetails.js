@@ -6,6 +6,7 @@ import {Access} from '../../api/access';
 import {Team} from '../../api/team';
 import {Alert} from '../Alert';
 import {EditGame} from './EditGame';
+import {EditAvailability} from './EditAvailability';
 import {PlayGame} from './PlayGame';
 import {Score} from './Score';
 import {ViewGame} from './ViewGame';
@@ -26,6 +27,9 @@ import {ShareIcon} from "../ShareIcon";
 * -none-
 */
 export class GameDetails extends Component {
+    static REFRESH_INTERVAL = 5000;
+    static AVAILABILITY_ENABLED = false;
+
     constructor(props) {
         super(props);
         const http = new Http(new Settings());
@@ -39,7 +43,10 @@ export class GameDetails extends Component {
             gameDeleted: false,
             error: null,
             mode: props.match.params.mode || 'view',
-            showSharingDetail: false
+            showSharingDetail: false,
+            refreshHandle: window.setInterval(this.refresh.bind(this), GameDetails.REFRESH_INTERVAL),
+            refreshEnabled: true,
+            refreshing: false
         };
         this.changeMode = this.changeMode.bind(this);
         this.goalScored = this.goalScored.bind(this);
@@ -49,6 +56,7 @@ export class GameDetails extends Component {
         this.availabilityChanged = this.availabilityChanged.bind(this);
         this.toggleSharingDetail = this.toggleSharingDetail.bind(this);
         this.goalNotRecorded = this.goalNotRecorded.bind(this);
+        this.stopRefresh = this.stopRefresh.bind(this);
     }
 
     //event handlers
@@ -85,8 +93,7 @@ export class GameDetails extends Component {
 
     async goalNotRecorded(gameId, holcombeGoal, playerId) {
         if (!gameId) {
-            // refresh
-            await this.props.reloadGame(gameId); // don't set the state to loading
+            await this.props.reloadGame(gameId, true, true); // don't set the state to loading
             return;
         }
 
@@ -102,8 +109,7 @@ export class GameDetails extends Component {
 
     async goalScored(gameId, holcombeGoal, playerId) {
         if (!gameId) {
-            // refresh
-            await this.props.reloadGame(gameId); // don't set the state to loading
+            await this.props.reloadGame(gameId, true, true); // don't set the state to loading
             return;
         }
 
@@ -132,11 +138,55 @@ export class GameDetails extends Component {
         window.history.replaceState(null, event.target.textContent, url);
     }
 
+    async refresh() {
+        if (this.state.mode === 'edit' || !this.state.refreshEnabled || !this.props.game || this.state.refreshing) {
+            return;
+        }
+
+        try {
+            const now = new Date().getTime();
+            const asAt = this.props.game.asAt.getTime();
+            const diff = now - asAt;
+
+            if (!this.props.game.playable) {
+                this.setState({
+                    refreshEnabled: false
+                });
+                return;
+            }
+
+            if (diff > (GameDetails.REFRESH_INTERVAL)) { // half the refresh interval
+                this.setState({
+                    refreshing: true
+                });
+
+                await this.props.reloadGame(this.gameId, true, true);
+            }
+        } catch (e) {
+            console.error(e);
+            this.setState({
+                refreshEnabled: false
+            });
+        }
+        finally {
+            this.setState({
+                refreshing: false
+            });
+        }
+    }
+
+    stopRefresh() {
+        this.setState({
+            refreshEnabled: false
+        })
+    }
+
     async componentDidMount() {
         if (this.props.game) {
             this.setState({
                 loading: false
             });
+
             return;
         }
 
@@ -147,6 +197,10 @@ export class GameDetails extends Component {
                 loading: false
             });
         }
+    }
+
+    componentWillUnmount() {
+        this.stopRefresh();
     }
 
     // renderers
@@ -171,7 +225,7 @@ export class GameDetails extends Component {
                 <Link className={`nav-link${this.state.mode === 'play' ? ' active' : ''}`}
                    to={`/game/${this.gameId}/play`} onClick={this.changeMode}>Play</Link>
             </li>)}
-            {true || this.state.gameDeleted || this.props.game.started ? null : (<li className="nav-item">
+            {!GameDetails.AVAILABILITY_ENABLED || this.state.gameDeleted || this.props.game.started ? null : (<li className="nav-item">
                 <Link className={`nav-link${this.state.mode === 'availability' ? ' active' : ''}`}
                    to={`/game/${this.gameId}/availability`} onClick={this.changeMode}>Availability</Link>
             </li>)}
@@ -219,15 +273,28 @@ export class GameDetails extends Component {
             component = (<EditGame {...this.props} onChanged={this.gameChanged} onDeleted={this.gameDeleted} />);
         } else if (this.state.mode === 'play') {
             component = (<PlayGame {...this.props} onGoalScored={this.goalScored} onGoalNotRecorded={this.goalNotRecorded} />);
-        /*} else if (this.state.mode === 'availability') {
+        } else if (GameDetails.AVAILABILITY_ENABLED && this.state.mode === 'availability') {
             component = (<EditAvailability {...this.props} onAvailabilityChanged={this.availabilityChanged} />);
-        */}
+        }
+
+        const notRefreshStatus = this.props.game.readOnly
+            ? 'Game over'
+            : 'Not refreshing';
 
         return (<div>
             {this.renderHeading()}
             {this.renderNav()}
             <br/>
             {component}
+            <hr />
+            <div className="text-center">
+                {this.state.refreshing ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
+                As at {this.props.game.asAt.toLocaleTimeString()}
+                &nbsp;-&nbsp;
+                {this.state.refreshEnabled && this.state.mode !== 'edit'
+                    ? (<button className="btn btn-secondary" onClick={this.stopRefresh}>Stop Refresh</button>)
+                    : <span>{notRefreshStatus}</span>}
+            </div>
         </div>)
     }
 
@@ -252,7 +319,9 @@ export class GameDetails extends Component {
         return (<h4>
             {this.props.team.name}: {content}{this.props.game.postponed ? ' (postponed)' : null}{this.props.game.friendly ? ' (friendly)' : null}
             &nbsp;
-            {this.props.game.training || this.props.game.postponed || !this.props.game.hasStarted ? null : (<Score playingAtHome={this.props.game.playingAtHome} score={score}/>)}
+            {this.props.game.training || this.props.game.postponed || !this.props.game.hasStarted
+                ? null
+                : (<Score playingAtHome={this.props.game.playingAtHome} score={score}/>)}
         </h4>);
     }
 }
