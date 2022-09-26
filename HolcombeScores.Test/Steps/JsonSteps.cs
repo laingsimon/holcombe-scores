@@ -28,7 +28,7 @@ public class JsonSteps : StepBase
         try
         {
             var array = JsonSerializer.Deserialize<object[]>(response.Body!);
-            Assert.That(array!.Length, Is.EqualTo(count));
+            Assert.That(array!.Length, Is.EqualTo(count), response.Body);
         }
         catch (JsonException exc)
         {

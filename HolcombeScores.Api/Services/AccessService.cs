@@ -46,7 +46,7 @@ namespace HolcombeScores.Api.Services
 
         public async Task<MyAccessDto> GetMyAccess()
         {
-            var access = await GetAccessInternal(permitRevoked: true);
+            var access = await GetAccessInternal();
             var impersonatedByAccess = await GetImpersonatedByAccess();
             var accessRequests = GetAccessRequestsInternal();
 
@@ -83,7 +83,7 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotPermitted<MyAccessDto>("Access to this user has been revoked");
             }
 
-            var impersonatedByAccess = await GetAccessInternal(permitRevoked: true);
+            var impersonatedByAccess = await GetAccessInternal();
             SetImpersonatingCookies(impersonatingAccess.Token, impersonatingAccess.UserId);
 
             var myAccess = await _myAccessDtoAdapter.Adapt(impersonatingAccess, null, impersonatedByAccess);
@@ -103,11 +103,23 @@ namespace HolcombeScores.Api.Services
             var userId = GetRequestUserId();
             var identifiedUsers = new HashSet<Guid>();
 
+            var myAccess = await GetAccessInternal();
+            if (myAccess?.Revoked != null)
+            {
+                yield break;
+            }
+
             await foreach (var access in _accessRepository.GetAllAccess())
             {
                 if ((userId != null && access.UserId != userId) || identifiedUsers.Contains(access.UserId))
                 {
                     // if the userId cookie was set, then only show the users access requests
+                    continue;
+                }
+
+                if (access.Revoked != null)
+                {
+                    // don't return revoked access
                     continue;
                 }
 
@@ -164,6 +176,11 @@ namespace HolcombeScores.Api.Services
                 yield break;
             }
 
+            if (myAccess.Revoked != null)
+            {
+                yield break;
+            }
+
             await foreach (var access in _accessRepository.GetAllAccess(myAccess.Admin ? null : myAccess.Teams))
             {
                 yield return _accessDtoAdapter.Adapt(access);
@@ -204,7 +221,7 @@ namespace HolcombeScores.Api.Services
         public async Task<bool> CanAccessTeam(Guid teamId)
         {
             var access = await GetAccess();
-            if (access == null)
+            if (access == null || access.Revoked != null)
             {
                 return false;
             }
@@ -303,7 +320,7 @@ namespace HolcombeScores.Api.Services
         public async IAsyncEnumerable<AccessRequestDto> GetAccessRequests()
         {
             var myAccess = await GetAccess();
-            if (myAccess == null || (!myAccess.Admin && !myAccess.Manager))
+            if (myAccess == null || (!myAccess.Admin && !myAccess.Manager) || myAccess.Revoked != null)
             {
                 yield break;
             }
@@ -320,6 +337,11 @@ namespace HolcombeScores.Api.Services
             if (myAccess == null || (!myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId))
             {
                 return _serviceHelper.NotAnAdmin<AccessDto>();
+            }
+
+            if (myAccess.Revoked != null)
+            {
+                return _serviceHelper.NotPermitted<AccessDto>("Access has been revoked");
             }
 
             var access = await _accessRepository.GetAccess(userId);
@@ -348,6 +370,11 @@ namespace HolcombeScores.Api.Services
         public async Task<ActionResultDto<AccessRequestDto>> RemoveAccessRequest(Guid teamId, Guid? userId)
         {
             var myAccess = await GetAccessInternal();
+            if (myAccess?.Revoked != null)
+            {
+                return _serviceHelper.NotPermitted<AccessRequestDto>("Access has been revoked");
+            }
+
             var myUserId = GetImpersonatingUserId() ?? GetRequestUserId() ?? Guid.Empty;
             if (myAccess != null && !myAccess.Admin && !myAccess.Manager && myAccess.UserId != userId)
             {
@@ -382,6 +409,11 @@ namespace HolcombeScores.Api.Services
                 return _serviceHelper.NotAnAdmin<AccessDto>();
             }
 
+            if (myAccess.Revoked != null)
+            {
+                return _serviceHelper.NotPermitted<AccessDto>("Access has been revoked");
+            }
+
             var access = await _accessRepository.GetAccess(accessResponseDto.UserId);
             if (access == null)
             {
@@ -412,6 +444,11 @@ namespace HolcombeScores.Api.Services
             if (myAccess == null)
             {
                 return _serviceHelper.NotLoggedIn<AccessDto>();
+            }
+
+            if (myAccess.Revoked != null)
+            {
+                return _serviceHelper.NotPermitted<AccessDto>("Access has been revoked");
             }
 
             var isAdmin = myAccess.Admin;
@@ -555,7 +592,7 @@ namespace HolcombeScores.Api.Services
             response?.Cookies.Delete(ImpersonatingUserIdCookieName);
         }
 
-        private async Task<Access> GetAccessInternal(bool permitRevoked = false)
+        private async Task<Access> GetAccessInternal()
         {
             var token = GetImpersonatingToken() ?? GetRequestToken();
             var userId = GetImpersonatingUserId() ?? GetRequestUserId();
@@ -564,19 +601,7 @@ namespace HolcombeScores.Api.Services
                 return null;
             }
 
-            var access = await _accessRepository.GetAccess(token, userId.Value);
-            if (permitRevoked)
-            {
-                return access;
-            }
-
-            if (access?.Revoked != null)
-            {
-                // the access has been revoked
-                return null;
-            }
-
-            return access;
+            return await _accessRepository.GetAccess(token, userId.Value);
         }
 
         private async Task<Access> GetImpersonatedByAccess()
