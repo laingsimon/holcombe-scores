@@ -121,7 +121,7 @@ public class CompositeSteps : StepBase
         Assert.That(createTeamResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Team was not created");
 
         var result = JsonConvert.DeserializeObject<ActionResultDto<TeamDto>>(createTeamResponse.Body!);
-        Assert.That(result!.Success, Is.True, "Team was not created");
+        Assert.That(result!.Success, Is.True, $"Team was not created: {createTeamResponse.Body}");
         Stash["teamId"] = result.Outcome.Id.ToString();
     }
 
