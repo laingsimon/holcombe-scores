@@ -2,29 +2,25 @@
 Tests for when goals are recorded
 
     Background:
-        Given I request admin access to the system
-        Then I create a team
-        Then I create a game
+        Given I request admin access to the system SYNC
+        Then I create a team SYNC
+        Then I create a game SYNC
         Then a GET request is sent to the api route /api/Game/${gameId}
-        Then the response is OK
-        Then the property recordGoalToken is stashed as goalRecordToken
-        Then I create a player
-        Then I add the player to the game
-        Then the background is now complete
+        Then the response is OK SYNC
+        Then the property recordGoalToken is stashed as goalRecordToken SYNC
+        Then I create a player SYNC
+        Then I add the player to the game SYNC
 
     Scenario: Opponent goal can be recorded
-        Given I wait for the background to complete
         When I record an opponent goal
         Then the request was successful with the message Goal recorded
 
     Scenario: Holcombe goal is recorded for game
-        Given I wait for the background to complete
         When I record a holcombe goal
         Then the request was successful with the message Goal recorded
 
     Scenario: Goal assists can be recorded
-        Given I wait for the background to complete
-        And a POST request is sent to the api route /api/Game/Goal with the following content
+        Given a POST request is sent to the api route /api/Game/Goal with the following content
         """
         {
         "time": "2022-09-19T06:37:52.281Z",
@@ -48,8 +44,7 @@ Tests for when goals are recorded
         Then the request was successful with the message Goal recorded
 
     Scenario: Goal is rejected with invalid token
-        Given I wait for the background to complete
-        And a POST request is sent to the api route /api/Game/Goal with the following content
+        Given a POST request is sent to the api route /api/Game/Goal with the following content
         """
         {
         "time": "2022-09-19T06:37:52.281Z",
@@ -67,8 +62,7 @@ Tests for when goals are recorded
         Then the request failed with the message Someone else may have recorded the same goal
 
     Scenario: Goal is not recorded for missing game
-        Given I wait for the background to complete
-        And a POST request is sent to the api route /api/Game/Goal with the following content
+        Given a POST request is sent to the api route /api/Game/Goal with the following content
         """
         {
         "time": "2022-09-19T06:37:52.281Z",
@@ -86,8 +80,7 @@ Tests for when goals are recorded
         Then the request failed with the warning Game not found
 
     Scenario: Goals cannot be recorded for training
-        Given I wait for the background to complete
-        And a PATCH request is sent to the api route /api/Game with the following content
+        Given a PATCH request is sent to the api route /api/Game with the following content
         """
         {
         "id": "${gameId}",
@@ -106,8 +99,7 @@ Tests for when goals are recorded
         Then the request failed with the error Goals cannot be recorded for training
 
     Scenario: Goals cannot be recorded for postponed games
-        Given I wait for the background to complete
-        And a PATCH request is sent to the api route /api/Game with the following content
+        Given a PATCH request is sent to the api route /api/Game with the following content
         """
         {
         "id": "${gameId}",
@@ -126,60 +118,52 @@ Tests for when goals are recorded
         Then the request failed with the error Goals cannot be recorded for postponed games
 
     Scenario: Admins can record goals for games that have not started
-        Given I wait for the background to complete
-        And the game hasn't started
+        Given the game hasn't started
         When I record a holcombe goal
         Then the request was successful with the message Goal recorded
 
     Scenario: Admins can record goals for games that have ended
-        Given I wait for the background to complete
-        And the game has finished
+        Given the game has finished
         When I record a holcombe goal
         Then the request was successful with the message Goal recorded
 
     Scenario: Managers cannot record goals for games that have not started
-        Given I wait for the background to complete
-        And I request and grant access to the team
+        Given I request and grant access to the team
         And the game hasn't started
         And I change my access to that of a manager
         When I record a holcombe goal
         Then the request failed with the error Game is over, no changes can be made
 
     Scenario: Managers cannot record goals for games that have ended
-        Given I wait for the background to complete
-        And I request and grant access to the team
+        Given I request and grant access to the team
         And the game has finished
         And I change my access to that of a manager
         When I record a holcombe goal
         Then the request failed with the error Game is over, no changes can be made
 
     Scenario: Goals cannot be recorded for games that have not started
-        Given I wait for the background to complete
-        And I request and grant access to the team
+        Given I request and grant access to the team
         And the game hasn't started
         And I change my access to that of a user
         When I record a holcombe goal
         Then the request failed with the error Game is over, no changes can be made
 
     Scenario: Goals cannot be recorded for games that have ended
-        Given I wait for the background to complete
-        And I request and grant access to the team
+        Given I request and grant access to the team
         And the game has finished
         And I change my access to that of a user
         When I record a holcombe goal
         Then the request failed with the error Game is over, no changes can be made
 
     Scenario: Goal can be deleted
-        Given I wait for the background to complete
-        And I record a holcombe goal
+        Given I record a holcombe goal
         And the request was successful with the message Goal recorded
         And the property outcome.goals[0].goalId is stashed as goalId
         When a DELETE request is sent to the api route /api/Game/Goal/${gameId}/${goalId}
         Then the request was successful with the message Goal deleted
 
     Scenario: Managers cannot delete goals for games which have ended
-        Given I wait for the background to complete
-        And I record a holcombe goal
+        Given I record a holcombe goal
         And the request was successful with the message Goal recorded
         And the property outcome.goals[0].goalId is stashed as goalId
         And the game has finished
@@ -189,8 +173,7 @@ Tests for when goals are recorded
         Then the request failed with the error Game is over, no changes can be made
 
     Scenario: Managers can delete goals for games which have not completed
-        Given I wait for the background to complete
-        And the game has started
+        Given the game has started
         And I record a holcombe goal
         And the request was successful with the message Goal recorded
         And the property outcome.goals[0].goalId is stashed as goalId

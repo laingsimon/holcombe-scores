@@ -1,4 +1,5 @@
-﻿using NUnit.Framework.Interfaces;
+﻿using HolcombeScores.Test.Configuration;
+using HolcombeScores.Test.Contexts;
 using TechTalk.SpecFlow;
 
 namespace HolcombeScores.Test.Steps;
@@ -12,45 +13,65 @@ namespace HolcombeScores.Test.Steps;
 [Binding]
 public class BackgroundPatchSteps
 {
-    private readonly BackgroundAwaitingContext _context;
+    private readonly CompositeSteps _compositeSteps;
+    private readonly ResponseSteps _responseSteps;
+    private readonly JsonSteps _jsonSteps;
 
-    public BackgroundPatchSteps(BackgroundAwaitingContext context)
+    public BackgroundPatchSteps(ApiScenarioContext apiScenarioContext,
+        TestingConfigurationFactory testingConfigurationFactory)
     {
-        _context = context;
+        _compositeSteps = new CompositeSteps(apiScenarioContext);
+        _responseSteps = new ResponseSteps(testingConfigurationFactory, apiScenarioContext);
+        _jsonSteps = new JsonSteps(apiScenarioContext);
     }
 
-    [Then("the background is now complete")]
-    public void TheBackgroundIsNowComplete()
+    [Given("I request admin access to the system SYNC")]
+    public void RequestAdminAccessToTheSystem()
     {
-        _context.WaitHandle.Set();
+        _compositeSteps.RequestAdminAccessToTheSystem().Wait();
     }
 
-    [Given("I wait for the background to complete")]
-    public void IWaitForTheBackgroundToComplete()
+    [Then("I create a team SYNC")]
+    public void CreateATeam()
     {
-        var resultOutcome = NUnit.Framework.TestContext.CurrentContext.Result.Outcome;
-
-        for (var index = 0; index < 100; index++)
-        {
-            if (_context.WaitHandle.WaitOne(TimeSpan.FromMilliseconds(100)))
-            {
-                return;
-            }
-
-            if (resultOutcome == ResultState.Error || resultOutcome == ResultState.Failure)
-            {
-                return;
-            }
-        }
+        _compositeSteps.CreateATeam().Wait();
     }
 
-    public class BackgroundAwaitingContext
+    [Then("I create a game SYNC")]
+    public void CreateAGame()
     {
-        public ManualResetEvent WaitHandle { get; }
+        _compositeSteps.CreateAGame().Wait();
+    }
 
-        public BackgroundAwaitingContext()
-        {
-            WaitHandle = new ManualResetEvent(false);
-        }
+    [Then("I create a player SYNC")]
+    public void CreateAPlayer()
+    {
+        _compositeSteps.CreateAPlayer().Wait();
+    }
+
+    [Then("I add the player to the game SYNC")]
+    public void AddThePlayerToTeGame()
+    {
+        _compositeSteps.AddThePlayerToTheGame().Wait();
+    }
+
+    [Then("the response is ([A-Za-z]+) SYNC")]
+    public void TheResponseIs(string statusCode)
+    {
+        _responseSteps.ThenTheResponseIs(statusCode).Wait();
+    }
+
+    [Given(@"the property (.+) is stashed as ([A-Za-z0-9]+) SYNC")]
+    [Then(@"the property (.+) is stashed as ([A-Za-z0-9]+) SYNC")]
+    public void ThenThePropertyIsStashed(string propertyPath, string stashName)
+    {
+        _jsonSteps.ThenThePropertyIsStashed(propertyPath, stashName).Wait();
+    }
+
+    [Given("the SYNC request was successful with the message (.+)")]
+    [Then("the SYNC request was successful with the message (.+)")]
+    public void TheRequestWasSuccessful(string message)
+    {
+        _compositeSteps.TheRequestWasSuccessful(message).Wait();
     }
 }

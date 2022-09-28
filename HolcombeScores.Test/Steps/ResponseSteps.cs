@@ -47,7 +47,7 @@ public class ResponseSteps : StepBase
         }
     }
 
-    [Then("the response is (.+)")]
+    [Then("the response is ([A-Za-z]+)")]
     public async Task ThenTheResponseIs(string statusCodeName)
     {
         var response = await GetResponse();
