@@ -29,7 +29,7 @@ public class CompositeSteps : StepBase
         Assert.That(response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
         Assert.That(response.Body, Is.Not.Null.Or.Empty);
         var result = JsonConvert.DeserializeObject<ActionResultDto<object>>(response.Body!);
-        Assert.That(result!.Success, Is.True);
+        Assert.That(result!.Success, Is.True, response.Body);
         Assert.That(result.Messages, Has.Member(message));
     }
 
@@ -121,7 +121,7 @@ public class CompositeSteps : StepBase
         Assert.That(createTeamResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Team was not created");
 
         var result = JsonConvert.DeserializeObject<ActionResultDto<TeamDto>>(createTeamResponse.Body!);
-        Assert.That(result!.Success, Is.True, "Team was not created");
+        Assert.That(result!.Success, Is.True, $"Team was not created: {createTeamResponse.Body}");
         Stash["teamId"] = result.Outcome.Id.ToString();
     }
 

@@ -28,7 +28,7 @@ public class JsonSteps : StepBase
         try
         {
             var array = JsonSerializer.Deserialize<object[]>(response.Body!);
-            Assert.That(array!.Length, Is.EqualTo(count));
+            Assert.That(array!.Length, Is.EqualTo(count), response.Body);
         }
         catch (JsonException exc)
         {
@@ -71,8 +71,8 @@ public class JsonSteps : StepBase
         }
     }
 
-    [Given(@"the property (.+) is stashed as (.+)")]
-    [Then(@"the property (.+) is stashed as (.+)")]
+    [Given(@"the property (.+) is stashed as ([A-Za-z0-9]+)")]
+    [Then(@"the property (.+) is stashed as ([A-Za-z0-9]+)")]
     public async Task ThenThePropertyIsStashed(string propertyPath, string stashName)
     {
         var response = await GetResponse();

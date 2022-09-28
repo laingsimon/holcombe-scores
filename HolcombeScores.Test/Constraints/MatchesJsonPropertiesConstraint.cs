@@ -35,7 +35,15 @@ public sealed class MatchesJsonPropertiesConstraint : Constraint
             var propertyPath = property["PropertyPath"];
             var value = property["Value"];
 
-            var matchingTokens = json.SelectTokens(propertyPath).Select(t => t.Value<string>()?.ToString() ?? "null").ToArray();
+            var matchingTokens = json.SelectTokens(propertyPath).Select(t =>
+            {
+                if (t is JArray)
+                {
+                    return t.ToString();
+                }
+
+                return t.Value<string>()?.ToString() ?? "null";
+            }).ToArray();
             var matches = _all;
 
             foreach (var matchingToken in matchingTokens)

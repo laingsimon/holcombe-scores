@@ -46,7 +46,7 @@ namespace HolcombeScores.Api.Services
             var access = await _accessService.GetAccess();
             if (access?.Revoked != null)
             {
-                // if someone has revoked access don't permit them access to the list of teams
+                // if someone has revoked access don't permit them access the team details
                 return null;
             }
 

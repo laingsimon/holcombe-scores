@@ -1,0 +1,14 @@
+{
+  "trace": {
+    "traceSuccessfulSteps": false,
+    "traceTimings": false
+  },
+  "runtime": {
+    "dependencies": [
+      {
+        "type": "HolcombeScores.Test.NullStepFormatter, HolcombeScores.Test",
+        "as": "TechTalk.SpecFlow.Tracing.IStepFormatter, TechTalk.SpecFlow, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0778194805d6db41"
+      }
+    ]
+  }
+}
