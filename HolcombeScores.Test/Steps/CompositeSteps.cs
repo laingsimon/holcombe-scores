@@ -180,11 +180,15 @@ public class CompositeSteps : StepBase
             {
                 Guid.Parse(Stash["playerId"]),
             },
-            Training = false
+            Training = false,
+            Date = DateTime.UtcNow,
         };
         var response = await GetResponse(NewRequestBuilder("/api/Game")
-            .WithData(HttpMethod.Post, MediaTypeNames.Application.Json, Json(game)));
+            .WithData(HttpMethod.Patch, MediaTypeNames.Application.Json, Json(game)));
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Player was not added to game");
+        var result = JsonConvert.DeserializeObject<ActionResultDto<GameDto>>(response.Body!);
+        Assert.That(result!.Errors, Is.Empty);
+        Assert.That(result.Warnings, Is.Empty);
     }
 
     [Given("I record a holcombe goal")]
