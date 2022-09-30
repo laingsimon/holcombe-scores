@@ -42,7 +42,12 @@ public sealed class MatchesJsonPropertiesConstraint : Constraint
                     return t.ToString();
                 }
 
-                return t.Value<string>()?.ToString() ?? "null";
+                if (t.Type == JTokenType.Null)
+                {
+                    return "null";
+                }
+
+                return t.ToString(Formatting.None).Trim('\"') ?? "null";
             }).ToArray();
             var matches = _all;
 
