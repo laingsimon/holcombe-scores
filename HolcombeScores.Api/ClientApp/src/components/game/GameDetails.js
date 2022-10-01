@@ -217,6 +217,9 @@ export class GameDetails extends Component {
 
     componentWillUnmount() {
         this.stopRefresh();
+        if (this.state.refreshHandle) {
+            window.clearInterval(this.state.refreshHandle);
+        }
     }
 
     // renderers
