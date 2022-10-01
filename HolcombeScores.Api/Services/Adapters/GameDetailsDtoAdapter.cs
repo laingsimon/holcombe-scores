@@ -31,6 +31,9 @@ namespace HolcombeScores.Api.Services.Adapters
                 Address = gameDetailsDto.Address,
                 Postponed = gameDetailsDto.Postponed,
                 Friendly = gameDetailsDto.Friendly,
+                ManagerPots = gameDetailsDto.ManagerPots,
+                SupporterPots = gameDetailsDto.SupporterPots,
+                PlayerPots = gameDetailsDto.PlayerPots,
             };
         }
 

@@ -22,6 +22,19 @@ namespace HolcombeScores.Api.Models.Dtos
         public bool Friendly { get; set; }
 
         /// <summary>
+        /// Manager awarded player of the session
+        /// </summary>
+        public PlayerDto ManagerPots { get; set; }
+        /// <summary>
+        /// Supporter awarded player of the session
+        /// </summary>
+        public PlayerDto SupporterPots { get; set; }
+        /// <summary>
+        /// Player awarded player of the session
+        /// </summary>
+        public PlayerDto PlayerPots { get; set; }
+
+        /// <summary>
         /// A token that must be passed to POST /api/Game/Goal to record a goal
         /// </summary>
         public string RecordGoalToken { get; set; }

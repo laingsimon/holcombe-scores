@@ -16,7 +16,7 @@ namespace HolcombeScores.Api.Services.Adapters
             _configuration = configuration;
         }
 
-        public async Task<GameDto> Adapt(Game game, IEnumerable<GamePlayer> squad, IEnumerable<Goal> goals, AdapterContext context)
+        public async Task<GameDto> Adapt(Game game, IReadOnlyCollection<GamePlayer> squad, IEnumerable<Goal> goals, AdapterContext context)
         {
             if (game == null)
             {
@@ -42,7 +42,22 @@ namespace HolcombeScores.Api.Services.Adapters
                 GoogleMapsApiKey = _configuration["GOOGLE_MAPS_API_KEY"],
                 HasStarted = context.HasStarted,
                 Friendly = game.Friendly,
+
+                ManagerPots = AdaptPots(squad, game.ManagerPots),
+                SupporterPots = AdaptPots(squad, game.SupporterPots),
+                PlayerPots = AdaptPots(squad, game.PlayerPots),
             };
+        }
+
+        private PlayerDto AdaptPots(IEnumerable<GamePlayer> squad, Guid? playerId)
+        {
+            if (playerId == null)
+            {
+                return null;
+            }
+
+            var player = squad.SingleOrDefault(p => p.PlayerId == playerId.Value);
+            return _gamePlayerAdapter.Adapt(player ?? new GamePlayer { Name = "Player not found", PlayerId = playerId.Value });
         }
 
         public Game Adapt(GameDto game)
@@ -63,6 +78,9 @@ namespace HolcombeScores.Api.Services.Adapters
                 Address = game.Address,
                 Postponed = game.Postponed,
                 Friendly = game.Friendly,
+                PlayerPots = game.PlayerPots?.Id,
+                ManagerPots = game.ManagerPots?.Id,
+                SupporterPots = game.SupporterPots?.Id,
             };
         }
 

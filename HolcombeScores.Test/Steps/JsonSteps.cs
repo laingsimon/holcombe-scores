@@ -42,7 +42,7 @@ public class JsonSteps : StepBase
     {
         var response = await GetResponse();
 
-        Assert.That(response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json));
+        Assert.That(response.Headers["Content-Type"], Contains.Substring(MediaTypeNames.Application.Json), response.Body);
         Assert.That(response.Body, Is.Not.Null.Or.Empty);
         Assert.That(response.Body, Does.StartWith("{"));
         Assert.That(response.Body!, new MatchesJsonPropertiesConstraint(SupplantValues(properties), true), () =>

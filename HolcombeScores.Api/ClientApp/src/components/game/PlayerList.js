@@ -54,7 +54,7 @@ export class PlayerList extends Component {
         }
 
         try {
-            return (<ul className="list-group" style={{height: '247px', overflow: 'auto'}}>
+            return (<ul className="list-group" style={{max_height: '247px', overflow: 'auto'}}>
                 {this.props.players.map(player => this.renderPlayer(player))}
             </ul>);
         } catch (e) {

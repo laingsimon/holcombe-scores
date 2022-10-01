@@ -19,35 +19,11 @@ class Game {
         return this.http.delete(`/api/Game/${id}`);
     }
 
-    createGame(teamId, date, opponent, playingAtHome, playerIds, training, address, friendly) {
-        let gameDetail = {
-            teamId: teamId,
-            date: date,
-            opponent: opponent,
-            playingAtHome: playingAtHome,
-            playerIds: playerIds,
-            training: training,
-            address: address,
-            friendly: friendly
-        };
-
+    createGame(gameDetail) {
         return this.http.post(`/api/Game`, gameDetail);
     }
 
-    updateGame(id, teamId, date, opponent, playingAtHome, playerIds, training, address, postponed, friendly) {
-        let gameDetail = {
-            id: id,
-            teamId: teamId,
-            date: date,
-            opponent: opponent,
-            playingAtHome: playingAtHome,
-            playerIds: playerIds,
-            training: training,
-            address: address,
-            postponed: postponed,
-            friendly: friendly
-        };
-
+    updateGame(gameDetail) {
         return this.http.patch(`/api/Game`, gameDetail);
     }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using Azure;
+﻿using Azure;
 using Azure.Data.Tables;
 
 namespace HolcombeScores.Api.Models.AzureTables
@@ -15,6 +14,19 @@ namespace HolcombeScores.Api.Models.AzureTables
         public bool Postponed { get; set; }
         public string Address { get; set; }
         public bool Friendly { get; set; }
+
+        /// <summary>
+        /// Manager awarded player of the session
+        /// </summary>
+        public Guid? ManagerPots { get; set; }
+        /// <summary>
+        /// Supporter awarded player of the session
+        /// </summary>
+        public Guid? SupporterPots { get; set; }
+        /// <summary>
+        /// Player awarded player of the session
+        /// </summary>
+        public Guid? PlayerPots { get; set; }
 
         /// <summary>
         /// TeamId

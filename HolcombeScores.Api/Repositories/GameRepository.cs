@@ -1,4 +1,5 @@
 using Azure;
+using Azure.Data.Tables;
 using HolcombeScores.Api.Models.AzureTables;
 using HolcombeScores.Api.Services;
 
@@ -107,7 +108,7 @@ namespace HolcombeScores.Api.Repositories
 
         public async Task Update(Game game)
         {
-            await _gameTableClient.UpdateEntityAsync(game, ETag.All);
+            await _gameTableClient.UpdateEntityAsync(game, ETag.All, TableUpdateMode.Replace);
         }
     }
 }
