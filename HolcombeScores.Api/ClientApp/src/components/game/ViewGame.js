@@ -93,6 +93,16 @@ export class ViewGame extends Component {
     }
 
     renderPlayer(player) {
-        return (<li key={player.id}>{player.number ? (<span className="badge rounded-pill bg-primary">{player.number}</span>) : null} {player.name}</li>);
+        const game = this.props.game;
+        const managerPots = game.managerPots != null && game.managerPots.id === player.id;
+        const supporterPots = game.supporterPots != null && game.supporterPots.id === player.id;
+        const playerPots = game.playerPots != null && game.playerPots.id === player.id;
+
+        return (<li key={player.id}>
+            {player.number ? (<span className="badge rounded-pill bg-primary">{player.number}</span>) : null} {player.name}
+            {managerPots ? (<span title="Managers player of the session">🏆</span>) : null}
+            {supporterPots ? (<span title="Supporters player of the session">🎖</span>) : null}
+            {playerPots ? (<span title="Players player of the session">👌</span>) : null}
+        </li>);
     }
 }
