@@ -38,9 +38,23 @@ export class EditGame extends Component {
         this.onPlayerSelected = this.onPlayerSelected.bind(this);
         this.beforeViewGame = this.beforeViewGame.bind(this);
         this.reset = this.reset.bind(this);
+        this.potsChange = this.potsChange.bind(this);
     }
 
     // event handlers
+    potsChange(event) {
+        const target = event.target;
+        const potsProperty = target.name;
+        const potsValue = target.value;
+
+        const newProposed = Object.assign({}, this.state.proposed);
+        newProposed[potsProperty] = potsValue === '' ? null : potsValue;
+
+        this.setState({
+            proposed: newProposed
+        });
+    }
+
     reset() {
         this.setState({
             proposed: this.defaultGameDetails(),
@@ -265,6 +279,7 @@ export class EditGame extends Component {
                     <input readOnly={this.state.readOnly || this.state.saving || this.state.deleting} type="datetime-local" className="form-control" id="basic-url" aria-describedby="basic-addon3"
                            name="date" value={this.state.proposed.date} onChange={this.valueChanged}/>
                 </div>
+                {this.renderPotsOptions()}
                 <PlayerList players={this.props.team.players} selected={this.state.proposed.players}
                             onPlayerSelected={this.onPlayerSelected} readOnly={this.state.readOnly || this.state.saving || this.state.deleting}
                             gameAvailability={this.props.gameAvailability} />
@@ -282,12 +297,42 @@ export class EditGame extends Component {
         }
     }
 
+    renderPotsOptions() {
+        if (!this.props.game || this.state.proposed.postponed) {
+            // cannot record POTS for new games
+            return null;
+        }
+
+        return (<div>
+            <div className="input-group mb-3">
+                <div className="input-group-prepend">
+                    <span className="input-group-text" id="basic-addon3"><abbr title='Player of the session'>POTS</abbr>&nbsp; Manager/Player/Supporter</span>
+                </div>
+                <select onChange={this.potsChange} name="managerPots" value={this.state.proposed.managerPots || ''} className="margin-right">
+                    <option key={'null'} value=''></option>
+                    {this.props.game.squad.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
+                </select>
+                <select onChange={this.potsChange} name="playerPots" value={this.state.proposed.playerPots || ''} className="margin-right">
+                    <option key={'null'} value=''></option>
+                    {this.props.game.squad.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
+                </select>
+                {this.state.proposed.training ? null : (<select onChange={this.potsChange} name="supporterPots" value={this.state.proposed.supporterPots || ''}>
+                    <option key={'null'} value=''></option>
+                    {this.props.game.squad.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
+                </select>)}
+            </div>
+        </div>);
+    }
+
     // apis
     getGameDetails(game) {
         let proposedGame = Object.assign({}, game);
         proposedGame.date = Functions.toLocalDateTime(new Date(game.date));
         proposedGame.players = {};
         proposedGame.address = proposedGame.address || '';
+        proposedGame.managerPots = game.managerPots ? game.managerPots.id : null;
+        proposedGame.supporterPots = game.supporterPots ? game.supporterPots.id : null;
+        proposedGame.playerPots = game.playerPots ? game.playerPots.id : null;
 
         delete proposedGame.squad; //remove squad to prevent confusion between players (dict) and squad (array)
 
@@ -300,12 +345,15 @@ export class EditGame extends Component {
 
     async applyApiChanges(utcDateTime, playerIds) {
         try {
-            const game = this.props.game;
-            const team = this.props.team;
-            const proposed = this.state.proposed;
+            const gameDetail = Object.assign({}, this.state.proposed);
+            gameDetail.id = this.props.game ? this.props.game.id : null;
+            gameDetail.teamId = this.props.team.id;
+            gameDetail.date = utcDateTime;
+            gameDetail.playerIds = playerIds;
+
             const apiFunction = this.props.game
-                ? async () => await this.gameApi.updateGame(game.id, team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training, proposed.address, proposed.postponed, proposed.friendly)
-                : async () => await this.gameApi.createGame(team.id, utcDateTime, proposed.opponent, proposed.playingAtHome, playerIds, proposed.training, proposed.address, proposed.friendly);
+                ? async () => await this.gameApi.updateGame(gameDetail)
+                : async () => await this.gameApi.createGame(gameDetail);
 
             const result = await apiFunction();
 
@@ -322,7 +370,7 @@ export class EditGame extends Component {
             }
 
             this.setState({
-                proposed: this.props.game ? proposed : this.defaultGameDetails(),
+                proposed: this.props.game ? this.state.proposed : this.defaultGameDetails(),
                 apiResult: result,
                 saving: false
             });
