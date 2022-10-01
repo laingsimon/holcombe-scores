@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+using System.Reflection;
 using HolcombeScores.Api.Models.AzureTables;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
@@ -47,7 +49,7 @@ namespace HolcombeScores.Api.Services
                 var goals = await _gameRepository.GetGoals(game.Id);
                 yield return await _gameDtoAdapter.Adapt(
                     game,
-                    gamePlayers,
+                    gamePlayers.ToArray(),
                     goals,
                     GetAdapterContext(game, goals, access));
             }
@@ -71,7 +73,7 @@ namespace HolcombeScores.Api.Services
             var goals = await _gameRepository.GetGoals(game.Id);
             return await _gameDtoAdapter.Adapt(
                 game,
-                gamePlayers,
+                gamePlayers.ToArray(),
                 goals,
                 GetAdapterContext(game, goals, access));
         }
@@ -168,6 +170,10 @@ namespace HolcombeScores.Api.Services
                     game.PlayingAtHome = update.PlayingAtHome;
                     updates.Add("PlayingAtHome updated");
                 }
+
+                UpdatePots(game, update, updates, g => g.ManagerPots);
+                UpdatePots(game, update, updates, g => g.SupporterPots);
+                UpdatePots(game, update, updates, g => g.PlayerPots);
 
                 if (game.Training != update.Training)
                 {
@@ -267,6 +273,33 @@ namespace HolcombeScores.Api.Services
             catch (Exception exc)
             {
                 return _serviceHelper.Error<GameDto>(exc.ToString());
+            }
+        }
+
+        private static void UpdatePots(Game game, Game update, List<string> updates, Expression<Func<Game, Guid?>> pots)
+        {
+            var member = (MemberExpression) pots.Body;
+            var property = (PropertyInfo)member.Member;
+
+            var updatePots = property.GetValue(update);
+            var currentPots = property.GetValue(game);
+
+            if (updatePots != null)
+            {
+                if (currentPots == null)
+                {
+                    property.SetValue(game, updatePots);
+                    updates.Add($"Set {property.Name}");
+                } else if (!currentPots.Equals(updatePots))
+                {
+                    property.SetValue(game, updatePots);
+                    updates.Add($"Changed {property.Name}");
+                }
+            }
+            else if (currentPots != null)
+            {
+                property.SetValue(game, null);
+                updates.Add($"Removed {property.Name}");
             }
         }
 
