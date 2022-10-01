@@ -1,5 +1,5 @@
 Feature: Games
-Tests for when games are managed
+Tests for managing games
 
     Background:
         Given I request admin access to the system SYNC
@@ -87,9 +87,9 @@ Tests for when games are managed
         """
         Then the request was successful with the message Date updated
         And the response has the following properties
-         | PropertyPath     | Value |
-         | outcome.readOnly | false |
-         | outcome.playable | false |
+          | PropertyPath     | Value |
+          | outcome.readOnly | false |
+          | outcome.playable | false |
 
     Scenario: Games are not playable after play time
         Given I create a game
