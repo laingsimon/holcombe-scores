@@ -5,7 +5,7 @@ namespace HolcombeScores.Api.Models;
 public class TestingContext : ITestingContext
 {
     public const string ContextIdCookieName = "HS_TestingContext";
-    private const string TestTableDelimiter = "TEST";
+    public const string TestTableDelimiter = "TEST";
 
     public string ContextId { get; set; }
     public bool TestingContextRequired { get; set; }
@@ -20,13 +20,6 @@ public class TestingContext : ITestingContext
         return ContextId == null
             ? tableName
             : GetTableName(tableName, ContextId);
-    }
-
-    public bool IsTestingTable(string tableName)
-    {
-        return ContextId != null
-            ? tableName.EndsWith($"{TestTableDelimiter}{ContextId}")
-            : tableName.Contains(TestTableDelimiter);
     }
 
     public bool IsRealTable(string tableName)
@@ -47,8 +40,8 @@ public class TestingContext : ITestingContext
             : null;
     }
 
-    private static string GetTableName(string tableName, string alternativeContextId)
+    private static string GetTableName(string tableName, string contextId)
     {
-        return $"{tableName}{TestTableDelimiter}{alternativeContextId}";
+        return $"{tableName}{TestTableDelimiter}{contextId}";
     }
 }

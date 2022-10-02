@@ -12,8 +12,10 @@ class Testing {
         return this.http.post(`/api/Testing`, request);
     }
 
-    stopTesting() {
-        return this.http.delete(`/api/Testing`);
+    stopTesting(endEntireStack) {
+        return this.http.delete(`/api/Testing`, {
+            endEntireStack: endEntireStack
+        });
     }
 
     getAllTestingContexts() {

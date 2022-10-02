@@ -36,9 +36,9 @@ public class TestingController : Controller
     }
 
     [HttpDelete("/api/Testing")]
-    public async Task<ActionResultDto<DeleteTestingContextDto>> EndTestingContext()
+    public async Task<ActionResultDto<DeleteTestingContextDto[]>> EndTestingContext(EndTestingContextDto request)
     {
-        return await _testingService.EndTestingContext();
+        return await _testingService.EndTestingContext(request);
     }
 
     [HttpDelete("/api/Testing/All")]

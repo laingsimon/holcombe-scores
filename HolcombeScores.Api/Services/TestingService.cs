@@ -7,6 +7,8 @@ namespace HolcombeScores.Api.Services;
 
 public class TestingService : ITestingService
 {
+    private const string ContextDelimiter = "zzz";
+
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IServiceHelper _serviceHelper;
     private readonly ITableServiceClientFactory _tableServiceClientFactory;
@@ -33,12 +35,25 @@ public class TestingService : ITestingService
         _logger = loggerFactory.CreateLogger<TestingService>();
     }
 
+    private static string GetNewContextId()
+    {
+        return DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+    }
+
     public async Task<ActionResultDto<TestingContextCreatedDto>> CreateTestingContext(CreateTestingContextRequestDto request)
     {
-        var deletionResult = _testingContext.ContextId != null
-            ? await EndTestingContext()
+        var deletionResult = _testingContext.ContextId != null && request.ReplaceExistingContext
+            ? await EndTestingContext(new EndTestingContextDto { EndEntireStack = true, UpdateCookies = false })
             : null;
-        var newContextId = EscapeContextId(Guid.NewGuid().ToString());
+        var newContextId = _testingContext.ContextId != null && !request.ReplaceExistingContext
+            ? _testingContext.ContextId + ContextDelimiter + EscapeContextId(GetNewContextId())
+            : EscapeContextId(GetNewContextId());
+
+        if (newContextId.Length + TableClientFactory.MaxHolcombeScoresTableName + TestingContext.TestTableDelimiter.Length > TableClientFactory.MaxTableLength)
+        {
+            throw new InvalidOperationException("Context depth is too great");
+        }
+
         var result = new ActionResultDto<TestingContextCreatedDto>
         {
             Outcome = new TestingContextCreatedDto
@@ -58,7 +73,7 @@ public class TestingService : ITestingService
         {
             await ProvisionTables(request, newTestingContext, result);
 
-            SetContextCookie(newTestingContext);
+            SetContextCookie(newTestingContext.ContextId);
             if (request.SetContextRequiredCookie)
             {
                 SetContextRequiredCookie();
@@ -73,32 +88,47 @@ public class TestingService : ITestingService
         return result;
     }
 
-    public async Task<ActionResultDto<DeleteTestingContextDto>> EndTestingContext()
+    public async Task<ActionResultDto<DeleteTestingContextDto[]>> EndTestingContext(EndTestingContextDto request)
     {
         if (_testingContext.ContextId == null)
         {
-            return _serviceHelper.NotFound<DeleteTestingContextDto>("No testing context in session");
+            return _serviceHelper.NotFound<DeleteTestingContextDto[]>("No testing context in session");
         }
 
-        var result = new DeleteTestingContextDto
+        var stack = GetContextIdStack(_testingContext.ContextId);
+        var toDelete = request.EndEntireStack ? stack.Count : 1;
+        var deletedContexts = new List<DeleteTestingContextDto>();
+
+        for (var index = 0; index < toDelete; index++)
         {
-            ContextId = _testingContext.ContextId,
-            RemovedTables = new List<string>(),
-        };
+            var result = new DeleteTestingContextDto
+            {
+                ContextId = stack.Pop(),
+                RemovedTables = new List<string>(),
+            };
+
+            await DeleteTables(result);
+            deletedContexts.Add(result);
+        }
 
         try
         {
-            await DeleteTables(result);
-
-            DeleteContextCookie();
-            DeleteContextRequiredCookie();
+            if ((request.EndEntireStack || stack.Count == 0) && request.UpdateCookies)
+            {
+                DeleteContextCookie();
+                DeleteContextRequiredCookie();
+            }
+            else if (!request.EndEntireStack)
+            {
+                SetContextCookie(stack.Peek());
+            }
         }
         catch (Exception exc)
         {
-            return _serviceHelper.Error<DeleteTestingContextDto>(exc.ToString());
+            return _serviceHelper.Error<DeleteTestingContextDto[]>(exc.ToString());
         }
 
-        return _serviceHelper.Success("Testing context removed", result);
+        return _serviceHelper.Success("Testing context removed", deletedContexts.ToArray());
     }
 
     public string GetTestingContextId()
@@ -225,7 +255,7 @@ public class TestingService : ITestingService
         }
     }
 
-    private ITableProvisioningService CreateTableProvisioningService(String tableName)
+    private ITableProvisioningService CreateTableProvisioningService(string tableName)
     {
         var dataType = Type.GetType($"HolcombeScores.Api.Models.AzureTables.{tableName}");
         if (dataType == null)
@@ -254,12 +284,19 @@ public class TestingService : ITestingService
     private async Task DeleteTables(DeleteTestingContextDto result)
     {
         var tablesToDelete = GetAllTableNames()
-            .WhereAsync(name => _testingContext.IsTestingTable(name));
+            .WhereAsync(name => IsTestingTable(name, result.ContextId));
 
         await foreach (var tableName in tablesToDelete)
         {
             await DeleteTable(tableName, result);
         }
+    }
+
+    private static bool IsTestingTable(string tableName, string contextId)
+    {
+        return contextId != null
+            ? tableName.EndsWith($"{TestingContext.TestTableDelimiter}{contextId}")
+            : tableName.Contains(TestingContext.TestTableDelimiter);
     }
 
     private async Task DeleteTable(string tableName, DeleteTestingContextDto result)
@@ -274,7 +311,7 @@ public class TestingService : ITestingService
         result.RemovedTables.Add(tableName);
     }
 
-    private void SetContextCookie(ITestingContext newTestingContext)
+    private void SetContextCookie(string contextId)
     {
         var response = _httpContextAccessor.HttpContext?.Response;
 
@@ -284,7 +321,7 @@ public class TestingService : ITestingService
             Secure = true,
             SameSite = SameSiteMode.None,
         };
-        response?.Cookies.Append(TestingContext.ContextIdCookieName, newTestingContext.ContextId, options);
+        response?.Cookies.Append(TestingContext.ContextIdCookieName, contextId, options);
     }
 
     private void SetContextRequiredCookie()
@@ -408,6 +445,19 @@ public class TestingService : ITestingService
 
             return instance;
         }
+    }
+
+    private static Stack<string> GetContextIdStack(string contextId)
+    {
+        var reversedIds = contextId.Split(ContextDelimiter).ToList();
+        var stack = new Stack<string>();
+
+        foreach (var item in reversedIds)
+        {
+            stack.Push(string.Join(ContextDelimiter, stack.Concat(new[] { item })));
+        }
+
+        return stack;
     }
 
     private static string EscapeContextId(string contextId)

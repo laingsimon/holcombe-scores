@@ -6,5 +6,7 @@ public class CreateTestingContextRequestDto
 
     public bool SetContextRequiredCookie { get; set; }
 
+    public bool ReplaceExistingContext { get; set; }
+
     public Dictionary<string, CreateTestingContextTableRequestDto> Tables { get; set; }
 }

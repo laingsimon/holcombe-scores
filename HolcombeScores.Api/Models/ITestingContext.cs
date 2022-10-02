@@ -4,7 +4,6 @@ public interface ITestingContext
 {
     string ContextId { get; }
     string GetTableName(string tableName);
-    bool IsTestingTable(string tableName);
     bool IsRealTable(string tableName);
     string GetContextIdFromTableName(string tableName);
 }
