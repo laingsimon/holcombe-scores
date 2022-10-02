@@ -22,7 +22,7 @@ public class ApiTestContextSteps
         if (_suiteContext != null)
         {
             _suiteContext.TestContextUsages.Add(featureContext.Name);
-            featureContext.TestContextId = _suiteContext.TestContextId!.Value;
+            featureContext.TestContextId = _suiteContext.TestContextId;
             featureContext.TestingConfiguration = _suiteContext.TestingConfiguration;
             return;
         }
@@ -49,7 +49,7 @@ public class ApiTestContextSteps
         Assert.That(result!.Success, Is.True, response.Body);
         _suiteContext = new ApiSuiteContext(result.Outcome.ContextId, testingConfiguration, apiInstance);
         featureContext.TestingConfiguration = _suiteContext.TestingConfiguration;
-        featureContext.TestContextId = _suiteContext.TestContextId!.Value;
+        featureContext.TestContextId = _suiteContext.TestContextId;
     }
 
     [AfterFeature]
@@ -72,7 +72,7 @@ public class ApiTestContextSteps
                 .WithMethod(HttpMethod.Delete)
                 .GetResponse();
 
-            featureContext.TestContextId = Guid.Empty;
+            featureContext.TestContextId = null;
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), string.IsNullOrEmpty(response.Body) ? "<Empty body>" : response.Body);
             suiteContext.ApiInstance.Dispose();
         }

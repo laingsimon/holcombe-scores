@@ -2,6 +2,6 @@
 
 public class TestingContextCreatedDto
 {
-    public Guid ContextId { get; set; }
+    public string ContextId { get; set; }
     public ActionResultDto<DeleteTestingContextDto> DeletionResult { get; set; }
 }

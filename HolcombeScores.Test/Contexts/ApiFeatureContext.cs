@@ -14,10 +14,10 @@ public class ApiFeatureContext
         _featureContext = featureContext;
     }
 
-    public Guid TestContextId
+    public string? TestContextId
     {
         [DebuggerStepThrough]
-        get => (Guid)_featureContext[nameof(TestContextId)];
+        get => (string)_featureContext[nameof(TestContextId)];
         [DebuggerStepThrough]
         set => _featureContext[nameof(TestContextId)] = value;
     }

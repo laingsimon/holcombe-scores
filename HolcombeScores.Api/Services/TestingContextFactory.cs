@@ -1,4 +1,6 @@
-﻿namespace HolcombeScores.Api.Services;
+﻿using HolcombeScores.Api.Models;
+
+namespace HolcombeScores.Api.Services;
 
 public class TestingContextFactory : ITestingContextFactory
 {
@@ -31,15 +33,12 @@ public class TestingContextFactory : ITestingContextFactory
         return false;
     }
 
-    private Guid? GetContextCookie()
+    private string GetContextCookie()
     {
         var requestCookie = _httpContextAccessor.HttpContext?.Request.Cookies[TestingContext.ContextIdCookieName];
-        if (!string.IsNullOrEmpty(requestCookie) && Guid.TryParse(requestCookie, out var contextId))
-        {
-            return contextId;
-        }
-
-        return null;
+        return !string.IsNullOrEmpty(requestCookie)
+            ? requestCookie
+            : null;
     }
 
     public static ITestingContext Create(IServiceProvider serviceProvider)

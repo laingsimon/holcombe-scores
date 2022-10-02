@@ -2,6 +2,6 @@
 
 public class DeleteTestingContextDto
 {
-    public Guid ContextId { get; set; }
+    public string ContextId { get; set; }
     public List<string> RemovedTables { get; set; }
 }

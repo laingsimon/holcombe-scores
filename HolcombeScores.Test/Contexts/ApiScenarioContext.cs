@@ -40,7 +40,7 @@ public class ApiScenarioContext
 
     public ITestingConfiguration TestingConfiguration => _featureContext.TestingConfiguration;
 
-    public Guid? TestContextId => _featureContext.TestContextId;
+    public string? TestContextId => _featureContext.TestContextId;
 
     public Dictionary<string, string> Stash
     {

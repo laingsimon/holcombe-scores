@@ -1,4 +1,6 @@
-﻿namespace HolcombeScores.Api.Services;
+﻿using HolcombeScores.Api.Models;
+
+namespace HolcombeScores.Api.Services;
 
 public interface ITestingContextFactory
 {

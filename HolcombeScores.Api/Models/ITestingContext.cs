@@ -1,10 +1,10 @@
-﻿namespace HolcombeScores.Api.Services;
+﻿namespace HolcombeScores.Api.Models;
 
 public interface ITestingContext
 {
-    Guid? ContextId { get; }
+    string ContextId { get; }
     string GetTableName(string tableName);
     bool IsTestingTable(string tableName);
     bool IsRealTable(string tableName);
-    Guid? GetContextIdFromTableName(string tableName);
+    string GetContextIdFromTableName(string tableName);
 }

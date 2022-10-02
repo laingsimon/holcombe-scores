@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using HolcombeScores.Api.Models;
 using HolcombeScores.Api.Services;
 
 namespace HolcombeScores.Test.Http;
@@ -9,13 +10,13 @@ namespace HolcombeScores.Test.Http;
 [SuppressMessage("ReSharper", "ParameterHidesMember")]
 public class HttpRequestBuilder
 {
-    private readonly Guid? _contextId;
+    private readonly string? _contextId;
     private readonly Dictionary<string, string> _cookies;
     private string? _baseUri;
     private string? _contentType;
     private HttpResponse? _response;
 
-    public HttpRequestBuilder(Guid? contextId, HttpRequestBuilder? requestBuilder = null)
+    public HttpRequestBuilder(string? contextId, HttpRequestBuilder? requestBuilder = null)
         :this(contextId, GetCookies(requestBuilder))
     { }
 
@@ -46,7 +47,7 @@ public class HttpRequestBuilder
         return nextRequestCookies;
     }
 
-    private HttpRequestBuilder(Guid? contextId, Dictionary<string, string> cookies)
+    private HttpRequestBuilder(string? contextId, Dictionary<string, string> cookies)
     {
         _contextId = contextId;
         _cookies = cookies;
@@ -104,7 +105,7 @@ public class HttpRequestBuilder
 
         if (_contextId != null)
         {
-            request.Headers.Add("Cookie", $"{TestingContext.ContextIdCookieName}={_contextId.Value}");
+            request.Headers.Add("Cookie", $"{TestingContext.ContextIdCookieName}={_contextId}");
             request.Headers.Add("Cookie", $"{TestingContextFactory.TestingContextRequiredName}=true");
 
             foreach (var cookie in _cookies)

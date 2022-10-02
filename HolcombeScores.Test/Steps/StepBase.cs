@@ -15,7 +15,7 @@ public abstract class StepBase
         _scenarioContext = scenarioContext;
     }
 
-    protected Guid? TestContextId => _scenarioContext.TestContextId;
+    protected string? TestContextId => _scenarioContext.TestContextId;
 
     protected ITestingConfiguration TestingConfiguration => _scenarioContext.TestingConfiguration;
 
@@ -54,7 +54,7 @@ public abstract class StepBase
         {
             { "ScenarioUniqueId", _scenarioContext.ScenarioUniqueId },
             { "UniqueId", Guid.NewGuid().ToString() },
-            { "TestContextId", TestContextId.ToString()! },
+            { "TestContextId", TestContextId ?? "" },
             { "UtcNow-1hr", utcNow.AddHours(-1).ToString(utcDateTimeFormat) },
             { "UtcNow-2hr", utcNow.AddHours(-2).ToString(utcDateTimeFormat) },
             { "UtcNow", utcNow.ToString(utcDateTimeFormat) },

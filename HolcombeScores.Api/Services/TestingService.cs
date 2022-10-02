@@ -1,4 +1,5 @@
 ﻿using Azure.Data.Tables;
+using HolcombeScores.Api.Models;
 using HolcombeScores.Api.Models.Dtos;
 using HolcombeScores.Api.Repositories;
 
@@ -37,7 +38,7 @@ public class TestingService : ITestingService
         var deletionResult = _testingContext.ContextId != null
             ? await EndTestingContext()
             : null;
-        var newContextId = Guid.NewGuid();
+        var newContextId = EscapeContextId(Guid.NewGuid().ToString());
         var result = new ActionResultDto<TestingContextCreatedDto>
         {
             Outcome = new TestingContextCreatedDto
@@ -81,7 +82,7 @@ public class TestingService : ITestingService
 
         var result = new DeleteTestingContextDto
         {
-            ContextId = _testingContext.ContextId.Value,
+            ContextId = _testingContext.ContextId,
             RemovedTables = new List<string>(),
         };
 
@@ -100,7 +101,7 @@ public class TestingService : ITestingService
         return _serviceHelper.Success("Testing context removed", result);
     }
 
-    public Guid? GetTestingContextId()
+    public string GetTestingContextId()
     {
         return _testingContext.ContextId;
     }
@@ -113,7 +114,7 @@ public class TestingService : ITestingService
             yield break;
         }
 
-        var details = new Dictionary<Guid, TestingContextDetail>();
+        var details = new Dictionary<string, TestingContextDetail>();
         await foreach (var testingTableName in GetAllTableNames().WhereAsync(t => !_testingContext.IsRealTable(t)))
         {
             var contextId = _testingContext.GetContextIdFromTableName(testingTableName);
@@ -123,15 +124,15 @@ public class TestingService : ITestingService
                 continue;
             }
 
-            if (!details.TryGetValue(contextId.Value, out var detail))
+            if (!details.TryGetValue(contextId, out var detail))
             {
                 detail = new TestingContextDetail
                 {
-                    ContextId = contextId.Value,
+                    ContextId = contextId,
                     Tables = 0,
-                    Self = _testingContext.ContextId == contextId.Value,
+                    Self = _testingContext.ContextId == contextId,
                 };
-                details.Add(contextId.Value, detail);
+                details.Add(contextId, detail);
             }
 
             detail.Tables++;
@@ -155,7 +156,7 @@ public class TestingService : ITestingService
         {
             var result = new DeleteTestingContextDto
             {
-                ContextId = _testingContext.ContextId.GetValueOrDefault(),
+                ContextId = _testingContext.ContextId,
                 RemovedTables = new List<string>(),
             };
 
@@ -283,7 +284,7 @@ public class TestingService : ITestingService
             Secure = true,
             SameSite = SameSiteMode.None,
         };
-        response?.Cookies.Append(TestingContext.ContextIdCookieName, newTestingContext.ContextId.ToString(), options);
+        response?.Cookies.Append(TestingContext.ContextIdCookieName, newTestingContext.ContextId, options);
     }
 
     private void SetContextRequiredCookie()
@@ -407,5 +408,10 @@ public class TestingService : ITestingService
 
             return instance;
         }
+    }
+
+    private static string EscapeContextId(string contextId)
+    {
+        return contextId?.Replace("-", "");
     }
 }
