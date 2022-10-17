@@ -182,7 +182,7 @@ export class EditGame extends Component {
                     <hr/>
                     <Link to={`/game/${result.outcome.id}/view`} onClick={this.beforeViewGame} className="btn btn-primary margin-right">
                         {this.state.loadingGame ? (<span className="spinner-border spinner-border-sm margin-right" role="status" aria-hidden="true"></span>) : null}
-                        {this.state.loadingGame ? 'Loading game...' : 'Play game'}
+                        {this.state.loadingGame ? 'Loading game...' : 'Go to game'}
                     </Link>
                     <button onClick={this.reset} className="btn btn-primary">
                         Create another
