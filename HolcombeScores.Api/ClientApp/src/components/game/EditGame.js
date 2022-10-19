@@ -246,8 +246,8 @@ export class EditGame extends Component {
                 <div className="input-group mb-3">
                     <div className="form-check form-switch margin-right">
                         <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
-                               name="playingAtHome" checked={this.state.proposed.playingAtHome}  onChange={this.valueChanged}/>
-                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{this.state.proposed.training ? 'Training' : 'Playing'} at home</label>
+                               name="playingAtHome" checked={this.state.proposed.playingAtHome} onChange={this.valueChanged}/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{this.state.proposed.playingAtHome ? 'Home' : 'Away'}</label>
                     </div>
                     <div className="form-check form-switch margin-right">
                         <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
