@@ -29,7 +29,7 @@ export class RequestOverview extends Component {
         this.rejectRequest = this.rejectRequest.bind(this);
         this.approveRequest = this.approveRequest.bind(this);
         this.reasonChanged = this.reasonChanged.bind(this);
-        this.team = this.props.teams.filter(team => team.id === this.props.request.teamId)[0];
+        this.team = this.props.teams.filter(team => team.id === this.props.request.teamId)[0] || { name: 'Unknown' };
     }
 
     //event handlers
