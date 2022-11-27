@@ -245,24 +245,24 @@ export class EditGame extends Component {
                 </div>
                 <div className="input-group mb-3">
                     <div className="form-check form-switch margin-right">
-                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="playingAtHome"
                                name="playingAtHome" checked={this.state.proposed.playingAtHome} onChange={this.valueChanged}/>
-                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{this.state.proposed.playingAtHome ? 'Home' : 'Away'}</label>
+                        <label className="form-check-label" htmlFor="playingAtHome">{this.state.proposed.playingAtHome ? 'Home' : 'Away'}</label>
                     </div>
                     <div className="form-check form-switch margin-right">
-                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="training"
                                name="training" checked={this.state.proposed.training}  onChange={this.valueChanged}/>
-                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Training</label>
+                        <label className="form-check-label" htmlFor="training">Training</label>
                     </div>
                     <div className="form-check form-switch margin-right">
-                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="friendly"
                                name="friendly" checked={this.state.proposed.friendly}  onChange={this.valueChanged}/>
-                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Friendly</label>
+                        <label className="form-check-label" htmlFor="friendly">Friendly</label>
                     </div>
                     {this.props.game ? (<div className="form-check form-switch margin-right">
-                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                        <input disabled={this.state.readOnly || this.state.saving || this.state.deleting} className="form-check-input" type="checkbox" id="postponed"
                                name="postponed" checked={this.state.proposed.postponed} onChange={this.valueChanged}/>
-                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Postponed</label>
+                        <label className="form-check-label" htmlFor="postponed">Postponed</label>
                     </div>) : null}
                 </div>
                 {this.state.proposed.playingAtHome ? null : (<div className="input-group mb-3">
